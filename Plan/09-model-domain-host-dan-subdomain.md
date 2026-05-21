@@ -223,16 +223,19 @@ Super Admin dapat memindahkan pemilik domain:
 | Field | Perilaku |
 |-------|----------|
 | `owner_user_id` baru | Wajib user aktif |
-| Owner lama | Opsi: jadi `co_admin`, `editor`, atau dihapus dari domain |
+| Owner lama | **Tanpa akses** — hapus dari `domain_shares` dan `user_domain_access` |
 | Audit | Wajib log: siapa, domain, owner lama → baru |
 | Notifikasi | Owner lama & owner baru mendapat notifikasi |
 
 Alur singkat:
 
 1. Super Admin: `/admin/sites/{id}/transfer-owner`
-2. Pilih user tujuan + perlakuan owner lama
-3. Transaksi DB: update `managed_domains`, `user_domain_access`, sesuaikan `domain_shares`
-4. Undangan `pending` milik owner lama tidak otomatis batal (keputusan: batalkan semua pending — **disarankan**)
+2. Pilih user tujuan sebagai owner baru
+3. Transaksi DB:
+   - Update `managed_domains.owner_user_id`
+   - Hapus akses owner lama (shares + `user_domain_access`)
+   - Insert owner baru di `user_domain_access`
+4. Batalkan semua `domain_share_invitations` **pending** untuk domain tersebut
 
 ### 7.4 Query scope (wajib di backend)
 
@@ -289,11 +292,11 @@ Cloudflare Pages masih bisa dipakai untuk **asset statis** (CSS/JS) jika diingin
 | 2026-05-21 | Pekerja: hanya domain **milik sendiri** + yang **di-share** ke mereka |
 | 2026-05-21 | **Co-admin** boleh undang user lain; **owner wajib setujui** (notifikasi) |
 | 2026-05-21 | **Super Admin** boleh **transfer ownership** domain |
+| 2026-05-21 | Owner lama setelah transfer: **tanpa akses** (bukan co_admin) |
 
 ## 11. Pertanyaan Terbuka
 
 - Apakah `www.seosementara.org` redirect ke apex?
-- Owner lama setelah transfer: default `co_admin` atau hapus akses?
 - Template per subdomain: satu folder repo per host atau config-driven?
 
 ## 12. Dokumen Terkait

@@ -256,7 +256,7 @@ CREATE INDEX idx_uda_domain ON user_domain_access (managed_domain_id, user_id);
 | Insert/update `domain_shares` | Upsert baris share (hanya setelah approved) |
 | Approve invitation | Insert share + upsert access |
 | Delete share | Delete baris share |
-| Transfer owner (SA) | Update `managed_domains.owner_user_id` + rebuild owner row di `user_domain_access` |
+| Transfer owner (SA) | Update owner; **hapus** akses owner lama; insert owner baru; cancel pending invites |
 
 | Tanpa denorm | Dengan denorm |
 |--------------|---------------|

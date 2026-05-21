@@ -117,8 +117,8 @@ Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hany
 
 | Method | Path | Deskripsi |
 |--------|------|-----------|
-| POST | `/api/admin/managed-domains/{id}/transfer-owner` | Body: `{ "new_owner_user_id", "previous_owner_role": "co_admin\|none" }` |
-| | | Hanya **Super Admin**; audit + notifikasi wajib |
+| POST | `/api/admin/managed-domains/{id}/transfer-owner` | Body: `{ "new_owner_user_id" }` — owner lama **tanpa akses** |
+| | | Hanya **Super Admin**; hapus share owner lama; audit + notifikasi wajib |
 
 ### Notifikasi
 
