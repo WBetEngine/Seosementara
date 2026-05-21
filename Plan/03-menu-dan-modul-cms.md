@@ -49,6 +49,11 @@ Pengguna & Akses (ringkas — kelola penuh di Setup Backend)
 ├── Profil saya / sesi saya
 └── Log aktivitas (jika berhak)
 
+Tools / Shortlink → [19-modul-url-shortlink.md](./19-modul-url-shortlink.md)
+├── Daftar shortlink (auto + manual)
+├── Buat manual (buka url.seosementara.org/manual)
+└── Analitik klik + Cloudflare
+
 Operasi Massal
 ├── Batch publish / unpublish
 ├── Bulk update meta SEO
