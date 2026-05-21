@@ -157,7 +157,7 @@ Terkait `media` table — `public_url`, `cdn_path`.
 | Ringkasan | |
 |-----------|--|
 | **Otomatis** | Domain `rezekibelanja.com` → `url.seosementara.org/rezekibelanja` |
-| **Manual** | UI `url.seosementara.org/manual` |
+| **Manual** | Form di admin — user buat sendiri (bukan otomatis) |
 | **Tracking** | `url_clicks` + agregat harian + sync **Cloudflare Analytics** |
 | **MVP modul** | Prioritas pertama di subdomain |
 
@@ -288,7 +288,7 @@ Tambah key di [11](./11-rbac-dan-permission-share.md) §3.3 saat implementasi.
 
 | Fase | Modul | Alasan |
 |------|-------|--------|
-| MVP | Apex + **URL** | Nilai langsung untuk domain portfolio |
+| MVP | Apex + **URL shortlink** [19](./19-modul-url-shortlink.md) | Auto per domain + redirect |
 | Fase 2 | **CDN** + Comments | Media & engagement |
 | Fase 3 | Bola, Ads, Reviews | Konten vertikal |
 
@@ -300,7 +300,7 @@ Tambah key di [11](./11-rbac-dan-permission-share.md) §3.3 saat implementasi.
 |------------|-----------------|
 | Apakah `toko-abc.com` punya situs publik di CMS? | **Tidak di MVP** — hanya data admin |
 | Preview domain | `GET /admin/sites/{id}/preview` — HTML privat (auth) |
-| Short link | **Ya** — modul URL, link ke domain |
+| Short link | **Ya** — [19](./19-modul-url-shortlink.md): auto `url.../rezekibelanja` |
 | Sitemap domain | Generate file / job — fase 2, bukan hostname terpisah |
 
 ---

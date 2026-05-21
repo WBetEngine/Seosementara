@@ -26,6 +26,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 16 | [16-deploy-dan-lingkungan.md](./16-deploy-dan-lingkungan.md) | **Deploy:** local / staging / prod, CI/CD, rollback |
 | 17 | [17-kontrak-htmx-dan-komponen-ui.md](./17-kontrak-htmx-dan-komponen-ui.md) | **HTMX:** header, error, swap, komponen admin & publik |
 | 18 | [18-bisnis-subdomain-dan-modul.md](./18-bisnis-subdomain-dan-modul.md) | **Subdomain:** bola, cdn, url, ads, comments, review |
+| 19 | [19-modul-url-shortlink.md](./19-modul-url-shortlink.md) | **Shortlink:** auto per domain, manual, tracking + CF |
 
 ## Ringkasan Stack
 

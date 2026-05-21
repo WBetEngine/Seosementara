@@ -15,54 +15,58 @@
 
 ---
 
-## 2. Dua Jenis Shortlink
+## 2. Dua Jenis Shortlink — Otomatis vs Manual
 
-| Jenis | `source` | Contoh kode | Kapan dibuat |
-|-------|----------|-------------|--------------|
-| **Otomatis** | `auto_domain` | `rezekibelanja` | Saat `managed_domains` dibuat / hostname diset |
-| **Manual** | `manual` | `promo2025`, `abc12` | User lewat UI `/manual` atau admin |
+> **Manual** = **cara pembuatan** (user sengaja membuat link), **bukan** nama path URL seperti `/manual`.
+
+| Jenis | `source` di DB | Contoh shortlink | Kapan dibuat |
+|-------|----------------|------------------|--------------|
+| **Otomatis** | `auto_domain` | `url.seosementara.org/rezekibelanja` | Sistem saat domain `rezekibelanja.com` ditambahkan |
+| **Manual** | `manual` | `url.seosementara.org/promo2025` | User klik **Buat shortlink** di admin & isi form |
+
+| | Otomatis | Manual |
+|--|----------|--------|
+| Pemicu | Tambah / import domain | Form di admin panel |
+| Kode | Dari hostname domain | User tentukan (atau random) |
+| Target | Default URL domain | URL tujuan bebas |
+| Jumlah | 1 per domain (typical) | Banyak per user/domain |
 
 ```mermaid
 flowchart LR
-  subgraph create [Pembuatan]
+  subgraph auto [Otomatis]
     D[Tambah domain rezekibelanja.com]
-    M[Form /manual]
+    D --> A["/rezekibelanja"]
   end
-  subgraph store [url_links]
-    A[code: rezekibelanja auto]
-    B[code: promo2025 manual]
+  subgraph man [Manual - bukan otomatis]
+    F[Form Buat Shortlink di admin]
+    F --> B["/promo2025"]
   end
-  subgraph hit [Akses publik]
-    U[Pengunjung] --> R[302 redirect]
-    R --> T[target_url]
-    R --> C[url_clicks + CF data]
+  subgraph pub [Publik]
+    U[Pengunjung] --> R[302]
   end
-  D --> A
-  M --> B
-  U --> A
-  U --> B
+  A --> R
+  B --> R
 ```
 
 ---
 
 ## 3. Peta URL di `url.seosementara.org`
 
+Hanya **redirect** dan halaman pendukung — **tidak** ada path `/manual`.
+
 | Path | Fungsi | Auth |
 |------|--------|------|
-| `/` | Beranda modul — penjelasan + stats agregat publik (opsional) | Publik |
-| `/manual` | **Form buat shortlink manual** + daftar link milik user | Login session (cookie apex) |
-| `/{code}` | **Redirect** — auto atau manual | Publik |
-| `/stats/{code}` | Dashboard statistik link (owner/SA) | Login |
+| `/` | Landing singkat modul shortlink (opsional) | Publik |
+| `/{code}` | **Redirect** ke `target_url` (auto **atau** manual) | Publik |
+| `/stats/{code}` | Lihat statistik satu link | Login |
 
-**Catatan:** `/manual` adalah **halaman aplikasi**, bukan kode shortlink — router wajib cek reserved paths sebelum lookup `code`.
-
-### Reserved paths (tidak bisa jadi kode)
+### Reserved paths (bukan kode shortlink)
 
 ```
-manual, stats, api, admin, health, assets, favicon.ico
+stats, api, admin, health, assets, favicon.ico
 ```
 
-Validasi saat create: `code` tidak boleh bentrok dengan reserved.
+**`manual` bukan path khusus** — bisa dipakai sebagai **kode** shortlink jika user buat manual (mis. `url.seosementara.org/manual` → redirect ke suatu URL), sama seperti kode lain.
 
 ---
 
@@ -325,12 +329,7 @@ Detail domain portfolio
 | POST | `/api/admin/url/links/sync-cf-stats` | Pull CF (SA) |
 | GET | `/api/public/url/r/{code}` | Redirect handler (bukan JSON) |
 
-Public UI manual (session):
-
-| Method | Path |
-|--------|------|
-| GET | `/api/public/url/manual` | HTML form |
-| POST | `/api/public/url/manual` | Create |
+Semua create **manual** lewat **`/api/admin/url/links`** (session + permission `tools.url.create`).
 
 ---
 
