@@ -67,6 +67,12 @@ Laporan
 └── Ringkasan error API
 
 Setup (Super Admin saja)
+├── Cloudflare → [15](./15-setup-cloudflare-integrasi.md)
+│   ├── Koneksi (API Token / Global API Key)
+│   ├── Domain utama & .env (sync Pages)
+│   ├── Tunnel (backend mini CPU)
+│   ├── Pages (UI admin & publik)
+│   └── DNS otomatis
 ├── Host / Subdomain
 │   ├── Daftar host (apex + subdomain)
 │   ├── Meta per host → [14](./14-setup-meta-dan-seo.md)

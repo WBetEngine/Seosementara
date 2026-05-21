@@ -12,6 +12,9 @@
 | **Meta global** | `/admin/setup/meta` | Default meta produk — [14](./14-setup-meta-dan-seo.md) |
 | **Keamanan** | `/admin/setup/security` | Rate limit, session, kebijakan password |
 | **Notifikasi sistem** | `/admin/setup/notifications` | Channel webhook platform |
+| **Cloudflare** | `/admin/setup/cloudflare/*` | API token, Tunnel, Pages, DNS, .env domain — **[15](./15-setup-cloudflare-integrasi.md)** |
+
+> Konfigurasi Cloudflare (Pages UI, Tunnel backend, Global API Token, domain `.env`) **bukan** di halaman backend umum — lihat dokumen **15** secara khusus.
 
 ---
 
@@ -50,7 +53,7 @@
 | Cache enabled | `cache.enabled` | Toggle Redis/memory |
 | TTL publik default | `cache.public_ttl_sec` | 60 |
 | TTL dashboard stats | `cache.stats_ttl_sec` | 300 |
-| Tombol purge all | aksi | Invalidate + Cloudflare API opsional |
+| Tombol purge all | aksi | Invalidate via [Setup Cloudflare](./15-setup-cloudflare-integrasi.md) |
 
 ### 2.5 Media & storage
 
@@ -109,10 +112,11 @@ CREATE TABLE system_settings (
 
 ```
 /admin/setup/
+├── cloudflare/    → koneksi, domain .env, tunnel, pages, dns
 ├── host/          → subdomain produk
-├── backend/       → form grup: Umum, Worker, Cache, Media, API
+├── backend/       → worker, cache, media (operasional)
 ├── meta/          → meta global produk
-├── security/      → rate limit, session TTL, password policy
+├── security/      → rate limit, session TTL
 └── notifications/ → webhook platform
 ```
 
@@ -151,6 +155,7 @@ Middleware: **`RequireSuperAdmin`** pada semua `/api/admin/setup/*`.
 | [09](./09-model-domain-host-dan-subdomain.md) | Setup Host |
 | [14](./14-setup-meta-dan-seo.md) | Setup Meta |
 | [12](./12-autentikasi-dan-login-aman.md) | Setup Security overlap |
+| [15](./15-setup-cloudflare-integrasi.md) | Cloudflare API, Tunnel, Pages |
 | [11](./11-rbac-dan-permission-share.md) | Siapa boleh akses Setup |
 
 ---

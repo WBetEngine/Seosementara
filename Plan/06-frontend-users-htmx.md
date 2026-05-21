@@ -47,7 +47,7 @@ Daftar subdomain **bukan hardcode** — didaftarkan di admin:
 |----------|---------|
 | Interaktivitas | **HTMX** |
 | Render | Go `html/template` + partial swap |
-| Hosting | Origin mini CPU (via Cloudflare proxy) |
+| Hosting | **Cloudflare Pages** + API via Tunnel [15](./15-setup-cloudflare-integrasi.md) |
 | Sumber file | Repo `Frontend-Users/` (+ subfolder per subdomain opsional) |
 
 ## 4. Routing (Backend)

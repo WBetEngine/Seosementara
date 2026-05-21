@@ -303,6 +303,10 @@ Cloudflare Pages masih bisa dipakai untuk **asset statis** (CSS/JS) jika diingin
 
 ## 12. Dokumen Terkait
 
+- [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md) — RBAC & checklist share
+- [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md) — login
+- [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) — setup backend
+- [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md) — meta
 - [10-database-postgresql.md](./10-database-postgresql.md) — schema, index, ownership di DB
 - [02-arsitektur-dan-infrastruktur.md](./02-arsitektur-dan-infrastruktur.md)
 - [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md) — menu Setup → Host

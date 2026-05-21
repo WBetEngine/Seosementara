@@ -135,7 +135,7 @@ Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hany
 | POST | `/api/admin/auth/logout` |
 | GET | `/api/admin/auth/me` |
 
-### Setup — [13](./13-setup-backend-dan-sistem.md), [14](./14-setup-meta-dan-seo.md)
+### Setup — [13](./13-setup-backend-dan-sistem.md), [14](./14-setup-meta-dan-seo.md), [15](./15-setup-cloudflare-integrasi.md)
 
 | Method | Path |
 |--------|------|
@@ -143,6 +143,15 @@ Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hany
 | GET/PATCH | `/api/admin/setup/meta/global` |
 | GET/PATCH | `/api/admin/hosts/{id}/meta` |
 | GET/PATCH | `/api/admin/managed-domains/{id}/meta` |
+| GET/PUT | `/api/admin/setup/cloudflare/credentials` |
+| POST | `/api/admin/setup/cloudflare/credentials/test` |
+| GET/PUT | `/api/admin/setup/cloudflare/domain-env` |
+| POST | `/api/admin/setup/cloudflare/domain-env/sync-pages` |
+| GET/PUT | `/api/admin/setup/cloudflare/tunnel` |
+| POST | `/api/admin/setup/cloudflare/tunnel/routes/apply` |
+| GET/PUT | `/api/admin/setup/cloudflare/pages` |
+| POST | `/api/admin/setup/cloudflare/pages/deploy` |
+| POST | `/api/admin/setup/cloudflare/dns/apply` |
 
 ### Setup → Host (Super Admin saja)
 

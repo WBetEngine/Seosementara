@@ -22,6 +22,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 12 | [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md) | Login aman, session, rate limit, CSRF |
 | 13 | [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) | Setup Backend (Super Admin) |
 | 14 | [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md) | Meta: global, subdomain, domain, halaman |
+| 15 | [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md) | **Cloudflare:** API token, Tunnel, Pages UI, DNS, .env domain |
 
 ## Ringkasan Stack
 
@@ -32,7 +33,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | Admin Panel | **HTMX** | `seosementara.org/admin/*` (sama origin) |
 | Frontend publik | **HTMX** | `seosementara.org/` + subdomain (`bola.`, `cdn.`, …) |
 | Domain portfolio | Data di DB | Ribuan domain **dikelola** di admin — bukan hostname frontend terpisah |
-| Edge | Cloudflare | DNS wildcard, SSL, cache, Tunnel ke mini CPU |
+| Edge | Cloudflare | Pages (UI), Tunnel (API), DNS — setup dari admin [15] |
 
 ## Konteks Skala (Prinsip Tetap)
 
@@ -56,3 +57,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 0.5 | 2026-05-21 | Co-admin undang dengan persetujuan owner; SA transfer ownership |
 | 0.6 | 2026-05-21 | Transfer ownership: owner lama **tanpa akses** |
 | 0.7 | 2026-05-21 | RBAC, login aman, setup backend, setup meta (11–14) |
+| 0.8 | 2026-05-21 | Integrasi Cloudflare dari admin: Tunnel, Pages, API key, .env |

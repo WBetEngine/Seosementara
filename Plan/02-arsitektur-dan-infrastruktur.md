@@ -4,76 +4,69 @@
 
 ## 1. Gambaran Deployment (Revisi)
 
-Satu ekosistem hostname **`seosementara.org`** (nama contoh) — backend, admin, dan frontend publik **satu origin** di mini CPU, dengan Cloudflare di depan sebagai DNS + proxy + cache.
+Satu ekosistem **`seosementara.org`** — **UI di Cloudflare Pages**, **API/backend di mini CPU** via **Cloudflare Tunnel**, dikonfigurasi dari **admin panel** ([15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md)).
 
 ```mermaid
 flowchart TB
   subgraph internet [Internet]
-    Worker[Pekerja - ribuan domain dikelola]
-    Visitor[Pengunjung seosementara.org]
-    SubVisitor[Pengunjung subdomain]
+    Worker[Pekerja]
+    Visitor[Pengunjung]
   end
-  subgraph cf [Cloudflare]
-    DNS["seosementara.org + *.seosementara.org"]
-    Cache[CDN Cache]
+  subgraph cf [Cloudflare - dikelola dari Admin Setup]
+    Pages[Pages UI HTMX]
+    Tunnel[Tunnel]
+    DNS[DNS Zone]
   end
-  subgraph mini [Mini CPU - Golang]
-    Router[Router Host + Path]
-    Admin["/admin/* HTMX"]
-    Public["/ HTMX apex"]
-    SubApps["Subdomain HTMX"]
-    API["/api/*"]
-    BG[Worker Jobs]
-    DB[(Database)]
+  subgraph mini [Mini CPU]
+    Go[Go API + Worker]
+    CFd[cloudflared]
+    DB[(PostgreSQL)]
   end
-  Worker --> DNS
+  Worker --> Pages
+  Worker --> Tunnel
   Visitor --> DNS
-  SubVisitor --> DNS
-  DNS --> Cache --> Router
-  Router --> Admin
-  Router --> Public
-  Router --> SubApps
-  Router --> API
-  API --> DB
-  BG --> DB
+  DNS --> Pages
+  DNS --> Tunnel
+  Pages -->|/api /admin via route| Tunnel
+  Tunnel --> CFd --> Go
+  Go --> DB
 ```
 
 ## 2. Peran Setiap Komponen
 
-### 2.1 Mini CPU — Backend Golang (Origin tunggal)
+### 2.1 Mini CPU — Backend Golang + cloudflared
 
 | Tugas | Detail |
 |-------|--------|
-| HTTP server | Melayani **semua** route: `/admin/`, `/`, subdomain, `/api/` |
-| Router | `Host` header + `path` → template HTMX yang benar |
-| Worker | Job batch untuk ribuan domain portfolio |
-| DB | Domain portfolio, konten, config host/subdomain, user pekerja |
+| HTTP server | `127.0.0.1:8080` — API `/api/*`, logic, HTMX partial (jika route ke Go) |
+| cloudflared | Outbound Tunnel — **tanpa buka port router** |
+| Worker | Job batch, wrangler deploy (opsional), sync Cloudflare |
+| DB | PostgreSQL + config CF terenkripsi |
 
 | Aspek | Rekomendasi |
 |-------|-------------|
-| Reverse proxy | Caddy/Nginx di depan Go (opsional jika Go langsung listen) |
-| TLS | Cloudflare Tunnel atau Full SSL |
-| Concurrency worker | 2–4 job paralel (sesuaikan mini CPU) |
+| TLS | Di terminasi Cloudflare (edge) |
+| Concurrency worker | 2–4 job paralel |
 
-### 2.2 Cloudflare (Edge)
+### 2.2 Cloudflare Pages — UI HTMX
 
-| Fungsi | Detail |
-|--------|--------|
-| DNS apex | `seosementara.org` → Tunnel / origin |
-| DNS wildcard | `*.seosementara.org` → Tunnel / origin |
-| Cache | Static asset + response publik (hati-hati jangan cache `/admin/` dengan cookie) |
-| Tunnel | Disarankan untuk mini CPU di belakang NAT |
+| Proyek | Folder | URL |
+|--------|--------|-----|
+| Admin UI | `Frontend-admin/` | `seosementara.org/admin/*` |
+| Publik | `Frontend-Users/` | `seosementara.org/` |
 
-**Bukan:** ribuan custom domain di Pages untuk setiap domain portfolio.
+Env vars (`PRIMARY_DOMAIN`, `API_BASE_URL`, …) di-sync dari **Setup → Cloudflare → Domain utama**.
 
-### 2.3 Folder repo `Frontend-admin/` & `Frontend-Users/`
+### 2.3 Cloudflare Tunnel — backend
 
-Sumber **template** HTMX/CSS:
+| Route contoh | Target |
+|--------------|--------|
+| `/api/*` | `http://127.0.0.1:8080` |
+| `*.seosementara.org` (subdomain) | Go router (template per host) |
 
-- Di-embed ke Go (`embed.FS`) **atau**
-- Di-copy saat build/deploy ke mini CPU
+Setup lengkap: [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md).
 
-Routing dilakukan Go — bukan proyek hostname terpisah per domain customer.
+**Bukan:** ribuan domain portfolio di Pages — hanya UI produk Seosementara.
 
 ## 3. Peta Path & Host
 

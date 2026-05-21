@@ -616,6 +616,7 @@ Backend/migrations/
 
 - RBAC & permissions → [11](./11-rbac-dan-permission-share.md)
 - Auth → [12](./12-autentikasi-dan-login-aman.md)
+- Cloudflare tables → [15](./15-setup-cloudflare-integrasi.md) §4–8
 - Setup & meta tables → [13](./13-setup-backend-dan-sistem.md), [14](./14-setup-meta-dan-seo.md)
 - Model domain & ownership → [09](./09-model-domain-host-dan-subdomain.md)
 - Backend & query rules → [04](./04-backend-golang.md)
