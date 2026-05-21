@@ -17,6 +17,7 @@ Situs (Domain Portfolio)
 ├── Detail domain
 │   ├── Pengaturan per domain
 │   ├── Berbagi akses (share ke admin lain)
+│   ├── Undangan menunggu persetujuan (owner)
 │   └── DNS & catatan operasi
 └── (Super Admin) Semua domain
 
@@ -108,7 +109,9 @@ Modul ini mengelola **domain yang dioperasikan** (ribuan), bukan hostname UI pro
 | Daftar domain saya | Pagination, search — hanya `owner_user_id = saya` |
 | Domain dibagikan | Domain yang user lain share ke saya (`domain_shares`) |
 | Tambah domain | Buat `managed_domain` baru → pemilik = user saat ini |
-| Detail → Berbagi akses | Invite admin lain: `co_admin`, `editor`, `viewer` |
+| Detail → Berbagi akses | Invite: `co_admin`, `editor`, `viewer` |
+| Undangan pending | Owner: setujui / tolak undangan dari co-admin |
+| Transfer ownership | **Super Admin** — pindah pemilik domain |
 | Pengaturan per domain | SEO default, status, catatan — **bukan WordPress** |
 | Semua domain | Hanya **Super Admin** — list global |
 
@@ -242,7 +245,10 @@ CRUD taxonomy per situs; hindari load semua term sekaligus — tree lazy-load ji
 | Situs — domain di-share | ✓ | ✓ | sesuai share | sesuai share | read |
 | Situs — semua domain | ✓ | — | — | — | — |
 | Setup → Host (subdomain) | ✓ | — | — | — | — |
-| Berbagi akses domain | ✓ | owner | co_admin* | — | — |
+| Berbagi akses (langsung aktif) | ✓ | owner | — | — | — |
+| Undang user (co-admin → pending) | ✓ | approve | ✓ kirim | — | — |
+| Setujui / tolak undangan share | ✓ | ✓ | — | — | — |
+| Transfer ownership domain | ✓ | — | — | — | — |
 | Konten — CRUD | ✓ | ✓ | ✓ | — | read |
 | Media — upload | ✓ | ✓ | ✓ | — | read |
 | SEO — edit | ✓ | ✓ | — | ✓ | read |
@@ -270,19 +276,22 @@ Detail di [06-frontend-users-htmx.md](./06-frontend-users-htmx.md) dan [09](./09
 |-------|------------|
 | Ownership | Setiap domain punya owner; bukan WordPress |
 | Isolasi | List/query filter owner + shared only |
-| Share | Owner undang admin lain ke domain yang sama |
-| Super Admin | Semua domain + kelola subdomain dinamis |
-| Audit log | Login, share, ubah owner, bulk job |
-| Site switcher | Hanya domain milik + dibagikan |
+| Share owner | Undangan langsung aktif |
+| Share co-admin | Undangan **pending** sampai owner **setujui** |
+| Notifikasi | Owner dapat alert undangan co-admin |
+| Transfer owner | Hanya Super Admin |
+| Audit log | Share, approve/reject, transfer ownership |
+| Site switcher | Domain milik + dibagikan (bukan pending) |
 
-*co_admin boleh share lagi — keputusan di [09](./09-model-domain-host-dan-subdomain.md) §11.
+Detail alur: [09](./09-model-domain-host-dan-subdomain.md) §7.3–7.6.
 
 ## 5. Pemetaan Menu → Endpoint API (Ringkas)
 
 | Menu | Prefix API (admin) |
 |------|-------------------|
 | Dashboard | `GET /api/admin/dashboard` |
-| Situs | `/api/admin/managed-domains`, `/domain-shares` |
+| Situs | `/managed-domains`, `/shares`, `/share-invitations` |
+| Notifikasi | `/api/admin/notifications` |
 | Setup Host | `/api/admin/hosts` (Super Admin) |
 | Konten | `/api/admin/posts`, `/pages`, `/taxonomies` |
 | Media | `/api/admin/media` |

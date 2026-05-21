@@ -182,10 +182,57 @@ domain_shares
 
 ### 7.3 Alur berbagi kepemilikan
 
-1. Owner buka domain → **Berbagi akses** → pilih user + peran share
-2. User yang di-share melihat domain di site switcher & daftar "Domain dibagikan"
-3. Owner bisa cabut share kapan saja
-4. Super Admin bisa override (audit, pindah owner, hapus share)
+#### A. Undangan langsung (Owner atau Super Admin)
+
+1. Owner / Super Admin buka **Berbagi akses** → pilih user + peran
+2. `domain_shares` + `user_domain_access` aktif **segera**
+3. User yang diundang melihat domain di site switcher
+
+#### B. Undangan dari Co-Admin (wajib persetujuan Owner)
+
+1. **Co-admin** mengundang user baru → status **`pending_approval`**
+2. **Owner** menerima **notifikasi**: setujui atau tolak undangan co-admin
+3. Jika **disetujui** → baris share aktif + update `user_domain_access`
+4. Jika **ditolak** → undangan ditutup; co-admin dan calon user diberi status (opsional notifikasi)
+5. Co-admin **boleh** mengundang berulang; setiap undangan tetap butuh persetujuan owner (kecuali owner sendiri yang undang)
+
+```mermaid
+sequenceDiagram
+  participant CA as Co-Admin
+  participant API as Backend
+  participant O as Owner
+  participant U as User diundang
+
+  CA->>API: POST share invite (role editor)
+  API->>API: Insert invitation pending_approval
+  API->>O: Notifikasi: co-admin mengundang U
+  O->>API: POST approve invitation
+  API->>API: Aktifkan domain_shares + user_domain_access
+  API->>U: Notifikasi: akses diterima
+```
+
+#### C. Pencabutan & override
+
+- Owner bisa cabut share kapan saja
+- Super Admin bisa cabut share, approve/tolak undangan, dan **pindah ownership** (§7.6)
+
+### 7.6 Transfer ownership (Super Admin)
+
+Super Admin dapat memindahkan pemilik domain:
+
+| Field | Perilaku |
+|-------|----------|
+| `owner_user_id` baru | Wajib user aktif |
+| Owner lama | Opsi: jadi `co_admin`, `editor`, atau dihapus dari domain |
+| Audit | Wajib log: siapa, domain, owner lama → baru |
+| Notifikasi | Owner lama & owner baru mendapat notifikasi |
+
+Alur singkat:
+
+1. Super Admin: `/admin/sites/{id}/transfer-owner`
+2. Pilih user tujuan + perlakuan owner lama
+3. Transaksi DB: update `managed_domains`, `user_domain_access`, sesuaikan `domain_shares`
+4. Undangan `pending` milik owner lama tidak otomatis batal (keputusan: batalkan semua pending — **disarankan**)
 
 ### 7.4 Query scope (wajib di backend)
 
@@ -205,7 +252,9 @@ Semua endpoint `/api/admin/managed-domains/{id}/*` harus cek akses ini sebelum m
 | Lihat domain sendiri | ✓ | ✓ | ✓ (hanya yang di-share) |
 | Tambah domain baru | ✓ | ✓ | — |
 | Edit konten/SEO domain | ✓ | ✓ | Sesuai `role` share |
-| Share ke user lain | ✓ | ✓ | Co-admin share saja (opsional) |
+| Share ke user lain (langsung aktif) | ✓ | ✓ | — |
+| Share via co-admin (pending approval) | ✓ | approve/tolak | ✓ undang → tunggu owner |
+| Transfer ownership | ✓ | — | — |
 | Setup → Host (subdomain) | ✓ | — | — |
 
 ## 8. Hosting (Revisi dari Draft Awal)
@@ -238,11 +287,13 @@ Cloudflare Pages masih bisa dipakai untuk **asset statis** (CSS/JS) jika diingin
 | 2026-05-21 | Domain portfolio **bukan WordPress** — situs native CMS |
 | 2026-05-21 | Subdomain produk: **Super Admin** tambah/ubah/ganti |
 | 2026-05-21 | Pekerja: hanya domain **milik sendiri** + yang **di-share** ke mereka |
+| 2026-05-21 | **Co-admin** boleh undang user lain; **owner wajib setujui** (notifikasi) |
+| 2026-05-21 | **Super Admin** boleh **transfer ownership** domain |
 
 ## 11. Pertanyaan Terbuka
 
 - Apakah `www.seosementara.org` redirect ke apex?
-- Peran share `co_admin` boleh invite share lagi atau hanya owner?
+- Owner lama setelah transfer: default `co_admin` atau hapus akses?
 - Template per subdomain: satu folder repo per host atau config-driven?
 
 ## 12. Dokumen Terkait

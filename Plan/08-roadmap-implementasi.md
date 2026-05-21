@@ -23,7 +23,9 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Migrasi DB | PostgreSQL schema v1 — lihat [10-database-postgresql.md](./10-database-postgresql.md) |
 | Auth admin | Login, session, logout |
 | CRUD managed-domains | Ownership + list scoped per user |
-| domain_shares | Share / unshare ke admin lain |
+| domain_shares + invitations | Share langsung (owner) + pending (co-admin) + approve |
+| notifications | Notifikasi undangan & transfer ownership |
+| transfer-owner | Endpoint Super Admin |
 | CRUD hosts | Super Admin — subdomain dinamis |
 | Router Host+Path | `/admin/`, apex, subdomain |
 | CRUD post (draft/publish) | Pagination wajib |
@@ -136,6 +138,8 @@ Catat keputusan di bagian bawah file ini setelah final.
 | 2026-05-21 | **Bukan WordPress** | Situs native CMS |
 | 2026-05-21 | **Ownership + share** | Pekerja hanya domain sendiri + dibagikan |
 | 2026-05-21 | **Subdomain dinamis** | Hanya Super Admin di Setup → Host |
+| 2026-05-21 | Co-admin undang → **owner setujui** | Notifikasi + `domain_share_invitations` |
+| 2026-05-21 | **SA transfer ownership** | API + audit + notifikasi |
 | | | |
 
 ---

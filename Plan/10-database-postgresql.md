@@ -48,6 +48,8 @@ erDiagram
   users ||--o{ managed_domains : owns
   users ||--o{ domain_shares : receives
   managed_domains ||--o{ domain_shares : shared
+  managed_domains ||--o{ domain_share_invitations : invites
+  users ||--o{ notifications : receives
   managed_domains ||--o{ posts : contains
   managed_domains ||--o{ pages : contains
   managed_domains ||--o{ media : contains
@@ -139,7 +141,7 @@ CREATE INDEX idx_managed_domains_status_updated
 
 ---
 
-### 6.3 `domain_shares`
+### 6.3 `domain_shares` (akses aktif)
 
 ```sql
 CREATE TABLE domain_shares (
@@ -147,6 +149,7 @@ CREATE TABLE domain_shares (
   user_id           BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   role              TEXT NOT NULL CHECK (role IN ('co_admin','editor','viewer')),
   invited_by        BIGINT NOT NULL REFERENCES users(id),
+  invitation_id     BIGINT,  -- FK ke share_invitations jika via approval
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (managed_domain_id, user_id)
 );
@@ -158,7 +161,75 @@ CREATE INDEX idx_domain_shares_user
 | Dampak | |
 |--------|--|
 | PK komposit | Mencegah duplikat share; cepat untuk revoke |
-| `ON DELETE CASCADE` | Hapus domain → bersihkan share otomatis |
+| Hanya baris **approved** | User pending tidak masuk tabel ini |
+
+---
+
+### 6.3b `domain_share_invitations` (co-admin → butuh persetujuan owner)
+
+```sql
+CREATE TABLE domain_share_invitations (
+  id                BIGSERIAL PRIMARY KEY,
+  managed_domain_id BIGINT NOT NULL REFERENCES managed_domains(id) ON DELETE CASCADE,
+  invitee_user_id   BIGINT NOT NULL REFERENCES users(id),
+  role              TEXT NOT NULL CHECK (role IN ('co_admin','editor','viewer')),
+  invited_by        BIGINT NOT NULL REFERENCES users(id),
+  status            SMALLINT NOT NULL DEFAULT 0,
+  -- 0=pending_approval, 1=approved, 2=rejected, 3=cancelled
+  reviewed_by       BIGINT REFERENCES users(id),
+  reviewed_at       TIMESTAMPTZ,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_share_invitations_domain_pending
+  ON domain_share_invitations (managed_domain_id, created_at DESC)
+  WHERE status = 0;
+
+CREATE INDEX idx_share_invitations_owner_queue
+  ON domain_share_invitations (managed_domain_id)
+  WHERE status = 0;
+  -- Owner poll/notifikasi via JOIN managed_domains.owner_user_id
+```
+
+| Skenario | Dampak |
+|----------|--------|
+| Co-admin undang 10 user | 10 row pending — **tanpa** update `user_domain_access` dulu |
+| Owner approve 1 | INSERT `domain_shares` + `user_domain_access` + UPDATE status=1 |
+| Owner reject | status=2 — tidak ada share |
+| Transfer ownership (SA) | Batalkan semua `status=0` untuk domain itu (disarankan) |
+
+**Aturan aplikasi:**
+
+| Pembuat undangan | Hasil |
+|------------------|-------|
+| Owner | Langsung ke `domain_shares` (skip tabel invitation) |
+| Super Admin | Langsung aktif (sama owner) |
+| Co-admin | Wajib `domain_share_invitations` pending |
+
+---
+
+### 6.3c `notifications`
+
+```sql
+CREATE TABLE notifications (
+  id                BIGSERIAL PRIMARY KEY,
+  user_id           BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type              TEXT NOT NULL,
+  -- share_invitation_pending, share_invitation_approved, ownership_transferred, ...
+  payload           JSONB NOT NULL DEFAULT '{}',
+  is_read           BOOLEAN NOT NULL DEFAULT false,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_notifications_user_unread
+  ON notifications (user_id, created_at DESC)
+  WHERE is_read = false;
+```
+
+| Dampak | |
+|--------|--|
+| Owner dapat notifikasi co-admin mengundang | Poll ringan atau HTMX `every 30s` |
+| Index partial unread | List notifikasi cepat |
 
 ---
 
@@ -182,9 +253,10 @@ CREATE INDEX idx_uda_domain ON user_domain_access (managed_domain_id, user_id);
 | Event | Aksi |
 |-------|------|
 | Insert `managed_domains` | Insert `user_domain_access (owner)` |
-| Insert/update `domain_shares` | Upsert baris share |
+| Insert/update `domain_shares` | Upsert baris share (hanya setelah approved) |
+| Approve invitation | Insert share + upsert access |
 | Delete share | Delete baris share |
-| Transfer owner | Update owner row + hapus owner lama |
+| Transfer owner (SA) | Update `managed_domains.owner_user_id` + rebuild owner row di `user_domain_access` |
 
 | Tanpa denorm | Dengan denorm |
 |--------------|---------------|
@@ -407,7 +479,9 @@ Job cron: `DELETE FROM sessions WHERE expires_at < now()` — batch 1000.
 | S5 | List post domain (page 1–100) | 5.000 row scan | Keyset + index domain | OFFSET → timeout 503 |
 | S6 | Bulk SEO 1.000 post | 1.000 update | `jobs` + batch 100 | Satu UPDATE global → lock panjang |
 | S7 | Lookup host `bola.` | 1 row | UNIQUE hostname + cache | Full table scan tiap request → latency |
-| S8 | Share domain ke 5 admin | 5 insert share | Trigger denorm | Lupa update `user_domain_access` → user tidak lihat domain |
+| S8 | Co-admin undang 5 user | 5 row pending | Index pending | Approve tanpa transaksi → access tidak konsisten |
+| S8b | Owner approve undangan | 1 insert share + access | Transaksi | Lupa `user_domain_access` → user tidak lihat domain |
+| S13 | SA transfer ownership | Update owner + shares | Transaksi + audit | Owner lama masih owner di access table |
 | S9 | Hapus domain | Cascade | FK cascade + soft delete | Hard delete massal → orphan / lock |
 | S10 | Audit 1 juta/bulan | Insert-heavy | Partition bulanan | Satu tabel → vacuum bloat |
 | S11 | Dashboard agregat | Read ringan | `stats_domain` | COUNT(*) tiap load → mini CPU 100% |
@@ -482,7 +556,8 @@ max_client_conn = 200
 Backend/migrations/
 ├── 00001_init_users.sql
 ├── 00002_managed_domains.sql
-├── 00003_domain_shares_access.sql
+├── 00003_domain_shares_invitations.sql
+├── 00003b_notifications.sql
 ├── 00004_hosts.sql
 ├── 00005_posts_pages_media.sql
 ├── 00006_jobs.sql

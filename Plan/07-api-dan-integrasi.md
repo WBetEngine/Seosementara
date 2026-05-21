@@ -97,11 +97,35 @@ Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hany
 
 ### Berbagi kepemilikan domain
 
+| Method | Path | Deskripsi | Perilaku |
+|--------|------|-----------|----------|
+| GET | `/api/admin/managed-domains/{id}/shares` | Daftar share aktif | — |
+| POST | `/api/admin/managed-domains/{id}/shares` | Undang user + role | Owner/SA: **aktif langsung**; Co-admin: **`pending_approval`** |
+| DELETE | `/api/admin/managed-domains/{id}/shares/{userId}` | Cabut share | Owner / SA |
+
+### Undangan share (persetujuan owner)
+
+| Method | Path | Deskripsi | Siapa |
+|--------|------|-----------|-------|
+| GET | `/api/admin/managed-domains/{id}/share-invitations` | List pending | Owner, SA |
+| GET | `/api/admin/share-invitations/pending` | Semua pending untuk owner (notifikasi) | Owner |
+| POST | `/api/admin/share-invitations/{id}/approve` | Setujui → aktifkan share | Owner, SA |
+| POST | `/api/admin/share-invitations/{id}/reject` | Tolak undangan | Owner, SA |
+| DELETE | `/api/admin/share-invitations/{id}` | Batalkan (pembuat co-admin) | Co-admin pembuat |
+
+### Transfer ownership (Super Admin)
+
 | Method | Path | Deskripsi |
 |--------|------|-----------|
-| GET | `/api/admin/managed-domains/{id}/shares` | Daftar user yang di-share |
-| POST | `/api/admin/managed-domains/{id}/shares` | Invite user + role |
-| DELETE | `/api/admin/managed-domains/{id}/shares/{userId}` | Cabut share |
+| POST | `/api/admin/managed-domains/{id}/transfer-owner` | Body: `{ "new_owner_user_id", "previous_owner_role": "co_admin\|none" }` |
+| | | Hanya **Super Admin**; audit + notifikasi wajib |
+
+### Notifikasi
+
+| Method | Path | Deskripsi |
+|--------|------|-----------|
+| GET | `/api/admin/notifications` | List belum dibaca (paginated) |
+| PATCH | `/api/admin/notifications/{id}/read` | Tandai dibaca |
 
 ### Setup → Host (Super Admin saja)
 

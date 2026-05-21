@@ -31,7 +31,9 @@ Logika bisnis di backend Go — HTMX hanya memanggil endpoint **sama origin** (`
 | `/admin/login` | Login pekerja |
 | `/admin/` | Dashboard |
 | `/admin/sites` | Domain milik saya + dibagikan (paginated) |
-| `/admin/sites/{id}/sharing` | Kelola berbagi akses |
+| `/admin/sites/{id}/sharing` | Berbagi akses + daftar undangan pending (owner) |
+| `/admin/sites/{id}/transfer-owner` | Transfer ownership (**Super Admin**) |
+| `/admin/notifications` | Notifikasi (undangan co-admin, transfer, dll.) |
 | `/admin/setup/host` | Subdomain produk (**Super Admin**) |
 | `/admin/posts` | Konten domain aktif |
 | `/admin/setup/host` | Konfigurasi host & subdomain |
@@ -73,7 +75,9 @@ Gunakan **combobox search** (ketik → `hx-get` autocomplete), bukan `<select>` 
 | Daftar domain | Pagination + filter + indexed search |
 | Bulk action | Pilih filter → konfirmasi → job ID → poll progress |
 | Dashboard | Angka agregat dari cache — bukan `COUNT(*)` tiap load |
-| Berbagi domain | Owner invite user lain via form HTMX |
+| Berbagi domain | Owner: langsung aktif; Co-admin: form + status pending |
+| Notifikasi owner | Badge + list; tombol setujui/tolak (HTMX) |
+| Transfer owner | Form Super Admin di halaman domain |
 
 ## 6. Kepemilikan & Banyak Pekerja
 
