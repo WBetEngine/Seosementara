@@ -77,7 +77,7 @@ Gunakan **combobox search** (ketik → `hx-get` autocomplete), bukan `<select>` 
 | Dashboard | Angka agregat dari cache — bukan `COUNT(*)` tiap load |
 | Berbagi domain | Owner: langsung aktif; Co-admin: form + status pending |
 | Notifikasi owner | Badge + list; tombol setujui/tolak (HTMX) |
-| Transfer owner | Form Super Admin di halaman domain |
+| Transfer owner | Form Super Admin; owner lama kehilangan akses sepenuhnya |
 
 ## 6. Kepemilikan & Banyak Pekerja
 

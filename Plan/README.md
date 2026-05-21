@@ -50,3 +50,4 @@ Detail teknis performa ada di file **04**, **07**, dan **10**.
 | 0.3 | 2026-05-21 | Native CMS (bukan WP), ownership + share, subdomain oleh Super Admin |
 | 0.4 | 2026-05-21 | Rencana database PostgreSQL (schema, index, skenario) |
 | 0.5 | 2026-05-21 | Co-admin undang dengan persetujuan owner; SA transfer ownership |
+| 0.6 | 2026-05-21 | Transfer ownership: owner lama **tanpa akses** |

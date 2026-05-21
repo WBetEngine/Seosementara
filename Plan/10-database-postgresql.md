@@ -481,7 +481,7 @@ Job cron: `DELETE FROM sessions WHERE expires_at < now()` — batch 1000.
 | S7 | Lookup host `bola.` | 1 row | UNIQUE hostname + cache | Full table scan tiap request → latency |
 | S8 | Co-admin undang 5 user | 5 row pending | Index pending | Approve tanpa transaksi → access tidak konsisten |
 | S8b | Owner approve undangan | 1 insert share + access | Transaksi | Lupa `user_domain_access` → user tidak lihat domain |
-| S13 | SA transfer ownership | Update owner + shares | Transaksi + audit | Owner lama masih owner di access table |
+| S13 | SA transfer ownership | Update owner; DELETE akses lama | Transaksi + audit | Owner lama masih di access → kebocoran data |
 | S9 | Hapus domain | Cascade | FK cascade + soft delete | Hard delete massal → orphan / lock |
 | S10 | Audit 1 juta/bulan | Insert-heavy | Partition bulanan | Satu tabel → vacuum bloat |
 | S11 | Dashboard agregat | Read ringan | `stats_domain` | COUNT(*) tiap load → mini CPU 100% |
