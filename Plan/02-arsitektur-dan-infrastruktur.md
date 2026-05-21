@@ -133,6 +133,7 @@ Runbook lengkap: **[16-deploy-dan-lingkungan.md](./16-deploy-dan-lingkungan.md)*
 
 ## 9. Dokumen Terkait
 
+- Deploy → [16-deploy-dan-lingkungan.md](./16-deploy-dan-lingkungan.md)
 - Model domain → [09](./09-model-domain-host-dan-subdomain.md)
 - Menu Setup → Host → [03](./03-menu-dan-modul-cms.md)
 - Backend routing → [04](./04-backend-golang.md)

@@ -23,6 +23,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 13 | [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) | **Pusat Setup Backend:** RBAC, auth, rate limit, operasional |
 | 14 | [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md) | Meta: global, subdomain, domain, halaman |
 | 15 | [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md) | **Cloudflare:** API token, Tunnel, Pages UI, DNS, .env domain |
+| 16 | [16-deploy-dan-lingkungan.md](./16-deploy-dan-lingkungan.md) | **Deploy:** local / staging / prod, CI/CD, rollback |
 
 ## Ringkasan Stack
 

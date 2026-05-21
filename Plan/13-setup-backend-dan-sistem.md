@@ -29,7 +29,7 @@ Dokumen detail:
 /admin/setup/
 │
 ├── backend/                          ← PUSAT (dokumen ini)
-│   ├── ringkasan/                    → health, versi, uptime
+│   ├── ringkasan/                    → health, versi, uptime, deploy info [16]
 │   ├── rbac/                         → §3
 │   │   ├── peran-sistem/             → CRUD role admin
 │   │   ├── pengguna/                 → user + assign role
