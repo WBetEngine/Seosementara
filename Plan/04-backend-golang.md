@@ -35,7 +35,7 @@ Backend/
 |-----------|------------------|
 | HTTP router | `chi` atau std `net/http` ServeMux (Go 1.22+) |
 | Config | `env` / file YAML |
-| DB | `pgx` (PostgreSQL) atau `modernc.org/sqlite` |
+| DB | `pgx` (PostgreSQL) — lihat [10-database-postgresql.md](./10-database-postgresql.md) |
 | Migrasi | `goose` atau `golang-migrate` |
 | Validasi | `go-playground/validator` |
 | Log | `slog` (stdlib) |
@@ -148,6 +148,7 @@ Dua unit: `seosementara-api.service`, `seosementara-worker.service` — restart 
 
 ## 14. Dokumen Terkait
 
+- Database PostgreSQL → [10-database-postgresql.md](./10-database-postgresql.md)
 - Model domain → [09-model-domain-host-dan-subdomain.md](./09-model-domain-host-dan-subdomain.md)
 - API kontrak → [07-api-dan-integrasi.md](./07-api-dan-integrasi.md)
 - Menu admin → [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)

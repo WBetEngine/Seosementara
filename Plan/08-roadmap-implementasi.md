@@ -20,7 +20,7 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 | Item | Detail |
 |------|--------|
-| Migrasi DB | sites, users, posts, pages, taxonomies |
+| Migrasi DB | PostgreSQL schema v1 — lihat [10-database-postgresql.md](./10-database-postgresql.md) |
 | Auth admin | Login, session, logout |
 | CRUD managed-domains | Ownership + list scoped per user |
 | domain_shares | Share / unshare ke admin lain |

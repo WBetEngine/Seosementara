@@ -247,6 +247,7 @@ Cloudflare Pages masih bisa dipakai untuk **asset statis** (CSS/JS) jika diingin
 
 ## 12. Dokumen Terkait
 
+- [10-database-postgresql.md](./10-database-postgresql.md) — schema, index, ownership di DB
 - [02-arsitektur-dan-infrastruktur.md](./02-arsitektur-dan-infrastruktur.md)
 - [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md) — menu Setup → Host
 - [05-admin-panel-htmx.md](./05-admin-panel-htmx.md)
