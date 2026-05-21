@@ -28,14 +28,14 @@ Situs utama produk: beranda, halaman marketing, dokumentasi, blog produk, dll.
 
 Setiap subdomain punya **UI HTMX sendiri** (layout, menu, fungsi):
 
-| Host (contoh) | Fungsi (draft) |
-|---------------|----------------|
-| `bola.seosementara.org` | Modul bola |
-| `cdn.seosementara.org` | Manajemen / akses aset CDN |
-| `url.seosementara.org` | Short link / redirect publik |
-| `ads.seosementara.org` | Halaman terkait iklan |
-| `comments.seosementara.org` | Antarmuka komentar |
-| `review.seosementara.org` | Ulasan |
+| Host (contoh) | Modul | Spesifikasi |
+|---------------|-------|-------------|
+| `bola.seosementara.org` | Bola | [18](./18-bisnis-subdomain-dan-modul.md) §4 |
+| `cdn.seosementara.org` | CDN | [18](./18-bisnis-subdomain-dan-modul.md) §5 |
+| `url.seosementara.org` | URL Short | [18](./18-bisnis-subdomain-dan-modul.md) §6 |
+| `ads.seosementara.org` | Ads | [18](./18-bisnis-subdomain-dan-modul.md) §7 |
+| `comments.seosementara.org` | Comments | [18](./18-bisnis-subdomain-dan-modul.md) §8 |
+| `review.seosementara.org` | Reviews | [18](./18-bisnis-subdomain-dan-modul.md) §9 |
 
 Daftar subdomain **bukan hardcode** — didaftarkan di admin:
 
