@@ -9,7 +9,7 @@
 |--------|------------|
 | Shortlink branded | `url.seosementara.org/{kode}` — bukan bit.ly pihak ketiga |
 | Otomatis massal | Tambah domain `rezekibelanja.com` → langsung ada `url.seosementara.org/rezekibelanja` |
-| Manual fleksibel | Kode & target bebas lewat UI `/manual` |
+| **Manual** | Shortlink **dibuat sendiri oleh user** (bukan dari tambah domain) — kode & target bebas |
 | Tracking | Klik, referrer, geo, device — dashboard admin |
 | Cloudflare | Analytics / logs / bot score dari edge selaras [15](./15-setup-cloudflare-integrasi.md) |
 
@@ -123,21 +123,33 @@ ALTER TABLE managed_domains ADD COLUMN
 
 ---
 
-## 5. Pembuatan Manual (`/manual`)
+## 5. Pembuatan Manual (Bukan Otomatis)
 
-### 5.1 UI (HTMX di `url.seosementara.org/manual`)
+Shortlink **manual** dibuat hanya ketika user **menyengaja** mengisi form — tidak muncul sendiri saat tambah domain.
 
-| Elemen | Perilaku |
-|--------|----------|
-| Target URL | Input wajib, validasi http(s) |
-| Kode custom | Opsional — kosong = generate random 6–8 char |
-| Domain portfolio | Opsional — link ke `managed_domain_id` |
-| Catatan | Label internal |
-| Simpan | `POST /api/admin/url/links` atau `/api/public/url/links` dengan session |
+### 5.1 UI — Admin panel (utama)
 
-Login: session cookie **sama** dengan admin apex (`seosementara.org`) — same-site atau shared cookie domain `.seosementara.org` [17](./17-kontrak-htmx-dan-komponen-ui.md).
+| Path admin | Fungsi |
+|------------|--------|
+| `/admin/tools/shortlink` | Daftar semua link (filter: auto / manual) |
+| `/admin/tools/shortlink/create` | **Form buat shortlink manual** |
 
-### 5.2 Permission
+| Field form | Wajib | Contoh |
+|------------|-------|--------|
+| Target URL | Ya | `https://landing.example.com/promo` |
+| Kode shortlink | Opsional | `promo2025` — kosong = random 6–8 char |
+| Domain portfolio | Opsional | Kait ke `managed_domain_id` |
+| Judul / catatan | Opsional | "Promo Ramadan" |
+
+Submit → `POST /api/admin/url/links` dengan `source: manual` → response HTMX + tampilkan URL lengkap:
+
+`https://url.seosementara.org/promo2025`
+
+### 5.2 UI — Dari detail domain (opsional)
+
+Di `/admin/sites/{id}` → tombol **Buat shortlink manual** (domain sudah terisi) — tetap `source: manual`, beda dengan kartu shortlink **auto** `url.../rezekibelanja`.
+
+### 5.3 Permission
 
 | Role | Manual create |
 |------|---------------|
@@ -305,17 +317,16 @@ CREATE TABLE url_cf_stats_daily (
 ### 9.1 Menu
 
 ```
-Tools (atau modul URL)
-├── Daftar shortlink (paginated, filter auto/manual)
-├── Buat manual → link ke url.../manual
-└── Analitik global
+Tools / Shortlink
+├── Daftar shortlink (filter: otomatis | manual)
+├── Buat shortlink manual   → form admin (BUKAN path /manual)
+└── Analitik
 
 Detail domain portfolio
-└── Kartu: Shortlink otomatis
-    ├── URL: url.seosementara.org/rezekibelanja
-    ├── Target: https://rezekibelanja.com
-    ├── Toggle auto_shortlink_enabled
-    └── Lihat statistik
+├── Shortlink OTOMATIS (sistem)
+│   └── url.seosementara.org/rezekibelanja
+├── Tombol: Buat shortlink MANUAL (form)
+└── Daftar link manual untuk domain ini
 ```
 
 ### 9.2 API
@@ -355,7 +366,7 @@ Semua create **manual** lewat **`/api/admin/url/links`** (session + permission `
 | U3 | Target phishing | Reputasi rusak | Blocklist domain + moderasi SA |
 | U4 | CF cache 302 | Under-count internal | Dokumentasi selisih analytics |
 | U5 | User ubah kode auto | Link mati | Kode auto **immutable** |
-| U6 | `/manual` sebagai kode | 404 salah | Reserved paths |
+| U6 | Kode `manual` vs path | Kode `manual` **diperbolehkan** sebagai shortlink manual user |
 | U7 | Redirect loop | Browser error | Validasi target ≠ url host |
 | U8 | Import 1000 domain bulk | 1000 insert | Job batch create shortlinks |
 
@@ -366,7 +377,7 @@ Semua create **manual** lewat **`/api/admin/url/links`** (session + permission `
 | Fase | Deliverable |
 |------|-------------|
 | MVP | Auto on domain create + redirect 302 + click_count |
-| Fase 2 | `/manual` UI + `url_clicks` + dashboard harian |
+| Fase 2 | Form admin buat manual + `url_clicks` + dashboard harian |
 | Fase 3 | CF Analytics sync + partition + geo chart |
 
 ---

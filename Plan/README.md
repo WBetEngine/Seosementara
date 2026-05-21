@@ -27,6 +27,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 17 | [17-kontrak-htmx-dan-komponen-ui.md](./17-kontrak-htmx-dan-komponen-ui.md) | **HTMX:** header, error, swap, komponen admin & publik |
 | 18 | [18-bisnis-subdomain-dan-modul.md](./18-bisnis-subdomain-dan-modul.md) | **Subdomain:** bola, cdn, url, ads, comments, review |
 | 19 | [19-modul-url-shortlink.md](./19-modul-url-shortlink.md) | **Shortlink:** auto per domain, manual, tracking + CF |
+| 20 | [20-pixel-admin-facebook-tiktok-gads.md](./20-pixel-admin-facebook-tiktok-gads.md) | **Pixel:** Facebook, TikTok, Google Ads — setup & analitik |
 
 ## Ringkasan Stack
 
@@ -66,3 +67,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 1.0 | 2026-05-21 | Deploy & lingkungan dev/staging/prod (16) |
 | 1.1 | 2026-05-21 | Kontrak HTMX (17) + bisnis subdomain (18) |
 | 1.2 | 2026-05-21 | Modul URL shortlink auto/manual + analitik CF (19) |
+| 1.3 | 2026-05-21 | Admin Pixel: Facebook, TikTok, Google Ads (20) |

@@ -51,8 +51,14 @@ Pengguna & Akses (ringkas — kelola penuh di Setup Backend)
 
 Tools / Shortlink → [19-modul-url-shortlink.md](./19-modul-url-shortlink.md)
 ├── Daftar shortlink (auto + manual)
-├── Buat manual (buka url.seosementara.org/manual)
+├── Buat shortlink manual (form di admin — bukan otomatis)
 └── Analitik klik + Cloudflare
+
+Pixel → [20-pixel-admin-facebook-tiktok-gads.md](./20-pixel-admin-facebook-tiktok-gads.md)
+├── /admin/pixel/              → Ringkasan kanal
+├── /admin/pixel/facebook/     → Setup, events, domains, analytics
+├── /admin/pixel/tiktok/       → Setup, events, domains, analytics
+└── /admin/pixel/gads/         → Setup, events, domains, analytics (Google Ads)
 
 Operasi Massal
 ├── Batch publish / unpublish

@@ -7,7 +7,7 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Item | Output | Folder |
 |------|--------|--------|
 | Repo layout | Backend, Frontend-admin, Frontend-Users, Plan | root |
-| Dokumentasi | File Plan 01–18 | `Plan/` |
+| Dokumentasi | File Plan 01–20 | `Plan/` |
 | Model domain | [09](./09-model-domain-host-dan-subdomain.md) disepakati | `Plan/` |
 | Lingkungan | Local + staging + prod — [16](./16-deploy-dan-lingkungan.md) | ops |
 | Infrastruktur | Go di mini CPU + Cloudflare DNS wildcard + Tunnel | ops |
@@ -100,6 +100,16 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Backup otomatis | DB + media |
 | Monitoring | Health, disk, queue depth |
 | Load test mini CPU | Identifikasi bottleneck |
+
+---
+
+## Fase 6b — Pixel Admin (Facebook, TikTok, GAds)
+
+| Item | Detail |
+|------|--------|
+| Halaman `/admin/pixel/*` | [20](./20-pixel-admin-facebook-tiktok-gads.md) |
+| MVP | Facebook Setup + CAPI test + event log |
+| Fase lanjut | TikTok, GAds, analytics sync, shortlink events |
 
 ---
 

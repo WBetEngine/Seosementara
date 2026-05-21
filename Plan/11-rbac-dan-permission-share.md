@@ -147,6 +147,11 @@ Detail hierarki meta: [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md).
 | `reports.view` | Lihat laporan domain | ✓ | ✓ | ✓ |
 | `tools.url.create` | Buat shortlink manual | | ✓ | ✓ |
 | `tools.url.view` | Lihat statistik shortlink | ✓ | ✓ | ✓ |
+| `pixel.view` | Lihat halaman pixel | ✓ | | |
+| `pixel.facebook.manage` | Setup & test Facebook Pixel / CAPI | ✓ | | |
+| `pixel.tiktok.manage` | Setup & test TikTok Pixel | ✓ | | |
+| `pixel.gads.manage` | Setup & test Google Ads / gtag | ✓ | | |
+| `pixel.analytics` | Analitik semua kanal | ✓ | | |
 
 ### 4.6 Larangan (tidak pernah via share)
 

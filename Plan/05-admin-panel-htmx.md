@@ -38,6 +38,9 @@ Logika bisnis di backend Go — HTMX hanya memanggil endpoint **sama origin** (`
 | `/admin/posts` | Konten domain aktif |
 | `/admin/setup/host` | Konfigurasi host & subdomain |
 | `/admin/users` | Manajemen pekerja |
+| `/admin/pixel/facebook` | Pixel Meta — [20](./20-pixel-admin-facebook-tiktok-gads.md) |
+| `/admin/pixel/tiktok` | Pixel TikTok |
+| `/admin/pixel/gads` | Pixel Google Ads |
 
 Semua link internal memakai prefix `/admin/` — hindari path absolut tanpa prefix.
 
