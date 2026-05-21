@@ -45,10 +45,9 @@ SEO
 ├── Redirect manager
 └── Schema / structured data
 
-Pengguna & Akses
-├── Pengguna admin
-├── Peran & permission
-└── Log aktivitas admin
+Pengguna & Akses (ringkas — kelola penuh di Setup Backend)
+├── Profil saya / sesi saya
+└── Log aktivitas (jika berhak)
 
 Operasi Massal
 ├── Batch publish / unpublish
@@ -66,28 +65,19 @@ Laporan
 ├── Status publish
 └── Ringkasan error API
 
-Setup (Super Admin saja)
+Setup (Super Admin / role dengan permission setup.*)
+├── Backend → [13](./13-setup-backend-dan-sistem.md) **PUSAT**
+│   ├── Ringkasan & health
+│   ├── RBAC (peran admin, pengguna, permission sistem)
+│   ├── Autentikasi & login aman → [12](./12-autentikasi-dan-login-aman.md)
+│   ├── Rate limit (aplikasi + selaras Cloudflare)
+│   ├── Operasional (DB, worker, cache, maintenance)
+│   ├── Media & storage
+│   └── API / webhook / Turnstile
 ├── Cloudflare → [15](./15-setup-cloudflare-integrasi.md)
-│   ├── Koneksi (API Token / Global API Key)
-│   ├── Domain utama & .env (sync Pages)
-│   ├── Tunnel (backend mini CPU)
-│   ├── Pages (UI admin & publik)
-│   └── DNS otomatis
-├── Host / Subdomain
-│   ├── Daftar host (apex + subdomain)
-│   ├── Meta per host → [14](./14-setup-meta-dan-seo.md)
-│   └── Panduan DNS
-├── Backend / Sistem → [13](./13-setup-backend-dan-sistem.md)
+├── Host / Subdomain + meta host → [09], [14]
 ├── Meta global → [14](./14-setup-meta-dan-seo.md)
-├── Keamanan → [12](./12-autentikasi-dan-login-aman.md)
 └── Notifikasi platform
-
-Pengaturan (per domain / user)
-├── Umum (nama produk, timezone)
-├── API keys & webhook
-├── Cache & performa
-├── Notifikasi (email/webhook)
-└── Maintenance mode
 
 Bantuan
 ├── Dokumentasi internal
@@ -246,13 +236,12 @@ CRUD taxonomy per situs; hindari load semua term sekaligus — tree lazy-load ji
 
 ## 3. RBAC (Ringkas)
 
-Matriks lengkap, checklist permission share, preset read only / edit: **[11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md)**.
-
-| Lapisan | Ringkasan |
-|---------|-----------|
-| Sistem | `super_admin` \| `worker` |
-| Domain | Owner = penuh; Share = checklist + preset |
-| Login | [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md) |
+| Lapisan | Kelola di admin | Dokumen |
+|---------|-----------------|---------|
+| Sistem (role admin, setup) | `/admin/setup/backend/rbac/` | [13](./13-setup-backend-dan-sistem.md) §3, [11](./11-rbac-dan-permission-share.md) |
+| Domain (share checklist) | `/admin/sites/{id}/sharing` | [11](./11-rbac-dan-permission-share.md) |
+| Login & keamanan | `/admin/setup/backend/autentikasi/` | [12](./12-autentikasi-dan-login-aman.md) |
+| Rate limit | `/admin/setup/backend/rate-limit/` | [13](./13-setup-backend-dan-sistem.md) §5 |
 
 ## 4. Menu Frontend Publik (Bukan Menu Admin)
 

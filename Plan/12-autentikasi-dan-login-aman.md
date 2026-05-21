@@ -1,6 +1,8 @@
 # 12 — Autentikasi & Login Aman
 
-> Admin: `https://seosementara.org/admin/login` — same origin API.
+> Admin: `https://seosementara.org/admin/login` — same origin API.  
+> **Semua parameter** (password, session, lockout, CSRF) dikonfigurasi dari admin panel:  
+> **`/admin/setup/backend/autentikasi/`** — lihat [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) §4.
 
 ## 1. Tujuan Keamanan
 
@@ -39,11 +41,13 @@ sequenceDiagram
 
 ## 3. Password
 
-| Aturan | Nilai |
-|--------|-------|
+Nilai di bawah = **default**; override via `system_settings` group `auth` di [Setup Backend §4](./13-setup-backend-dan-sistem.md).
+
+| Aturan | Default |
+|--------|---------|
 | Hash | **Argon2id** (prefer) atau bcrypt cost ≥ 12 |
-| Panjang minimum | 10 karakter |
-| Kompleksitas | Huruf + angka (opsional simbol) |
+| Panjang minimum | `auth.password.min_length` = 10 |
+| Kompleksitas | Sesuai checkbox di admin |
 | Storage | Hanya hash — tidak pernah log password |
 
 ```go
@@ -92,11 +96,14 @@ Setiap `/admin/*` dan `/api/admin/*`:
 
 ## 5. Rate Limiting & Lockout
 
-| Endpoint | Limit |
-|----------|-------|
-| `POST /auth/login` | 5 percobaan / 15 menit / IP |
-| | 10 percobaan / jam / email |
-| Setelah 10 gagal | Lock akun 30 menit (`locked_until`) |
+**Wajib selaras** dengan Cloudflare WAF — konfigurasi di [13 §5](./13-setup-backend-dan-sistem.md).
+
+| Lapisan | Login limit (default) |
+|---------|----------------------|
+| Cloudflare edge | 5 req/menit/IP (sync dari admin) |
+| Go origin | `auth.lockout.per_ip` = 5 / 15 menit |
+| Go origin | `auth.lockout.per_email` = 10 / jam |
+| Lock akun | `auth.lockout.duration_min` = 30 |
 
 Response gagal selalu sama:
 

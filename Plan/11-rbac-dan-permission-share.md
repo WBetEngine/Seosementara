@@ -33,12 +33,28 @@ flowchart TB
 
 ## 2. Peran Sistem (Lapisan 1)
 
+### 2.1 Kelola dari admin panel
+
+**Path:** `/admin/setup/backend/rbac/`
+
+| Halaman | Fungsi |
+|---------|--------|
+| Peran sistem | CRUD role + checklist permission sistem |
+| Pengguna admin | Assign role, suspend, reset password |
+
+Detail UI & tabel `system_roles`: [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) §3.
+
+### 2.2 Role bawaan & kustom
+
 | Role | Kode | Kemampuan global |
 |------|------|------------------|
-| **Super Admin** | `super_admin` | Semua domain, Setup Host/subdomain, Setup Backend, kelola user sistem, transfer ownership |
-| **Worker** | `worker` | Hanya domain milik + yang di-share; tidak ada menu Setup sistem |
+| **Super Admin** | `super_admin` | Semua — bypass permission JSON |
+| **Worker** | `worker` | Domain milik + share; tanpa Setup sistem |
+| **Role kustom** | slug bebas | Centang `setup.*`, `users.manage`, dll. |
 
-Tidak ada peran sistem `site_manager`, `editor`, dll. — itu diganti **permission checklist per share** (lapisan 2).
+Permission **domain** (post, SEO, …) tetap via **share checklist** §4 — bukan role sistem.
+
+Tidak ada peran `site_manager` / `editor` di lapisan sistem — diganti share preset + checklist.
 
 ---
 

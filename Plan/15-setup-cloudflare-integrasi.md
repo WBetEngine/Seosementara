@@ -453,8 +453,8 @@ HTTP_ADDR=127.0.0.1:8080
 
 ## 15. Dokumen Terkait
 
+- [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) — rate limit selaras §5, auth, RBAC
 - [02-arsitektur-dan-infrastruktur.md](./02-arsitektur-dan-infrastruktur.md)
-- [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md)
 - [05-admin-panel-htmx.md](./05-admin-panel-htmx.md)
 - [06-frontend-users-htmx.md](./06-frontend-users-htmx.md)
 - [10-database-postgresql.md](./10-database-postgresql.md)

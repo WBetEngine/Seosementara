@@ -1,169 +1,400 @@
-# 13 — Setup Backend & Konfigurasi Sistem
+# 13 — Setup Backend (Pusat Pengaturan di Admin Panel)
 
-> Hanya **Super Admin** — menu di `/admin/setup/*`  
-> Bukan pengaturan per domain portfolio (itu di detail domain).
+> **Semua** konfigurasi yang mempengaruhi backend Go, keamanan, RBAC, dan perilaku API **harus** dapat diatur dari admin panel — bukan hanya file `.env` manual.  
+> Path induk: **`/admin/setup/backend/`**  
+> Akses: **Super Admin** (default); role sistem kustom bisa diberi akses subset (§2).
 
-## 1. Ruang Lingkup
-
-| Area | Path admin (contoh) | Fungsi |
-|------|----------------------|--------|
-| **Host / Subdomain** | `/admin/setup/host` | Hostname produk, template UI — [09](./09-model-domain-host-dan-subdomain.md) |
-| **Backend / Sistem** | `/admin/setup/backend` | Konfigurasi operasional platform |
-| **Meta global** | `/admin/setup/meta` | Default meta produk — [14](./14-setup-meta-dan-seo.md) |
-| **Keamanan** | `/admin/setup/security` | Rate limit, session, kebijakan password |
-| **Notifikasi sistem** | `/admin/setup/notifications` | Channel webhook platform |
-| **Cloudflare** | `/admin/setup/cloudflare/*` | API token, Tunnel, Pages, DNS, .env domain — **[15](./15-setup-cloudflare-integrasi.md)** |
-
-> Konfigurasi Cloudflare (Pages UI, Tunnel backend, Global API Token, domain `.env`) **bukan** di halaman backend umum — lihat dokumen **15** secara khusus.
+Dokumen detail:
+- RBAC → [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md)
+- Login → [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md)
+- Cloudflare (edge) → [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md) — **selaras** dengan rate limit §5
 
 ---
 
-## 2. Menu Setup Backend (`/admin/setup/backend`)
+## 1. Prinsip
 
-### 2.1 Umum
-
-| Setting | Key | Contoh | Dampak |
-|---------|-----|--------|--------|
-| Nama platform | `app.name` | Seosementara | UI admin |
-| Timezone default | `app.timezone` | Asia/Jakarta | Jadwal publish |
-| URL apex | `app.apex_url` | https://seosementara.org | Link email, sitemap |
-| Mode maintenance global | `app.maintenance` | false | Semua publik 503 kecuali admin |
-
-### 2.2 Database & performa
-
-| Setting | Key | Dampak |
-|---------|-----|--------|
-| Pool size hint | `db.pool_size` | Baca di startup Go |
-| Query timeout default | `db.query_timeout_ms` | Cegah hung di mini CPU |
-| Pagination default | `app.page_size_default` | 50 |
-| Pagination max | `app.page_size_max` | 100 |
-
-### 2.3 Worker & job
-
-| Setting | Key | Dampak |
-|---------|-----|--------|
-| Worker concurrency | `worker.concurrency` | 2–4 di mini CPU |
-| Batch size | `worker.batch_size` | 50–200 row per iterasi |
-| Job timeout | `worker.job_timeout_sec` | Cegah job menggantung |
-
-### 2.4 Cache
-
-| Setting | Key | Dampak |
-|---------|-----|--------|
-| Cache enabled | `cache.enabled` | Toggle Redis/memory |
-| TTL publik default | `cache.public_ttl_sec` | 60 |
-| TTL dashboard stats | `cache.stats_ttl_sec` | 300 |
-| Tombol purge all | aksi | Invalidate via [Setup Cloudflare](./15-setup-cloudflare-integrasi.md) |
-
-### 2.5 Media & storage
-
-| Setting | Key | Dampak |
-|---------|-----|--------|
-| Max upload MB | `media.max_upload_mb` | 10 |
-| Allowed MIME | `media.allowed_mimes` | image/webp,... |
-| Storage driver | `media.driver` | `local` \| `r2` |
-| R2 bucket / endpoint | `media.r2_*` | Jika pakai Cloudflare R2 |
-
-### 2.6 API & integrasi
-
-| Setting | Key | Dampak |
-|---------|-----|--------|
-| API rate limit global | `api.rate_limit_per_min` | 300 |
-| Webhook signing secret | `webhook.secret` | HMAC outbound |
-| Turnstile site key | `turnstile.site_key` | Form publik |
-
-### 2.7 Email (opsional fase 2)
-
-| Setting | Key |
-|---------|-----|
-| SMTP host / port | `email.smtp_*` |
-| From address | `email.from` |
+| Prinsip | Artinya |
+|---------|---------|
+| **Satu pusat** | Operator tidak edit `postgresql.conf` / env untuk hal yang boleh UI |
+| **Simpan ke DB** | `system_settings` + tabel khusus; reload tanpa rebuild binary |
+| **Audit** | Setiap ubah setting → `audit_logs` |
+| **Selaras Cloudflare** | Rate limit & auth publik koordinasi edge + origin (§5) |
+| **Bukan domain portfolio** | Setting per domain tetap di `/admin/sites/{id}/` |
 
 ---
 
-## 3. Penyimpanan Konfigurasi
-
-### 3.1 Tabel `system_settings`
-
-```sql
-CREATE TABLE system_settings (
-  key         TEXT PRIMARY KEY,
-  value       JSONB NOT NULL,
-  group_name  TEXT NOT NULL,  -- app, worker, cache, media, security
-  updated_by  BIGINT REFERENCES users(id),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-| Dampak | |
-|--------|--|
-| Satu row per key | Update tanpa reload binary |
-| JSONB | Tipe fleksibel (number, bool, array) |
-| Cache di Go | Load semua settings di startup + refresh tiap 60s atau SET NOTIFY |
-
-**Jangan** simpan secret plain di DB tanpa enkripsi — gunakan:
-
-- Env var untuk secret utama (`DATABASE_URL`, `SESSION_SECRET`)
-- `system_settings` hanya untuk non-secret atau secret terenkripsi (AES dengan master key di env)
-
----
-
-## 4. UI Admin (HTMX)
+## 2. Peta Menu Lengkap — Setup Backend
 
 ```
 /admin/setup/
-├── cloudflare/    → koneksi, domain .env, tunnel, pages, dns
-├── host/          → subdomain produk
-├── backend/       → worker, cache, media (operasional)
-├── meta/          → meta global produk
-├── security/      → rate limit, session TTL
-└── notifications/ → webhook platform
+│
+├── backend/                          ← PUSAT (dokumen ini)
+│   ├── ringkasan/                    → health, versi, uptime
+│   ├── rbac/                         → §3
+│   │   ├── peran-sistem/             → CRUD role admin
+│   │   ├── pengguna/                 → user + assign role
+│   │   └── permission-sistem/      → daftar key (read-only doc)
+│   ├── autentikasi/                  → §4 [12]
+│   │   ├── kebijakan-password/
+│   │   ├── sesi-login/
+│   │   ├── lockout-brute-force/
+│   │   └── csrf-cookie/
+│   ├── rate-limit/                   → §5
+│   │   ├── aplikasi-origin/          → Go middleware
+│   │   └── cloudflare-edge/          → sync WAF (butuh [15])
+│   ├── operasional/                  → §6
+│   │   ├── umum-maintenance/
+│   │   ├── database-performa/
+│   │   ├── worker-job/
+│   │   └── cache/
+│   ├── media-storage/                → §7
+│   ├── api-webhook/                  → §8
+│   └── audit-log/                    → view config retensi
+│
+├── cloudflare/                       → [15] infrastruktur edge
+├── host/                             → subdomain produk [09]
+├── meta/                             → [14]
+└── notifications/                    → channel alert platform
 ```
 
-Sidebar **Setup** hanya visible untuk `role = super_admin`.
+Sidebar **Setup** → submenu dikelompokkan: **Backend**, **Cloudflare**, **Host**, **Meta**.
 
 ---
 
-## 5. API
+## 3. RBAC — Peran & Admin (di Admin Panel)
 
-| Method | Path | Deskripsi |
-|--------|------|-----------|
-| GET | `/api/admin/setup/settings` | List by group (masked secrets) |
-| PATCH | `/api/admin/setup/settings` | Update batch key-value |
-| GET | `/api/admin/setup/health` | DB, disk, queue depth, version |
-| POST | `/api/admin/setup/cache/purge` | Purge cache global |
+> Detail permission domain (share checklist): [11](./11-rbac-dan-permission-share.md).  
+> Di sini fokus **lapisan sistem** yang dikelola Super Admin.
 
-Middleware: **`RequireSuperAdmin`** pada semua `/api/admin/setup/*`.
+### 3.1 UI (`/admin/setup/backend/rbac/`)
+
+| Halaman | Fungsi |
+|---------|--------|
+| **Peran sistem** | Daftar + tambah + edit + nonaktifkan role |
+| **Pengguna admin** | CRUD pekerja, assign peran, reset password, suspend |
+| **Permission sistem** | Referensi key yang bisa dicentang per role |
+
+### 3.2 Model peran (diperluas)
+
+Selain bawaan, Super Admin bisa **menambah role admin**:
+
+| Role bawaan | Kode | Tidak bisa dihapus |
+|-------------|------|-------------------|
+| Super Admin | `super_admin` | Ya |
+| Worker | `worker` | Ya |
+
+| Role kustom (contoh) | Kode contoh | Permission sistem |
+|----------------------|-------------|------------------|
+| Platform Manager | `platform_manager` | User CRUD, lihat setup backend, **tanpa** Cloudflare |
+| Support Read-only | `support_viewer` | Dashboard global read, **tanpa** setup |
+
+```sql
+CREATE TABLE system_roles (
+  id            BIGSERIAL PRIMARY KEY,
+  slug          TEXT NOT NULL UNIQUE,
+  display_name  TEXT NOT NULL,
+  is_system     BOOLEAN NOT NULL DEFAULT false,  -- super_admin, worker
+  permissions   JSONB NOT NULL DEFAULT '{}',    -- key sistem §3.3
+  is_active     BOOLEAN NOT NULL DEFAULT true,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE users
+  ADD COLUMN system_role_id BIGINT REFERENCES system_roles(id);
+-- super_admin: bypass cek JSON (hardcoded)
+```
+
+### 3.3 Permission sistem (checklist per role)
+
+Key untuk **akses menu Setup & operasi global** — terpisah dari permission domain (share).
+
+| Key | Label | Super Admin |
+|-----|-------|:-----------:|
+| `setup.backend.view` | Lihat Setup Backend | ✓ |
+| `setup.backend.edit` | Ubah setting backend | ✓ |
+| `setup.cloudflare.view` | Lihat Setup Cloudflare | ✓ |
+| `setup.cloudflare.edit` | Ubah Cloudflare | ✓ |
+| `setup.host.edit` | Kelola host/subdomain | ✓ |
+| `setup.meta.edit` | Meta global | ✓ |
+| `users.manage` | Kelola pengguna admin | ✓ |
+| `roles.manage` | Kelola peran sistem | ✓ |
+| `domains.view_all` | Lihat semua domain portfolio | ✓ |
+| `domains.transfer` | Transfer ownership | ✓ |
+| `audit.view` | Lihat audit log global | ✓ |
+
+Role kustom: centang subset di form HTMX.
+
+### 3.4 Dampak
+
+| Skenario | Tanpa UI RBAC | Dengan UI RBAC |
+|----------|---------------|----------------|
+| Tambah pekerja baru | SSH / SQL manual | Form admin |
+| Role salah | Kebocoran setup | Audit + permission check middleware |
+| Hapus role masih dipakai | FK error | UI cegah + soft-disable |
 
 ---
 
-## 6. Skenario & Dampak
+## 4. Autentikasi & Login Aman (di Admin Panel)
 
-| Skenario | Salah konfigurasi | Dampak |
-|----------|-------------------|--------|
-| `worker.concurrency = 20` di mini CPU | CPU 100%, timeout | Set cap di UI + validasi max 4 |
-| `page_size_max = 10000` | OOM pada list | Hard cap 100 di API |
-| Maintenance on | Lupa matikan | Publik down — banner di admin |
-| Secret di DB plain | DB bocor | Enkripsi / env only |
+> Implementasi teknis: [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md).  
+> **Semua parameter** di bawah ini editable di `/admin/setup/backend/autentikasi/`.
+
+### 4.1 Kebijakan password (`system_settings` group `auth`)
+
+| Setting | Key default | Contoh |
+|---------|-------------|--------|
+| Panjang minimum | `auth.password.min_length` | 10 |
+| Wajib angka | `auth.password.require_number` | true |
+| Wajib huruf besar | `auth.password.require_upper` | false |
+| Hash algorithm | `auth.password.hash` | `argon2id` (read-only UI) |
+| Masa berlaku password (hari) | `auth.password.max_age_days` | 0 = tidak kedaluwarsa |
+
+### 4.2 Sesi & cookie
+
+| Setting | Key | Contoh |
+|---------|-----|--------|
+| Masa session (hari) | `auth.session.ttl_days` | 7 |
+| Perpanjang saat aktivitas | `auth.session.rolling` | true |
+| Max session per user | `auth.session.max_per_user` | 5 |
+| Nama cookie | `auth.session.cookie_name` | `sse_session` |
+| SameSite | `auth.session.same_site` | `Lax` |
+
+### 4.3 Brute force & lockout
+
+| Setting | Key | Contoh |
+|---------|-----|--------|
+| Max gagal login / IP / 15 menit | `auth.lockout.per_ip` | 5 |
+| Max gagal / email / jam | `auth.lockout.per_email` | 10 |
+| Durasi lock (menit) | `auth.lockout.duration_min` | 30 |
+
+### 4.4 CSRF & header keamanan
+
+| Setting | Key | Contoh |
+|---------|-----|--------|
+| CSRF enabled | `auth.csrf.enabled` | true |
+| Secure cookie only | `auth.cookie.secure` | true |
+
+### 4.5 UI form
+
+Satu halaman per grup + tombol **Simpan** → `PATCH /api/admin/setup/backend/auth`  
+Tombol **Terapkan ke runtime** → refresh cache settings di Go (tanpa restart jika memungkinkan).
+
+| Dampak ubah session TTL | User harus login ulang setelah TTL baru — tampilkan peringatan di UI |
 
 ---
 
-## 7. Relasi dengan Setup Lain
+## 5. Rate Limit — Aplikasi & Cloudflare (Selaras)
 
-| Dokumen | Isi |
-|---------|-----|
-| [09](./09-model-domain-host-dan-subdomain.md) | Setup Host |
-| [14](./14-setup-meta-dan-seo.md) | Setup Meta |
-| [12](./12-autentikasi-dan-login-aman.md) | Setup Security overlap |
-| [15](./15-setup-cloudflare-integrasi.md) | Cloudflare API, Tunnel, Pages |
-| [11](./11-rbac-dan-permission-share.md) | Siapa boleh akses Setup |
+Rate limiting **dua lapis** — keduanya dikonfigurasi dari admin, nilai **tidak boleh saling bertabrakan** (origin lebih ketat atau sama dengan edge).
+
+```mermaid
+flowchart LR
+  Client[Client] --> CF[Cloudflare Edge Rate Limit]
+  CF --> Tunnel[Tunnel]
+  Tunnel --> Go[Go Middleware Rate Limit]
+  Go --> API[Handler]
+```
+
+### 5.1 Lapisan Cloudflare (`/admin/setup/backend/rate-limit/cloudflare-edge/`)
+
+Membutuhkan kredensial [Setup Cloudflare](./15-setup-cloudflare-integrasi.md).
+
+| Aksi UI | CF produk | Contoh |
+|---------|-----------|--------|
+| Rate limit rule API publik | WAF / Rate Limiting | 120 req/menit/IP `/api/public/*` |
+| Rate limit login | WAF | 5 req/menit/IP ke path login |
+| Challenge / Block | WAF | Opsional bot fight |
+
+| Setting DB | Sync ke CF |
+|------------|------------|
+| `ratelimit.cf.public_rpm` | Rule ID disimpan untuk update |
+| `ratelimit.cf.login_rpm` | |
+| `ratelimit.cf.enabled` | Toggle |
+
+Tombol: **Push ke Cloudflare** → panggil API CF → simpan `rule_id` di `cloudflare_rate_rules`.
+
+```sql
+CREATE TABLE cloudflare_rate_rules (
+  id          BIGSERIAL PRIMARY KEY,
+  name        TEXT NOT NULL,
+  cf_rule_id  TEXT,
+  path_pattern TEXT NOT NULL,
+  limit_rpm   INT NOT NULL,
+  action      TEXT NOT NULL DEFAULT 'block',
+  is_enabled  BOOLEAN NOT NULL DEFAULT true,
+  synced_at   TIMESTAMPTZ
+);
+```
+
+### 5.2 Lapisan aplikasi — Go (`/admin/setup/backend/rate-limit/aplikasi-origin/`)
+
+| Setting | Key | Default | Harus ≤ CF? |
+|---------|-----|---------|-------------|
+| Global API admin rpm/user | `ratelimit.app.admin_rpm` | 300 | Ya |
+| Public API rpm/IP | `ratelimit.app.public_rpm` | 100 | ≤ CF rule |
+| Login rpm/IP | `ratelimit.app.login_rpm` | 5 | ≤ CF rule |
+| Form contact rpm/IP | `ratelimit.app.form_rpm` | 10 | |
+| Burst | `ratelimit.app.burst` | 20 | |
+
+**Validasi UI:** jika `app.public_rpm` > `cf.public_rpm` → warning: *"Origin limit lebih longgar dari Cloudflare — traffic bisa membebani mini CPU"*.
+
+### 5.3 Tabel sinkronisasi (panel ringkasan)
+
+| Endpoint | CF (edge) | Go (origin) | Rekomendasi |
+|----------|-----------|-------------|-------------|
+| `POST /auth/login` | 5/min/IP | 5/min/IP | Sama |
+| `GET /api/public/*` | 120/min/IP | 100/min/IP | CF ≥ origin |
+| `GET /api/admin/*` | 300/min/IP | 300/min/user | Beda dimensi (IP vs user) |
+
+### 5.4 Dampak
+
+| Skenario | Dampak |
+|----------|--------|
+| Hanya CF, tanpa Go | Attacker bypass via tunnel direct — **wajib** origin limit |
+| Hanya Go, tanpa CF | Mini CPU kewalahan sebelum block — **wajib** edge |
+| CF longgar, Go ketat | OK — ideal |
+| Keduanya longgar | DDoS / brute force |
 
 ---
 
-## 8. Roadmap
+## 6. Operasional Backend
 
-| Fase | Item |
-|------|------|
-| MVP | `system_settings` + UI backend umum + worker + cache |
-| Fase 2 | R2 media, email, health dashboard grafik |
-| Fase 3 | Import/export settings, staging preview |
+Path: `/admin/setup/backend/operasional/`
+
+### 6.1 Umum & maintenance
+
+| Key | Contoh |
+|-----|--------|
+| `app.name` | Seosementara |
+| `app.timezone` | Asia/Jakarta |
+| `app.maintenance` | false |
+| `app.maintenance_message` | Sedang pemeliharaan |
+
+### 6.2 Database & performa
+
+| Key | Contoh |
+|-----|--------|
+| `db.pool_size` | 20 |
+| `db.query_timeout_ms` | 5000 |
+| `app.page_size_default` | 50 |
+| `app.page_size_max` | 100 |
+
+### 6.3 Worker & job
+
+| Key | Contoh | Validasi UI max |
+|-----|--------|-----------------|
+| `worker.concurrency` | 2 | 4 (mini CPU) |
+| `worker.batch_size` | 100 | 200 |
+| `worker.job_timeout_sec` | 3600 | |
+
+### 6.4 Cache
+
+| Key | Contoh |
+|-----|--------|
+| `cache.enabled` | true |
+| `cache.public_ttl_sec` | 60 |
+| `cache.stats_ttl_sec` | 300 |
+
+Tombol **Purge cache aplikasi** + link ke Cloudflare purge [15].
+
+---
+
+## 7. Media & Storage
+
+Path: `/admin/setup/backend/media-storage/`
+
+| Key | Contoh |
+|-----|--------|
+| `media.max_upload_mb` | 10 |
+| `media.allowed_mimes` | `["image/webp","image/jpeg"]` |
+| `media.driver` | `local` \| `r2` |
+| `media.r2_*` | dari integrasi CF [15] |
+
+---
+
+## 8. API, Webhook, Turnstile
+
+Path: `/admin/setup/backend/api-webhook/`
+
+| Key | Contoh |
+|-----|--------|
+| `webhook.secret` | (encrypted) |
+| `turnstile.site_key` | publik |
+| `turnstile.secret_key` | (encrypted) |
+| `api.cors_allowed_origins` | dari domain utama [15] |
+
+---
+
+## 9. Penyimpanan & API
+
+### 9.1 Tabel
+
+- `system_settings` — key/value by group (`auth`, `ratelimit`, `worker`, …)
+- `system_roles` — role admin kustom
+- `cloudflare_rate_rules` — sync rate limit edge
+
+### 9.2 API (semua `RequireSuperAdmin` atau `setup.backend.edit`)
+
+| Method | Path |
+|--------|------|
+| GET | `/api/admin/setup/backend/overview` |
+| GET/PATCH | `/api/admin/setup/backend/settings?group=auth` |
+| GET/POST/PATCH/DELETE | `/api/admin/setup/backend/roles` |
+| GET/POST/PATCH | `/api/admin/setup/backend/users` |
+| GET/PATCH | `/api/admin/setup/backend/rate-limit/app` |
+| GET/POST | `/api/admin/setup/backend/rate-limit/cloudflare/sync` |
+| GET | `/api/admin/setup/backend/audit-config` |
+
+Setelah simpan: `POST /api/admin/setup/backend/reload` → invalidate settings cache.
+
+---
+
+## 10. Matriks: Harus di Admin Panel
+
+| Area | Di panel? | Path |
+|------|:---------:|------|
+| RBAC & role admin | ✅ | `/admin/setup/backend/rbac/` |
+| Rate limit app + CF | ✅ | `/admin/setup/backend/rate-limit/` |
+| Autentikasi / login | ✅ | `/admin/setup/backend/autentikasi/` |
+| Worker, cache, DB | ✅ | `/admin/setup/backend/operasional/` |
+| Media / API keys | ✅ | `/admin/setup/backend/` |
+| Cloudflare Tunnel/Pages | ✅ | `/admin/setup/cloudflare/` [15] |
+| Share permission domain | ✅ | `/admin/sites/{id}/sharing` [11] |
+
+| Bukan di panel (tetap env server) | Alasan |
+|-----------------------------------|--------|
+| `DATABASE_URL` | Bootstrap; tidak boleh diubah dari web |
+| `MASTER_ENCRYPTION_KEY` | Root secret |
+| `SESSION_SECRET` bootstrap | Bisa rotate via CLI fase 2 |
+
+---
+
+## 11. Skenario & Dampak
+
+| # | Skenario | Dampak |
+|---|----------|--------|
+| B1 | Nonaktifkan role masih dipakai 50 user | Block delete — force reassign |
+| B2 | Rate limit CF tidak di-sync | Mini CPU overload |
+| B3 | Session TTL 365 hari | Cookie dicuri lama valid — UI warning |
+| B4 | Matikan CSRF | XSS → aksi admin — default ON |
+| B5 | Dua Super Admin ubah setting bersamaan | Last write wins — audit log |
+
+---
+
+## 12. Roadmap
+
+| Fase | Deliverable |
+|------|-------------|
+| MVP | RBAC users + role bawaan; auth settings UI; rate limit app |
+| Fase 2 | Role kustom + permission checklist; CF rate sync |
+| Fase 3 | 2FA settings; import/export backend config |
+
+---
+
+## 13. Dokumen Terkait
+
+- [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md)
+- [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md)
+- [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md)
+- [10-database-postgresql.md](./10-database-postgresql.md)
+- [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)

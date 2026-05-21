@@ -135,7 +135,20 @@ Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hany
 | POST | `/api/admin/auth/logout` |
 | GET | `/api/admin/auth/me` |
 
-### Setup — [13](./13-setup-backend-dan-sistem.md), [14](./14-setup-meta-dan-seo.md), [15](./15-setup-cloudflare-integrasi.md)
+### Setup Backend (pusat) — [13](./13-setup-backend-dan-sistem.md)
+
+| Method | Path |
+|--------|------|
+| GET | `/api/admin/setup/backend/overview` |
+| GET/PATCH | `/api/admin/setup/backend/settings` |
+| GET/POST/PATCH/DELETE | `/api/admin/setup/backend/roles` |
+| GET/POST/PATCH | `/api/admin/setup/backend/users` |
+| GET/PATCH | `/api/admin/setup/backend/auth` |
+| GET/PATCH | `/api/admin/setup/backend/rate-limit/app` |
+| POST | `/api/admin/setup/backend/rate-limit/cloudflare/sync` |
+| POST | `/api/admin/setup/backend/reload` |
+
+### Setup lain — [14](./14-setup-meta-dan-seo.md), [15](./15-setup-cloudflare-integrasi.md)
 
 | Method | Path |
 |--------|------|

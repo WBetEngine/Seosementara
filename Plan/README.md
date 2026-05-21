@@ -20,7 +20,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 10 | [10-database-postgresql.md](./10-database-postgresql.md) | **PostgreSQL:** schema, index, skenario, dampak performa |
 | 11 | [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md) | **RBAC** + share read/edit + checklist permission |
 | 12 | [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md) | Login aman, session, rate limit, CSRF |
-| 13 | [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) | Setup Backend (Super Admin) |
+| 13 | [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) | **Pusat Setup Backend:** RBAC, auth, rate limit, operasional |
 | 14 | [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md) | Meta: global, subdomain, domain, halaman |
 | 15 | [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md) | **Cloudflare:** API token, Tunnel, Pages UI, DNS, .env domain |
 
@@ -58,3 +58,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 0.6 | 2026-05-21 | Transfer ownership: owner lama **tanpa akses** |
 | 0.7 | 2026-05-21 | RBAC, login aman, setup backend, setup meta (11–14) |
 | 0.8 | 2026-05-21 | Integrasi Cloudflare dari admin: Tunnel, Pages, API key, .env |
+| 0.9 | 2026-05-21 | Semua setting backend di admin: RBAC, auth, rate limit selaras CF |
