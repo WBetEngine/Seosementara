@@ -76,7 +76,7 @@ Tabel `hosts` diisi dari admin **Setup → Host**. Tabel `managed_domains` untuk
 // Index DB: (site_id, status, updated_at DESC)
 ```
 
-## 6. Job Queue & Worker
+## 7. Job Queue & Worker
 
 Operasi berat **tidak** di HTTP handler utama:
 
@@ -119,7 +119,7 @@ Password: `bcrypt` atau `argon2id`.
 
 Invalidasi: pada `publish`, `update`, `delete` → hapus key terkait situs.
 
-## 10. Health & Observabilitas
+## 11. Health & Observabilitas
 
 ```
 GET /health        → { "status": "ok", "db": "ok" }
@@ -128,7 +128,7 @@ GET /health/ready  → cek DB + disk space
 
 Metric opsional: Prometheus endpoint `/metrics` (ringan).
 
-## 11. Konfigurasi Lingkungan
+## 12. Konfigurasi Lingkungan
 
 ```env
 APP_ENV=production
@@ -140,12 +140,13 @@ WORKER_CONCURRENCY=2
 MAX_UPLOAD_MB=10
 ```
 
-## 12. Systemd (Mini CPU)
+## 13. Systemd (Mini CPU)
 
 Dua unit: `seosementara-api.service`, `seosementara-worker.service` — restart on failure, memory limit opsional.
 
-## 13. Dokumen Terkait
+## 14. Dokumen Terkait
 
+- Model domain → [09-model-domain-host-dan-subdomain.md](./09-model-domain-host-dan-subdomain.md)
 - API kontrak → [07-api-dan-integrasi.md](./07-api-dan-integrasi.md)
 - Menu admin → [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)
 - Infrastruktur → [02-arsitektur-dan-infrastruktur.md](./02-arsitektur-dan-infrastruktur.md)
