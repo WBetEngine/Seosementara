@@ -145,6 +145,8 @@ Detail hierarki meta: [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md).
 | `jobs.create` | Jalankan bulk / batch job | | | ✓ |
 | `jobs.cancel` | Batalkan job milik sendiri | | | ✓ |
 | `reports.view` | Lihat laporan domain | ✓ | ✓ | ✓ |
+| `tools.url.create` | Buat shortlink manual | | ✓ | ✓ |
+| `tools.url.view` | Lihat statistik shortlink | ✓ | ✓ | ✓ |
 
 ### 4.6 Larangan (tidak pernah via share)
 

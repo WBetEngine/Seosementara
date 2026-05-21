@@ -52,16 +52,17 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 ---
 
-## Fase 3 — Frontend Publik HTMX
+## Fase 3 — Frontend Publik HTMX + Kontrak UI
 
 | Item | Detail |
 |------|--------|
+| Kontrak HTMX | [17](./17-kontrak-htmx-dan-komponen-ui.md) |
 | Apex `seosementara.org/` | Beranda, halaman statis |
-| Subdomain contoh | Minimal 2: `url.`, `cdn.` atau `bola.` |
-| Admin Setup → Host | CRUD host + pilih template |
-| Cache publik | Cloudflare + invalidasi on publish |
+| Modul URL shortlink (MVP) | [19](./19-modul-url-shortlink.md) — auto domain + redirect |
+| Admin Setup → Host | CRUD host + `template_id` |
+| Cache publik | Cloudflare + invalidasi |
 
-**Selesai jika:** pengunjung akses apex + satu subdomain; Super Admin bisa tambah host; pekerja share domain ke rekan.
+**Selesai jika:** checklist [17](./17-kontrak-htmx-dan-komponen-ui.md) §13; `url.*` redirect jalan; share domain OK.
 
 ---
 
@@ -102,7 +103,16 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 ---
 
-## Fase 7 — Peningkatan (Backlog)
+## Fase 7 — Modul Subdomain Lanjutan
+
+| Modul | Doc |
+|-------|-----|
+| CDN, Comments | [18](./18-bisnis-subdomain-dan-modul.md) §5, §8 |
+| Bola, Ads, Reviews | [18](./18-bisnis-subdomain-dan-modul.md) §4, §7, §9 |
+
+---
+
+## Fase 8 — Peningkatan (Backlog)
 
 - 2FA admin
 - Import/export CSV besar (chunked)

@@ -24,6 +24,8 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 14 | [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md) | Meta: global, subdomain, domain, halaman |
 | 15 | [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md) | **Cloudflare:** API token, Tunnel, Pages UI, DNS, .env domain |
 | 16 | [16-deploy-dan-lingkungan.md](./16-deploy-dan-lingkungan.md) | **Deploy:** local / staging / prod, CI/CD, rollback |
+| 17 | [17-kontrak-htmx-dan-komponen-ui.md](./17-kontrak-htmx-dan-komponen-ui.md) | **HTMX:** header, error, swap, komponen admin & publik |
+| 18 | [18-bisnis-subdomain-dan-modul.md](./18-bisnis-subdomain-dan-modul.md) | **Subdomain:** bola, cdn, url, ads, comments, review |
 
 ## Ringkasan Stack
 
@@ -61,3 +63,5 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 0.8 | 2026-05-21 | Integrasi Cloudflare dari admin: Tunnel, Pages, API key, .env |
 | 0.9 | 2026-05-21 | Semua setting backend di admin: RBAC, auth, rate limit selaras CF |
 | 1.0 | 2026-05-21 | Deploy & lingkungan dev/staging/prod (16) |
+| 1.1 | 2026-05-21 | Kontrak HTMX (17) + bisnis subdomain (18) |
+| 1.2 | 2026-05-21 | Modul URL shortlink auto/manual + analitik CF (19) |

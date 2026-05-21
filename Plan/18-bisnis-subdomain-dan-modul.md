@@ -150,44 +150,16 @@ Terkait `media` table — `public_url`, `cdn_path`.
 
 ---
 
-## 6. Modul: URL Short (`url.`)
+## 6. Modul: URL Shortlink (`url.`)
 
-### 6.1 Fungsi
+**Spesifikasi lengkap:** [19-modul-url-shortlink.md](./19-modul-url-shortlink.md)
 
-| Fitur | Deskripsi |
-|-------|-----------|
-| Buat short link | `url.seosementara.org/abc123` → target URL |
-| Statistik klik | Count per link (aggregat cached) |
-| Link per domain portfolio | `managed_domain_id` opsional |
-
-### 6.2 Data
-
-```sql
-CREATE TABLE url_links (
-  id BIGSERIAL PRIMARY KEY,
-  code            TEXT NOT NULL UNIQUE,
-  target_url      TEXT NOT NULL,
-  managed_domain_id BIGINT REFERENCES managed_domains(id),
-  owner_user_id   BIGINT NOT NULL REFERENCES users(id),
-  click_count     BIGINT NOT NULL DEFAULT 0,
-  is_active       BOOLEAN NOT NULL DEFAULT true,
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX idx_url_links_code ON url_links (code);
-```
-
-### 6.3 Alur publik
-
-```http
-GET https://url.seosementara.org/{code}
-→ 302 target_url
-→ increment click_count async (job)
-```
-
-### 6.4 Admin
-
-- Pekerja buat link untuk domain yang mereka miliki / share
-- Menu: **Tools → Short URL** atau di detail domain portfolio
+| Ringkasan | |
+|-----------|--|
+| **Otomatis** | Domain `rezekibelanja.com` → `url.seosementara.org/rezekibelanja` |
+| **Manual** | UI `url.seosementara.org/manual` |
+| **Tracking** | `url_clicks` + agregat harian + sync **Cloudflare Analytics** |
+| **MVP modul** | Prioritas pertama di subdomain |
 
 ---
 

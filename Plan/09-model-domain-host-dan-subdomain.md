@@ -51,6 +51,7 @@ Subdomain **bukan** domain portfolio ribuan — itu entri terpisah di modul **Se
 - Disimpan sebagai record: `managed_domains` — **bukan instalasi WordPress**
 - Setiap domain punya **pemilik** (`owner_user_id`) — pekerja yang mendaftarkan / ditetapkan sebagai owner
 - Konten, SEO, media, batch di dalam CMS untuk domain tersebut
+- **Shortlink otomatis:** `url.seosementara.org/{slug}` — [19-modul-url-shortlink.md](./19-modul-url-shortlink.md)
 - Pekerja hanya melihat & mengedit domain **milik sendiri**, kecuali ada **shared ownership** (lihat §7)
 
 ## 3. Diagram Arsitektur

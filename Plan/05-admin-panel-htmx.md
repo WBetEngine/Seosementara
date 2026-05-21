@@ -134,6 +134,7 @@ Frontend-admin/
 
 ## 10. Dokumen Terkait
 
+- Kontrak HTMX & komponen → [17-kontrak-htmx-dan-komponen-ui.md](./17-kontrak-htmx-dan-komponen-ui.md)
 - Menu lengkap → [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)
 - Model domain → [09](./09-model-domain-host-dan-subdomain.md)
 - API → [07-api-dan-integrasi.md](./07-api-dan-integrasi.md)

@@ -106,7 +106,7 @@ Modul ini mengelola **domain yang dioperasikan** (ribuan), bukan hostname UI pro
 |---------|--------|
 | Daftar domain saya | Pagination, search — hanya `owner_user_id = saya` |
 | Domain dibagikan | Domain yang user lain share ke saya (`domain_shares`) |
-| Tambah domain | Buat `managed_domain` baru → pemilik = user saat ini |
+| Tambah domain | Buat `managed_domain` + **auto shortlink** `url.../{slug}` [19](./19-modul-url-shortlink.md) |
 | Detail → Berbagi akses | Preset read only / edit / co-admin + **checklist permission** → [11](./11-rbac-dan-permission-share.md) |
 | Undangan pending | Owner: setujui / tolak undangan dari co-admin |
 | Transfer ownership | **Super Admin** — pindah pemilik domain |
