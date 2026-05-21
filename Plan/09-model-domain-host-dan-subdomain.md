@@ -177,16 +177,18 @@ managed_domains
   id, name, owner_user_id, status, ...
 
 domain_shares
-  managed_domain_id, user_id, role (co_admin | editor | viewer), invited_by, created_at
+  managed_domain_id, user_id, permission_preset, permissions (JSONB), invited_by, created_at
 ```
+
+Detail preset read only / edit / checklist: [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md).
 
 ### 7.3 Alur berbagi kepemilikan
 
 #### A. Undangan langsung (Owner atau Super Admin)
 
-1. Owner / Super Admin buka **Berbagi akses** → pilih user + peran
+1. Owner / Super Admin buka **Berbagi akses** → pilih user + preset atau checklist permission
 2. `domain_shares` + `user_domain_access` aktif **segera**
-3. User yang diundang melihat domain di site switcher
+3. User yang diundang melihat domain di site switcher (hanya aksi sesuai permission)
 
 #### B. Undangan dari Co-Admin (wajib persetujuan Owner)
 
@@ -203,7 +205,7 @@ sequenceDiagram
   participant O as Owner
   participant U as User diundang
 
-  CA->>API: POST share invite (role editor)
+  CA->>API: POST share invite (preset + permissions)
   API->>API: Insert invitation pending_approval
   API->>O: Notifikasi: co-admin mengundang U
   O->>API: POST approve invitation

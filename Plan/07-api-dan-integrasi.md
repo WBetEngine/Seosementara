@@ -100,7 +100,7 @@ Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hany
 | Method | Path | Deskripsi | Perilaku |
 |--------|------|-----------|----------|
 | GET | `/api/admin/managed-domains/{id}/shares` | Daftar share aktif | — |
-| POST | `/api/admin/managed-domains/{id}/shares` | Undang user + role | Owner/SA: **aktif langsung**; Co-admin: **`pending_approval`** |
+| POST | `/api/admin/managed-domains/{id}/shares` | Body: `user_id`, `preset`, `permissions` {} | Owner/SA: aktif; Co-admin: pending |
 | DELETE | `/api/admin/managed-domains/{id}/shares/{userId}` | Cabut share | Owner / SA |
 
 ### Undangan share (persetujuan owner)
@@ -126,6 +126,23 @@ Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hany
 |--------|------|-----------|
 | GET | `/api/admin/notifications` | List belum dibaca (paginated) |
 | PATCH | `/api/admin/notifications/{id}/read` | Tandai dibaca |
+
+### Auth — [12](./12-autentikasi-dan-login-aman.md)
+
+| Method | Path |
+|--------|------|
+| POST | `/api/admin/auth/login` |
+| POST | `/api/admin/auth/logout` |
+| GET | `/api/admin/auth/me` |
+
+### Setup — [13](./13-setup-backend-dan-sistem.md), [14](./14-setup-meta-dan-seo.md)
+
+| Method | Path |
+|--------|------|
+| GET/PATCH | `/api/admin/setup/settings` |
+| GET/PATCH | `/api/admin/setup/meta/global` |
+| GET/PATCH | `/api/admin/hosts/{id}/meta` |
+| GET/PATCH | `/api/admin/managed-domains/{id}/meta` |
 
 ### Setup → Host (Super Admin saja)
 

@@ -66,15 +66,17 @@ Laporan
 ├── Status publish
 └── Ringkasan error API
 
-Setup
+Setup (Super Admin saja)
 ├── Host / Subdomain
 │   ├── Daftar host (apex + subdomain)
-│   ├── Tambah / edit host
-│   ├── Mapping template UI
-│   ├── Status aktif / maintenance
-│   └── Panduan DNS (wildcard *.seosementara.org)
+│   ├── Meta per host → [14](./14-setup-meta-dan-seo.md)
+│   └── Panduan DNS
+├── Backend / Sistem → [13](./13-setup-backend-dan-sistem.md)
+├── Meta global → [14](./14-setup-meta-dan-seo.md)
+├── Keamanan → [12](./12-autentikasi-dan-login-aman.md)
+└── Notifikasi platform
 
-Pengaturan
+Pengaturan (per domain / user)
 ├── Umum (nama produk, timezone)
 ├── API keys & webhook
 ├── Cache & performa
@@ -109,7 +111,7 @@ Modul ini mengelola **domain yang dioperasikan** (ribuan), bukan hostname UI pro
 | Daftar domain saya | Pagination, search — hanya `owner_user_id = saya` |
 | Domain dibagikan | Domain yang user lain share ke saya (`domain_shares`) |
 | Tambah domain | Buat `managed_domain` baru → pemilik = user saat ini |
-| Detail → Berbagi akses | Invite: `co_admin`, `editor`, `viewer` |
+| Detail → Berbagi akses | Preset read only / edit / co-admin + **checklist permission** → [11](./11-rbac-dan-permission-share.md) |
 | Undangan pending | Owner: setujui / tolak undangan dari co-admin |
 | Transfer ownership | **Super Admin** — pindah pemilik domain |
 | Pengaturan per domain | SEO default, status, catatan — **bukan WordPress** |
@@ -236,26 +238,15 @@ CRUD taxonomy per situs; hindari load semua term sekaligus — tree lazy-load ji
 
 ---
 
-## 3. Matriks Peran (RBAC)
+## 3. RBAC (Ringkas)
 
-| Menu / Aksi | Super Admin | Site Manager | Editor | SEO Specialist | Viewer |
-|-------------|:-----------:|:------------:|:------:|:--------------:|:------:|
-| Dashboard | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Situs — domain milik sendiri | ✓ | ✓ | ✓ | ✓ | read |
-| Situs — domain di-share | ✓ | ✓ | sesuai share | sesuai share | read |
-| Situs — semua domain | ✓ | — | — | — | — |
-| Setup → Host (subdomain) | ✓ | — | — | — | — |
-| Berbagi akses (langsung aktif) | ✓ | owner | — | — | — |
-| Undang user (co-admin → pending) | ✓ | approve | ✓ kirim | — | — |
-| Setujui / tolak undangan share | ✓ | ✓ | — | — | — |
-| Transfer ownership domain | ✓ | — | — | — | — |
-| Konten — CRUD | ✓ | ✓ | ✓ | — | read |
-| Media — upload | ✓ | ✓ | ✓ | — | read |
-| SEO — edit | ✓ | ✓ | — | ✓ | read |
-| Operasi massal | ✓ | ✓ | — | ✓ | — |
-| Jobs | ✓ | ✓ | read | read | — |
-| Pengguna | ✓ | — | — | — | — |
-| Pengaturan sistem | ✓ | — | — | — | — |
+Matriks lengkap, checklist permission share, preset read only / edit: **[11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md)**.
+
+| Lapisan | Ringkasan |
+|---------|-----------|
+| Sistem | `super_admin` \| `worker` |
+| Domain | Owner = penuh; Share = checklist + preset |
+| Login | [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md) |
 
 ## 4. Menu Frontend Publik (Bukan Menu Admin)
 

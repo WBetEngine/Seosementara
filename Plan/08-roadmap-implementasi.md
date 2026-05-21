@@ -30,7 +30,8 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Router Host+Path | `/admin/`, apex, subdomain |
 | CRUD post (draft/publish) | Pagination wajib |
 | Public read API | home + post by slug |
-| RBAC dasar | Super Admin, Editor |
+| RBAC + permission checklist | [11](./11-rbac-dan-permission-share.md) |
+| Login aman | [12](./12-autentikasi-dan-login-aman.md) |
 
 **Risiko:** CORS cross-origin — selesaikan dengan subdomain konsisten di fase 0.
 
@@ -63,7 +64,17 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 ---
 
-## Fase 4 — SEO & Operasi Massal
+## Fase 4 — Setup Meta, Backend, SEO lanjutan
+
+| Item | Detail |
+|------|--------|
+| Setup backend UI | [13](./13-setup-backend-dan-sistem.md) |
+| Meta global + host + domain | [14](./14-setup-meta-dan-seo.md) |
+| Bulk SEO | Job queue |
+
+---
+
+## Fase 5 — Operasi Massal & Hardening
 
 | Item | Detail |
 |------|--------|
@@ -77,7 +88,7 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 ---
 
-## Fase 5 — Hardening & Skala
+## Fase 6 — Hardening & Skala
 
 | Item | Detail |
 |------|--------|
@@ -89,7 +100,7 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 ---
 
-## Fase 6 — Peningkatan (Backlog)
+## Fase 7 — Peningkatan (Backlog)
 
 - 2FA admin
 - Import/export CSV besar (chunked)

@@ -147,9 +147,11 @@ CREATE INDEX idx_managed_domains_status_updated
 CREATE TABLE domain_shares (
   managed_domain_id BIGINT NOT NULL REFERENCES managed_domains(id) ON DELETE CASCADE,
   user_id           BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  role              TEXT NOT NULL CHECK (role IN ('co_admin','editor','viewer')),
+  role              TEXT NOT NULL,  -- legacy label; gunakan preset + permissions
+  permission_preset TEXT NOT NULL DEFAULT 'custom',
+  permissions       JSONB NOT NULL DEFAULT '{}',
   invited_by        BIGINT NOT NULL REFERENCES users(id),
-  invitation_id     BIGINT,  -- FK ke share_invitations jika via approval
+  invitation_id     BIGINT,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (managed_domain_id, user_id)
 );
@@ -172,7 +174,8 @@ CREATE TABLE domain_share_invitations (
   id                BIGSERIAL PRIMARY KEY,
   managed_domain_id BIGINT NOT NULL REFERENCES managed_domains(id) ON DELETE CASCADE,
   invitee_user_id   BIGINT NOT NULL REFERENCES users(id),
-  role              TEXT NOT NULL CHECK (role IN ('co_admin','editor','viewer')),
+  permission_preset TEXT NOT NULL,
+  permissions       JSONB NOT NULL DEFAULT '{}',
   invited_by        BIGINT NOT NULL REFERENCES users(id),
   status            SMALLINT NOT NULL DEFAULT 0,
   -- 0=pending_approval, 1=approved, 2=rejected, 3=cancelled
@@ -611,6 +614,9 @@ Backend/migrations/
 
 ## 14. Dokumen Terkait
 
+- RBAC & permissions → [11](./11-rbac-dan-permission-share.md)
+- Auth → [12](./12-autentikasi-dan-login-aman.md)
+- Setup & meta tables → [13](./13-setup-backend-dan-sistem.md), [14](./14-setup-meta-dan-seo.md)
 - Model domain & ownership → [09](./09-model-domain-host-dan-subdomain.md)
 - Backend & query rules → [04](./04-backend-golang.md)
 - API → [07](./07-api-dan-integrasi.md)

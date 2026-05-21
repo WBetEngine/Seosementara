@@ -18,6 +18,10 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 08 | [08-roadmap-implementasi.md](./08-roadmap-implementasi.md) | Fase implementasi dan prioritas |
 | 09 | [09-model-domain-host-dan-subdomain.md](./09-model-domain-host-dan-subdomain.md) | **Model domain:** apex, `/admin/`, subdomain, ribuan domain portfolio |
 | 10 | [10-database-postgresql.md](./10-database-postgresql.md) | **PostgreSQL:** schema, index, skenario, dampak performa |
+| 11 | [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md) | **RBAC** + share read/edit + checklist permission |
+| 12 | [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md) | Login aman, session, rate limit, CSRF |
+| 13 | [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) | Setup Backend (Super Admin) |
+| 14 | [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md) | Meta: global, subdomain, domain, halaman |
 
 ## Ringkasan Stack
 
@@ -39,7 +43,7 @@ Proyek ini ditargetkan untuk operasi massal (banyak domain, volume konten besar)
 - Cache dengan invalidasi yang jelas
 - Hindari timeout dan beban berlebihan di server terbatas (mini CPU)
 
-Detail teknis performa ada di file **04**, **07**, dan **10**.
+Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **12**.
 
 ## Status Dokumen
 
@@ -51,3 +55,4 @@ Detail teknis performa ada di file **04**, **07**, dan **10**.
 | 0.4 | 2026-05-21 | Rencana database PostgreSQL (schema, index, skenario) |
 | 0.5 | 2026-05-21 | Co-admin undang dengan persetujuan owner; SA transfer ownership |
 | 0.6 | 2026-05-21 | Transfer ownership: owner lama **tanpa akses** |
+| 0.7 | 2026-05-21 | RBAC, login aman, setup backend, setup meta (11–14) |
