@@ -10,11 +10,15 @@ Dashboard
 ├── Aktivitas terbaru
 └── Peringatan sistem
 
-Situs
-├── Daftar situs / domain
-├── Tambah / edit situs
-├── Pengaturan per situs
-└── DNS & domain (informasi)
+Situs (Domain Portfolio)
+├── Daftar domain saya
+├── Domain dibagikan ke saya
+├── Tambah domain baru
+├── Detail domain
+│   ├── Pengaturan per domain
+│   ├── Berbagi akses (share ke admin lain)
+│   └── DNS & catatan operasi
+└── (Super Admin) Semua domain
 
 Konten
 ├── Post
@@ -101,14 +105,16 @@ Modul ini mengelola **domain yang dioperasikan** (ribuan), bukan hostname UI pro
 
 | Submenu | Fungsi |
 |---------|--------|
-| Daftar situs | Pagination wajib (50/halaman), search, filter status |
-| Tambah / edit | Nama domain, grup, tag, penanggung jawab |
-| Pengaturan per situs | SEO default, integrasi WP, catatan operasi |
-| DNS & domain | Info DNS customer (read-only / helper) |
+| Daftar domain saya | Pagination, search — hanya `owner_user_id = saya` |
+| Domain dibagikan | Domain yang user lain share ke saya (`domain_shares`) |
+| Tambah domain | Buat `managed_domain` baru → pemilik = user saat ini |
+| Detail → Berbagi akses | Invite admin lain: `co_admin`, `editor`, `viewer` |
+| Pengaturan per domain | SEO default, status, catatan — **bukan WordPress** |
+| Semua domain | Hanya **Super Admin** — list global |
 
-**Skala:** desain untuk **1000+ domain** — tidak ada dropdown tanpa search.
+**Skala:** **1000+ domain** total di sistem; setiap pekerja hanya memuat subset milik + shared.
 
-**Peran:** Super Admin, Site Manager. Pekerja dengan scope terbatas hanya melihat domain yang di-assign.
+**Kepemilikan:** pekerja **tidak** melihat domain pekerja lain kecuali di-share. Lihat [09](./09-model-domain-host-dan-subdomain.md) §7.
 
 ---
 
@@ -117,15 +123,16 @@ Modul ini mengelola **domain yang dioperasikan** (ribuan), bukan hostname UI pro
 | Submenu | Fungsi |
 |---------|--------|
 | Daftar host | `seosementara.org`, `bola.seosementara.org`, … |
-| Tambah / edit | Hostname, template UI, enabled, maintenance |
-| Mapping template | Pilih `apex_default`, `subdomain_bola`, dll. |
+| Tambah host | Hostname baru + template (subdomain dinamis) |
+| Edit / ganti | Ubah template, hostname, maintenance, nonaktifkan |
+| Mapping template | Pilih UI HTMX untuk host tersebut |
 | Panduan DNS | Wildcard `*.seosementara.org` → origin |
 
 **URL admin:** `/admin/setup/host`
 
-Tanpa konfigurasi di sini, subdomain baru **tidak** dilayani backend.
+Subdomain **bisa ditambah dan diganti** sewaktu-waktu — keputusan **Super Admin** saja.
 
-**Peran:** Super Admin saja.
+**Peran:** **Super Admin eksklusif** — pekerja biasa tidak punya menu ini.
 
 ---
 
@@ -188,7 +195,7 @@ CRUD taxonomy per situs; hindari load semua term sekaligus — tree lazy-load ji
 | Batch publish | Pilih filter → enqueue job |
 | Bulk SEO | Update field meta terpilih |
 | Import / export | CSV/JSON terbatas; tidak unbounded parse |
-| Sinkronisasi | Integrasi masa depan (WP, dll.) |
+| Sinkronisasi | Integrasi eksternal masa depan (opsional) |
 
 **Wajib:** semua operasi > N item (mis. 50) masuk antrian job, bukan loop sinkron di request HTTP.
 
@@ -231,7 +238,11 @@ CRUD taxonomy per situs; hindari load semua term sekaligus — tree lazy-load ji
 | Menu / Aksi | Super Admin | Site Manager | Editor | SEO Specialist | Viewer |
 |-------------|:-----------:|:------------:|:------:|:--------------:|:------:|
 | Dashboard | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Situs — kelola | ✓ | ✓ | — | — | read |
+| Situs — domain milik sendiri | ✓ | ✓ | ✓ | ✓ | read |
+| Situs — domain di-share | ✓ | ✓ | sesuai share | sesuai share | read |
+| Situs — semua domain | ✓ | — | — | — | — |
+| Setup → Host (subdomain) | ✓ | — | — | — | — |
+| Berbagi akses domain | ✓ | owner | co_admin* | — | — |
 | Konten — CRUD | ✓ | ✓ | ✓ | — | read |
 | Media — upload | ✓ | ✓ | ✓ | — | read |
 | SEO — edit | ✓ | ✓ | — | ✓ | read |
@@ -253,22 +264,26 @@ Navigasi pengunjung di **`seosementara.org`** dan subdomain — dikonfigurasi pe
 
 Detail di [06-frontend-users-htmx.md](./06-frontend-users-htmx.md) dan [09](./09-model-domain-host-dan-subdomain.md).
 
-## 4b. Skala Banyak Pekerja
+## 4b. Kepemilikan & Banyak Pekerja
 
 | Fitur | Keterangan |
 |-------|------------|
-| RBAC | Peran + scope domain portfolio |
-| Assign domain | Pekerja hanya edit domain yang di-assign |
-| Audit log | Login, perubahan konten, bulk job |
-| Site switcher | Header admin — pilih domain aktif sebelum edit |
-| Konflik edit | Cek `updated_at` / notifikasi tabrakan (fase 2) |
+| Ownership | Setiap domain punya owner; bukan WordPress |
+| Isolasi | List/query filter owner + shared only |
+| Share | Owner undang admin lain ke domain yang sama |
+| Super Admin | Semua domain + kelola subdomain dinamis |
+| Audit log | Login, share, ubah owner, bulk job |
+| Site switcher | Hanya domain milik + dibagikan |
+
+*co_admin boleh share lagi — keputusan di [09](./09-model-domain-host-dan-subdomain.md) §11.
 
 ## 5. Pemetaan Menu → Endpoint API (Ringkas)
 
 | Menu | Prefix API (admin) |
 |------|-------------------|
 | Dashboard | `GET /api/admin/dashboard` |
-| Situs | `/api/admin/sites` |
+| Situs | `/api/admin/managed-domains`, `/domain-shares` |
+| Setup Host | `/api/admin/hosts` (Super Admin) |
 | Konten | `/api/admin/posts`, `/pages`, `/taxonomies` |
 | Media | `/api/admin/media` |
 | SEO | `/api/admin/seo` |

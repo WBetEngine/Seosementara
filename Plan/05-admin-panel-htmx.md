@@ -6,7 +6,8 @@
 
 Panel admin adalah antarmuka **banyak pekerja** yang mengelola:
 
-- **Ribuan domain portfolio** (record di database)
+- **Ribuan domain portfolio** (situs native CMS — bukan WordPress)
+- Hanya domain **milik sendiri** + yang **di-share** (kecuali Super Admin)
 - Konten, SEO, media, job batch per domain
 - **Host & subdomain produk** (`/admin/setup/host`)
 
@@ -29,7 +30,9 @@ Logika bisnis di backend Go — HTMX hanya memanggil endpoint **sama origin** (`
 |------|---------|
 | `/admin/login` | Login pekerja |
 | `/admin/` | Dashboard |
-| `/admin/sites` | Daftar domain portfolio (paginated) |
+| `/admin/sites` | Domain milik saya + dibagikan (paginated) |
+| `/admin/sites/{id}/sharing` | Kelola berbagi akses |
+| `/admin/setup/host` | Subdomain produk (**Super Admin**) |
 | `/admin/posts` | Konten domain aktif |
 | `/admin/setup/host` | Konfigurasi host & subdomain |
 | `/admin/users` | Manajemen pekerja |
@@ -70,16 +73,17 @@ Gunakan **combobox search** (ketik → `hx-get` autocomplete), bukan `<select>` 
 | Daftar domain | Pagination + filter + indexed search |
 | Bulk action | Pilih filter → konfirmasi → job ID → poll progress |
 | Dashboard | Angka agregat dari cache — bukan `COUNT(*)` tiap load |
-| Assign pekerja | Admin assign subset domain ke user |
+| Berbagi domain | Owner invite user lain via form HTMX |
 
-## 6. Skala Banyak Pekerja
+## 6. Kepemilikan & Banyak Pekerja
 
 | Kebutuhan | Implementasi |
 |-----------|--------------|
-| Login simultan | Session per user, Redis/store session |
-| RBAC | Middleware + hide menu sidebar |
-| Audit | Log siapa ubah domain X |
-| Scope | User hanya lihat domain yang di-assign |
+| Login simultan | Session per user |
+| Isolasi | API filter `owner OR domain_shares` |
+| Share | Halaman `/admin/sites/{id}/sharing` |
+| Super Admin | Menu "Semua domain" + Setup Host |
+| Audit | Log share, ubah owner, edit konten |
 
 ## 7. Layout
 

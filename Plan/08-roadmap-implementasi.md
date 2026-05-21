@@ -22,8 +22,9 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 |------|--------|
 | Migrasi DB | sites, users, posts, pages, taxonomies |
 | Auth admin | Login, session, logout |
-| CRUD managed-domains | List/search/create (pagination) |
-| CRUD hosts | Setup subdomain → template |
+| CRUD managed-domains | Ownership + list scoped per user |
+| domain_shares | Share / unshare ke admin lain |
+| CRUD hosts | Super Admin — subdomain dinamis |
 | Router Host+Path | `/admin/`, apex, subdomain |
 | CRUD post (draft/publish) | Pagination wajib |
 | Public read API | home + post by slug |
@@ -56,7 +57,7 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Admin Setup → Host | CRUD host + pilih template |
 | Cache publik | Cloudflare + invalidasi on publish |
 
-**Selesai jika:** pengunjung akses apex + satu subdomain; pekerja bisa tambah host baru dari admin.
+**Selesai jika:** pengunjung akses apex + satu subdomain; Super Admin bisa tambah host; pekerja share domain ke rekan.
 
 ---
 
@@ -90,7 +91,7 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 - 2FA admin
 - Import/export CSV besar (chunked)
-- Integrasi WordPress / sinkronisasi
+- Integrasi eksternal / sinkronisasi pihak ketiga
 - Multi-bahasa konten
 - R2 media offload penuh
 - JSON-LD schema lanjutan
@@ -132,6 +133,9 @@ Catat keputusan di bagian bawah file ini setelah final.
 | 2026-05-21 | Admin di **`/admin/`** pada domain produk | Bukan per-domain portfolio |
 | 2026-05-21 | Frontend publik = **apex + subdomain** | Setup di `/admin/setup/host` |
 | 2026-05-21 | Portfolio = **ribuan domain di DB** | Banyak pekerja, pagination wajib |
+| 2026-05-21 | **Bukan WordPress** | Situs native CMS |
+| 2026-05-21 | **Ownership + share** | Pekerja hanya domain sendiri + dibagikan |
+| 2026-05-21 | **Subdomain dinamis** | Hanya Super Admin di Setup → Host |
 | | | |
 
 ---

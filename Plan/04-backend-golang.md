@@ -49,7 +49,7 @@ Middleware pertama mem-parse:
 - `Host` → record `hosts` (subdomain) atau apex
 - `Path` → `/admin/`, `/api/admin/`, `/api/public/`, `/`
 
-Tabel `hosts` diisi dari admin **Setup → Host**. Tabel `managed_domains` untuk ribuan domain portfolio.
+Tabel `hosts` — subdomain produk (CRUD **Super Admin**). Tabel `managed_domains` + `domain_shares` — ribuan domain native CMS dengan **ownership** (bukan WordPress).
 
 ## 5. Pola Arsitektur
 
@@ -99,7 +99,9 @@ Operasi berat **tidak** di HTTP handler utama:
 |------|-----------|
 | Admin API | Session cookie HttpOnly **atau** JWT short-lived + refresh |
 | Public API | Tidak ada auth untuk read; API key untuk form tertentu |
-| RBAC | Middleware cek `role` + `site_id` scope |
+| Super Admin | Bypass scope domain; akses `/api/admin/hosts` |
+| Domain scope | Middleware: `owner_user_id = uid OR domain_shares` |
+| Host/subdomain | Hanya Super Admin — `RequireSuperAdmin` |
 
 Password: `bcrypt` atau `argon2id`.
 

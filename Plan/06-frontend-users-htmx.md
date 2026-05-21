@@ -10,7 +10,7 @@
 |----------------|-----------------|
 | UI terpisah untuk setiap dari ribuan domain portfolio | UI produk di `https://seosementara.org/` |
 | Deploy hostname `toko-abc.com` di CMS ini | Kelola `toko-abc.com` sebagai **data** di admin |
-| Satu tema per domain WP customer | Beberapa **subdomain layanan** dengan tampilan berbeda |
+| Satu UI per domain portfolio | Beberapa **subdomain layanan produk** dengan tampilan berbeda |
 
 ## 2. Dua Jenis Tampilan Publik
 
@@ -86,9 +86,7 @@ Namespace API publik bisa diprefix per layanan: `/api/public/bola/...`, `/api/pu
 
 ## 7. Hubungan dengan Ribuan Domain Portfolio
 
-Pekerja mengelola domain `toko-abc.com` di **`/admin/`** — pengunjung `toko-abc.com` **tidak** otomatis dilayani oleh stack HTMX ini kecuali ada integrasi terpisah (mis. WP di shared hosting).
-
-Frontend file ini hanya untuk **brand produk Seosementara** dan **layanan subdomain**.
+Domain portfolio (mis. `toko-abc.com`) dikelola sebagai **situs native CMS** di `/admin/` — **bukan** WordPress. Tampilan publik domain portfolio (jika nanti ada) terpisah dari dokumen ini; file ini fokus ke **brand produk** `seosementara.org` dan **subdomain layanan** (bola, cdn, url, …).
 
 ## 8. Struktur Folder (Usulan)
 

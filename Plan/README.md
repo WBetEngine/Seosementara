@@ -45,3 +45,4 @@ Detail teknis performa ada di file **04** dan **07**.
 |-------|---------|---------|
 | 0.1 | 2026-05-21 | Draft awal struktur perencanaan |
 | 0.2 | 2026-05-21 | Revisi model domain: `/admin/`, subdomain, ribuan domain portfolio |
+| 0.3 | 2026-05-21 | Native CMS (bukan WP), ownership + share, subdomain oleh Super Admin |

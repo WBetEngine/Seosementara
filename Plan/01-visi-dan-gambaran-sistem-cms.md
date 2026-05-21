@@ -28,7 +28,7 @@ CMS ini dirancang untuk **skala operasional massal**: ribuan domain dikelola, ba
 
 - Page builder drag-and-drop penuh
 - E-commerce lengkap (cart, payment gateway)
-- Hosting WordPress tradisional di dalam CMS ini
+- Instalasi WordPress / hosting WP sebagai bagian CMS ini
 - Plugin marketplace pihak ketiga
 
 Hal di luar lingkup dapat masuk roadmap fase berikutnya jika dibutuhkan.

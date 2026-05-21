@@ -94,7 +94,7 @@ Lihat contoh subdomain di [09](./09-model-domain-host-dan-subdomain.md).
 | | Domain produk | Domain portfolio |
 |--|---------------|------------------|
 | Jumlah | Sedikit (1 apex + N subdomain) | **Ribuan** |
-| DNS | Wildcard ke origin kita | Bisa di hosting lain (WP, dll.) |
+| DNS publik domain portfolio | Mungkin mengarah ke infrastruktur publik domain tersebut (terpisah dari UI produk) |
 | Frontend HTMX | Ya | **Tidak** — hanya data di admin |
 | Contoh | `url.seosementara.org` | `toko-abc.com`, `blog-xyz.net` |
 
@@ -103,8 +103,8 @@ Lihat contoh subdomain di [09](./09-model-domain-host-dan-subdomain.md).
 | Area | Strategi |
 |------|----------|
 | Admin list domain | Pagination 50, search indexed, filter status |
-| Site switcher | Pekerja pilih 1 domain aktif → semua form scoped `managed_domain_id` |
-| RBAC | Peran + daftar domain yang boleh diakses |
+| Site switcher | Hanya domain **milik** + **dibagikan** ke pekerja |
+| RBAC | Super Admin global; pekerja terisolasi per ownership + share |
 | Session | Banyak login simultan; audit log |
 | Bulk | Job async — tidak satu request untuk 1000 domain |
 

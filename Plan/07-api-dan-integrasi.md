@@ -85,14 +85,27 @@ Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hany
 
 ## 5. Endpoint Admin (Ringkas)
 
-### Domain portfolio (ribuan)
+### Domain portfolio (ribuan — native CMS, bukan WP)
+
+| Method | Path | Deskripsi | Akses |
+|--------|------|-----------|-------|
+| GET | `/api/admin/managed-domains` | List milik + shared (+ semua jika super) | Owner/share/SA |
+| POST | `/api/admin/managed-domains` | Tambah domain; owner = user login | Authenticated |
+| GET | `/api/admin/managed-domains/{id}` | Detail | Owner/share/SA |
+| PATCH | `/api/admin/managed-domains/{id}` | Update | Owner/co_admin share/SA |
+| DELETE | `/api/admin/managed-domains/{id}` | Hapus / arsip | Owner/SA |
+
+### Berbagi kepemilikan domain
 
 | Method | Path | Deskripsi |
 |--------|------|-----------|
-| GET | `/api/admin/managed-domains` | List paginated + search |
-| POST | `/api/admin/managed-domains` | Tambah domain portfolio |
-| GET | `/api/admin/managed-domains/{id}` | Detail |
-| PATCH | `/api/admin/managed-domains/{id}` | Update |
+| GET | `/api/admin/managed-domains/{id}/shares` | Daftar user yang di-share |
+| POST | `/api/admin/managed-domains/{id}/shares` | Invite user + role |
+| DELETE | `/api/admin/managed-domains/{id}/shares/{userId}` | Cabut share |
+
+### Setup → Host (Super Admin saja)
+
+Middleware: `RequireSuperAdmin` pada semua `/api/admin/hosts/*`.
 
 ### Setup → Host (subdomain produk)
 
