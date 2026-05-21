@@ -9,21 +9,24 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | No. | File | Isi |
 |-----|------|-----|
 | 01 | [01-visi-dan-gambaran-sistem-cms.md](./01-visi-dan-gambaran-sistem-cms.md) | Visi produk, ruang lingkup CMS, prinsip desain |
-| 02 | [02-arsitektur-dan-infrastruktur.md](./02-arsitektur-dan-infrastruktur.md) | Arsitektur tiga lapisan, mini CPU, Cloudflare Pages |
-| 03 | [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md) | Daftar menu admin, modul, hak akses per peran |
+| 02 | [02-arsitektur-dan-infrastruktur.md](./02-arsitektur-dan-infrastruktur.md) | Satu domain produk, mini CPU, Cloudflare, routing Host+Path |
+| 03 | [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md) | Menu admin, Setup → Host, skala ribuan domain & pekerja |
 | 04 | [04-backend-golang.md](./04-backend-golang.md) | Backend Go: struktur, API, database, performa |
-| 05 | [05-admin-panel-htmx.md](./05-admin-panel-htmx.md) | Panel admin HTMX di Cloudflare Pages |
-| 06 | [06-frontend-users-htmx.md](./06-frontend-users-htmx.md) | Situs pengguna/customer HTMX di Cloudflare Pages |
+| 05 | [05-admin-panel-htmx.md](./05-admin-panel-htmx.md) | Panel admin HTMX di `/admin/` |
+| 06 | [06-frontend-users-htmx.md](./06-frontend-users-htmx.md) | Frontend publik apex + subdomain HTMX |
 | 07 | [07-api-dan-integrasi.md](./07-api-dan-integrasi.md) | Kontrak API, auth, CORS, cache |
 | 08 | [08-roadmap-implementasi.md](./08-roadmap-implementasi.md) | Fase implementasi dan prioritas |
+| 09 | [09-model-domain-host-dan-subdomain.md](./09-model-domain-host-dan-subdomain.md) | **Model domain:** apex, `/admin/`, subdomain, ribuan domain portfolio |
 
 ## Ringkasan Stack
 
-| Lapisan | Teknologi | Hosting |
-|---------|-----------|---------|
-| Backend API | **Golang** | Mini CPU (self-hosted) |
-| Admin Panel | **HTMX** + HTML/CSS | **Cloudflare Pages** |
-| Frontend Customer | **HTMX** + HTML/CSS | **Cloudflare Pages** |
+| Lapisan | Teknologi | URL / Hosting |
+|---------|-----------|---------------|
+| Backend API | **Golang** | Mini CPU; `seosementara.org/api/*` |
+| Admin Panel | **HTMX** | `seosementara.org/admin/*` (sama origin) |
+| Frontend publik | **HTMX** | `seosementara.org/` + subdomain (`bola.`, `cdn.`, …) |
+| Domain portfolio | Data di DB | Ribuan domain **dikelola** di admin — bukan hostname frontend terpisah |
+| Edge | Cloudflare | DNS wildcard, SSL, cache, Tunnel ke mini CPU |
 
 ## Konteks Skala (Prinsip Tetap)
 
@@ -41,3 +44,4 @@ Detail teknis performa ada di file **04** dan **07**.
 | Versi | Tanggal | Catatan |
 |-------|---------|---------|
 | 0.1 | 2026-05-21 | Draft awal struktur perencanaan |
+| 0.2 | 2026-05-21 | Revisi model domain: `/admin/`, subdomain, ribuan domain portfolio |

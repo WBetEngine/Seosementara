@@ -42,7 +42,16 @@ Backend/
 | Auth JWT/session | `golang-jwt` + secure cookie |
 | Test | `testing` + `testify` |
 
-## 4. Pola Arsitektur
+## 4. Router Host + Path
+
+Middleware pertama mem-parse:
+
+- `Host` → record `hosts` (subdomain) atau apex
+- `Path` → `/admin/`, `/api/admin/`, `/api/public/`, `/`
+
+Tabel `hosts` diisi dari admin **Setup → Host**. Tabel `managed_domains` untuk ribuan domain portfolio.
+
+## 5. Pola Arsitektur
 
 **Clean-ish layering:** Handler → Service → Repository.
 
@@ -50,7 +59,7 @@ Backend/
 - **Service:** aturan bisnis, transaksi, enqueue job
 - **Repository:** query terarah, selalu parameterized
 
-## 5. Aturan Query (Wajib — Skala Massal)
+## 6. Aturan Query (Wajib — Skala Massal)
 
 | Larangan | Alternatif |
 |----------|------------|
@@ -84,7 +93,7 @@ Operasi berat **tidak** di HTTP handler utama:
 
 **Concurrency:** max 2–4 job paralel di mini CPU (configurable).
 
-## 7. Autentikasi & Otorisasi
+## 8. Autentikasi & Otorisasi
 
 | Tipe | Mekanisme |
 |------|-----------|
@@ -94,13 +103,13 @@ Operasi berat **tidak** di HTTP handler utama:
 
 Password: `bcrypt` atau `argon2id`.
 
-## 8. Media & File
+## 9. Media & File
 
 - Upload: `multipart` → validasi ukuran/MIME → simpan disk atau R2
 - Serving: URL signed atau public path via reverse proxy
 - Thumbnail: generate async di worker (jangan block upload response)
 
-## 9. Cache
+## 10. Cache
 
 | Lapisan | Strategi |
 |---------|----------|

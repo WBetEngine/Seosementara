@@ -1,141 +1,127 @@
-# 06 — Frontend Customer / Users (HTMX + Cloudflare Pages)
+# 06 — Frontend Publik (HTMX) — Domain Produk
 
-## 1. Peran
+> **Bukan** frontend per domain portfolio. Lihat [09-model-domain-host-dan-subdomain.md](./09-model-domain-host-dan-subdomain.md).
 
-Lapisan ini adalah **tampilan publik** yang dilihat pengunjung setiap domain customer. Sama seperti admin, memakai **HTMX** dan di-host di **Cloudflare Pages** — bukan di mini CPU.
+## 1. Peran (Revisi)
 
-## 2. Perbedaan Admin vs Customer
+**Frontend customer** = antarmuka publik yang dilayani dari **domain backend** `seosementara.org` dan **subdomain**-nya — yang dilihat pengunjung internet.
 
-| Aspek | Admin Panel | Frontend Customer |
-|-------|-------------|-------------------|
-| Pengguna | Operator internal | Pengunjung internet |
-| Auth | Wajib login | Umumnya anonymous (read) |
-| API prefix | `/api/admin/*` | `/api/public/*` |
-| Cache | Sedikit | Agresif (edge + CDN) |
-| Tema | Satu UI admin | Per situs / per domain |
-| SEO output | Tidak relevan | Sangat relevan (HTML meta, schema) |
+| Yang ini BUKAN | Yang ini ADALAH |
+|----------------|-----------------|
+| UI terpisah untuk setiap dari ribuan domain portfolio | UI produk di `https://seosementara.org/` |
+| Deploy hostname `toko-abc.com` di CMS ini | Kelola `toko-abc.com` sebagai **data** di admin |
+| Satu tema per domain WP customer | Beberapa **subdomain layanan** dengan tampilan berbeda |
+
+## 2. Dua Jenis Tampilan Publik
+
+### 2.1 Apex — `seosementara.org`
+
+Situs utama produk: beranda, halaman marketing, dokumentasi, blog produk, dll.
+
+| URL contoh | Isi |
+|------------|-----|
+| `/` | Beranda |
+| `/blog/{slug}` | Artikel produk |
+| `/tentang` | Halaman statis |
+
+### 2.2 Subdomain — layanan terpisah
+
+Setiap subdomain punya **UI HTMX sendiri** (layout, menu, fungsi):
+
+| Host (contoh) | Fungsi (draft) |
+|---------------|----------------|
+| `bola.seosementara.org` | Modul bola |
+| `cdn.seosementara.org` | Manajemen / akses aset CDN |
+| `url.seosementara.org` | Short link / redirect publik |
+| `ads.seosementara.org` | Halaman terkait iklan |
+| `comments.seosementara.org` | Antarmuka komentar |
+| `review.seosementara.org` | Ulasan |
+
+Daftar subdomain **bukan hardcode** — didaftarkan di admin:
+
+`https://seosementara.org/admin/setup/host`
 
 ## 3. Stack
 
 | Komponen | Pilihan |
 |----------|---------|
 | Interaktivitas | **HTMX** |
-| Markup | HTML + partial server-driven |
-| Styling | Per-site CSS theme |
-| Hosting | **Cloudflare Pages** |
-| Data | API Golang (read-mostly) |
+| Render | Go `html/template` + partial swap |
+| Hosting | Origin mini CPU (via Cloudflare proxy) |
+| Sumber file | Repo `Frontend-Users/` (+ subfolder per subdomain opsional) |
 
-## 4. Pola Halaman
+## 4. Routing (Backend)
 
-### 4.1 Beranda
+```go
+// Host: bola.seosementara.org, Path: /match/123
+hostCfg := db.GetHostByHostname(host)
+if hostCfg == nil { return 404 }
+return renderTemplate(hostCfg.TemplateID, path)
+```
+
+Template ID contoh: `apex_default`, `subdomain_bola`, `subdomain_cdn`.
+
+## 5. Pola HTMX (Apex)
 
 ```html
-<main hx-get="/api/public/sites/{site}/home"
+<!-- seosementara.org -->
+<main hx-get="/api/public/home"
       hx-trigger="load"
       hx-swap="innerHTML">
 </main>
 ```
 
-Backend mengembalikan daftar artikel terbaru, hero, dll. sebagai HTML fragment.
+Sama origin → **tanpa CORS** untuk request ke `/api/public/*`.
 
-### 4.2 Artikel / halaman tunggal
-
-- URL cantik: `/blog/{slug}` — Pages rewrite ke template + fetch by slug
-- Meta SEO di `<head>` di-render server (Go template) atau di-inject saat swap
-
-### 4.3 Arsip & kategori
-
-Pagination HTMX:
+## 6. Pola HTMX (Subdomain)
 
 ```html
-<button hx-get="/api/public/posts?page=2"
-        hx-target="#listing"
-        hx-swap="beforeend">
-  Muat lebih
-</button>
+<!-- bola.seosementara.org -->
+<section hx-get="/api/public/bola/fixtures"
+         hx-trigger="load">
+</section>
 ```
 
-### 4.4 Pencarian (opsional)
+Namespace API publik bisa diprefix per layanan: `/api/public/bola/...`, `/api/public/url/...`.
 
-`hx-get` dengan query `q=` — backend limit 20 hasil, debounce input.
+## 7. Hubungan dengan Ribuan Domain Portfolio
 
-## 5. Multi-Domain di Cloudflare Pages
+Pekerja mengelola domain `toko-abc.com` di **`/admin/`** — pengunjung `toko-abc.com` **tidak** otomatis dilayani oleh stack HTMX ini kecuali ada integrasi terpisah (mis. WP di shared hosting).
 
-| Strategi | Kapan dipakai |
-|----------|---------------|
-| Satu project, banyak custom domain | Banyak situs, tema sama |
-| Beberapa project per kelompok | Tema berbeda total |
-| `host` header → resolve `site_id` | API lookup situs by domain |
+Frontend file ini hanya untuk **brand produk Seosementara** dan **layanan subdomain**.
 
-Flow:
-
-1. Request masuk `https://customer-a.com/artikel/foo`
-2. Pages serve shell HTML
-3. HTMX call API dengan header `X-Forwarded-Host` atau embed `site_id` di build config per domain
-
-## 6. Cache & Performa Publik
-
-| Lapisan | TTL |
-|---------|-----|
-| Cloudflare CDN | Cache static asset 1 tahun |
-| API response public | `Cache-Control: public, max-age=60` untuk listing; invalidasi on publish |
-| HTMX partial | ETag support dari backend |
-
-**Prinsip:** mini CPU tidak diload oleh traffic static — hanya API ringan dan cacheable.
-
-## 7. SEO di Frontend
-
-Wajib di response HTML (bukan hanya setelah JS):
-
-- `<title>`, meta description, canonical
-- Open Graph / Twitter Card
-- JSON-LD (Article, WebSite) — dari modul SEO CMS
-- Sitemap XML di route terpisah (bisa generate statis ke Pages saat publish)
-
-## 8. Form Publik (Terbatas)
-
-Jika ada kontak / newsletter:
-
-- POST ke `/api/public/forms/contact`
-- Rate limit + honeypot + Turnstile (Cloudflare)
-- Tidak expose admin credentials
-
-## 9. Struktur Folder (Usulan)
+## 8. Struktur Folder (Usulan)
 
 ```
 Frontend-Users/
-├── public/
-│   ├── index.html          # shell generik
+├── apex/
+│   ├── layouts/
+│   ├── pages/
+│   └── partials/
+├── subdomains/
+│   ├── bola/
+│   ├── cdn/
+│   ├── url/
+│   ├── ads/
+│   ├── comments/
+│   └── review/
+├── static/
 │   ├── css/
-│   │   ├── base.css
-│   │   └── themes/
-│   │       ├── site-a.css
-│   │       └── site-b.css
 │   └── js/htmx.min.js
-├── themes/
-│   └── site-a/
-│       └── config.json     # site_id, domain
-├── _redirects
-└── wrangler.toml
+└── README.md
 ```
 
-## 10. Navigasi Publik (Bukan Menu CMS)
+## 9. Cache & SEO
 
-Dikonfigurasi per situs di admin → disimpan di API → dirender di header/footer:
+| Host | SEO |
+|------|-----|
+| Apex | Meta produk, OG, sitemap `seosementara.org/sitemap.xml` |
+| Subdomain | Meta per layanan; sitemap opsional per host |
 
-- Beranda
-- Blog / Artikel
-- Kategori populer
-- Halaman: Tentang, Kontak, Kebijakan Privasi
-- Footer: social links, sitemap link
+Cache agresif di Cloudflare untuk GET publik; invalidasi saat publish dari admin.
 
-## 11. Offline & Error
+## 10. Dokumen Terkait
 
-- Fallback statis di Pages jika API down (halaman maintenance)
-- HTMX `hx-on::response-error` tampilkan pesan ramah
-
-## 12. Dokumen Terkait
-
-- SEO modul admin → [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)
-- Public API → [07-api-dan-integrasi.md](./07-api-dan-integrasi.md)
-- Backend cache invalidation → [04-backend-golang.md](./04-backend-golang.md)
+- Model domain → [09](./09-model-domain-host-dan-subdomain.md)
+- Setup host → [03](./03-menu-dan-modul-cms.md)
+- API publik → [07](./07-api-dan-integrasi.md)

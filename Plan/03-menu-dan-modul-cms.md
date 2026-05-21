@@ -61,6 +61,14 @@ Laporan
 ├── Status publish
 └── Ringkasan error API
 
+Setup
+├── Host / Subdomain
+│   ├── Daftar host (apex + subdomain)
+│   ├── Tambah / edit host
+│   ├── Mapping template UI
+│   ├── Status aktif / maintenance
+│   └── Panduan DNS (wildcard *.seosementara.org)
+
 Pengaturan
 ├── Umum (nama produk, timezone)
 ├── API keys & webhook
@@ -87,16 +95,37 @@ Bantuan
 
 ---
 
-### 2.2 Situs
+### 2.2 Situs (Domain Portfolio — Ribuan)
+
+Modul ini mengelola **domain yang dioperasikan** (ribuan), bukan hostname UI produk.
 
 | Submenu | Fungsi |
 |---------|--------|
-| Daftar situs | Pagination, filter status, pencarian domain |
-| Tambah / edit | Nama, domain, locale, tema default |
-| Pengaturan per situs | Logo, favicon, default SEO, struktur URL |
-| DNS & domain | Catatan CNAME/target Pages (read-only helper) |
+| Daftar situs | Pagination wajib (50/halaman), search, filter status |
+| Tambah / edit | Nama domain, grup, tag, penanggung jawab |
+| Pengaturan per situs | SEO default, integrasi WP, catatan operasi |
+| DNS & domain | Info DNS customer (read-only / helper) |
 
-**Peran:** Super Admin, Site Manager.
+**Skala:** desain untuk **1000+ domain** — tidak ada dropdown tanpa search.
+
+**Peran:** Super Admin, Site Manager. Pekerja dengan scope terbatas hanya melihat domain yang di-assign.
+
+---
+
+### 2.2b Setup → Host (Domain Produk & Subdomain)
+
+| Submenu | Fungsi |
+|---------|--------|
+| Daftar host | `seosementara.org`, `bola.seosementara.org`, … |
+| Tambah / edit | Hostname, template UI, enabled, maintenance |
+| Mapping template | Pilih `apex_default`, `subdomain_bola`, dll. |
+| Panduan DNS | Wildcard `*.seosementara.org` → origin |
+
+**URL admin:** `/admin/setup/host`
+
+Tanpa konfigurasi di sini, subdomain baru **tidak** dilayani backend.
+
+**Peran:** Super Admin saja.
 
 ---
 
@@ -211,17 +240,28 @@ CRUD taxonomy per situs; hindari load semua term sekaligus — tree lazy-load ji
 | Pengguna | ✓ | — | — | — | — |
 | Pengaturan sistem | ✓ | — | — | — | — |
 
-## 4. Menu Frontend Customer (Bukan Admin)
+## 4. Menu Frontend Publik (Bukan Menu Admin)
 
-Frontend customer **bukan** menu CMS — ini navigasi publik per situs, dikonfigurasi per `Site`:
+Navigasi pengunjung di **`seosementara.org`** dan subdomain — dikonfigurasi per **host** di Setup → Host, bukan per domain portfolio:
 
-- Beranda
-- Kategori / arsip
-- Halaman statis (Tentang, Kontak, dll.)
-- Pencarian (opsional)
-- Footer links
+| Host | Navigasi (contoh) |
+|------|-------------------|
+| Apex | Beranda, Blog, Dokumentasi, Kontak |
+| `bola.*` | Jadwal, Liga, Statistik |
+| `url.*` | Buat link, Statistik klik |
+| `cdn.*` | Browse aset (jika publik) |
 
-Detail di [06-frontend-users-htmx.md](./06-frontend-users-htmx.md).
+Detail di [06-frontend-users-htmx.md](./06-frontend-users-htmx.md) dan [09](./09-model-domain-host-dan-subdomain.md).
+
+## 4b. Skala Banyak Pekerja
+
+| Fitur | Keterangan |
+|-------|------------|
+| RBAC | Peran + scope domain portfolio |
+| Assign domain | Pekerja hanya edit domain yang di-assign |
+| Audit log | Login, perubahan konten, bulk job |
+| Site switcher | Header admin — pilih domain aktif sebelum edit |
+| Konflik edit | Cek `updated_at` / notifikasi tabrakan (fase 2) |
 
 ## 5. Pemetaan Menu → Endpoint API (Ringkas)
 

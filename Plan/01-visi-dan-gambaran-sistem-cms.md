@@ -4,17 +4,18 @@
 
 **Seosementara CMS** adalah sistem manajemen konten terpusat yang memungkinkan:
 
-1. **Admin/operator** mengelola banyak situs, konten, SEO, dan konfigurasi dari satu panel.
-2. **Pengguna akhir (customer)** mengakses situs publik yang cepat, ringan, dan stabil.
-3. **Backend** berjalan efisien di perangkat **mini CPU** dengan sumber daya terbatas.
+1. **Pekerja/internal** mengelola **ribuan domain portfolio**, konten, SEO, dan konfigurasi dari **`seosementara.org/admin/`** — dengan banyak pengguna bersamaan.
+2. **Pengunjung publik** mengakses UI produk di **`seosementara.org`** dan **subdomain** (`bola.`, `cdn.`, `url.`, …) — bukan hostname terpisah per domain portfolio.
+3. **Backend** berjalan efisien di **mini CPU**, melayani admin, API, dan semua frontend HTMX dari satu origin.
 
-CMS ini bukan sekadar editor artikel — ia dirancang untuk **skala operasional massal** (banyak domain, ribuan halaman/post per domain) dengan disiplin performa ketat.
+CMS ini dirancang untuk **skala operasional massal**: ribuan domain dikelola, banyak pekerja, subdomain layanan berbeda-beda.
 
 ## 2. Ruang Lingkup Sistem
 
 ### Dalam Lingkup
 
-- Manajemen multi-situs / multi-domain dari satu instalasi CMS
+- Manajemen **ribuan domain portfolio** dari satu panel admin (`/admin/`)
+- Konfigurasi **host & subdomain produk** (`/admin/setup/host`)
 - CRUD konten (post, page, kategori, tag)
 - Pengaturan SEO per konten dan per situs
 - Manajemen media (upload, organisasi, optimasi dasar)
@@ -35,27 +36,30 @@ Hal di luar lingkup dapat masuk roadmap fase berikutnya jika dibutuhkan.
 ## 3. Pembagian Tiga Lapisan
 
 ```mermaid
-flowchart LR
-  subgraph cf [Cloudflare Pages]
-    Admin[Admin Panel HTMX]
-    Users[Frontend Customer HTMX]
+flowchart TB
+  subgraph product [seosementara.org - satu ekosistem]
+    Admin["/admin/ HTMX"]
+    Apex["/ HTMX apex"]
+    Sub["subdomain HTMX"]
   end
   subgraph mini [Mini CPU]
-    API[Backend Golang]
+    Go[Backend Golang]
     DB[(Database)]
-    Cache[(Redis opsional)]
   end
-  Admin -->|HTTPS API| API
-  Users -->|HTTPS API| API
-  API --> DB
-  API --> Cache
+  Admin --> Go
+  Apex --> Go
+  Sub --> Go
+  Go --> DB
 ```
 
-| Lapisan | Peran | Pengguna |
-|---------|-------|----------|
-| Backend (Golang) | Sumber kebenaran data, bisnis logic, auth, batch job | Sistem |
-| Admin Panel (HTMX) | Antarmuka operator internal | Admin, Editor, SEO Specialist |
-| Frontend Customer (HTMX) | Tampilan publik situs per domain | Pengunjung web |
+| Lapisan | URL | Pengguna |
+|---------|-----|----------|
+| Backend (Golang) | `/api/*` | Sistem |
+| Admin Panel | `/admin/*` | Banyak pekerja — kelola ribuan domain |
+| Frontend publik | `/` + `*.seosementara.org` | Pengunjung internet |
+| Domain portfolio | Hanya data di DB | Bukan hostname frontend CMS |
+
+Detail: [09-model-domain-host-dan-subdomain.md](./09-model-domain-host-dan-subdomain.md)
 
 ## 4. Prinsip Desain
 

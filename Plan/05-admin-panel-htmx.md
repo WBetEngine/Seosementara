@@ -1,136 +1,131 @@
-# 05 — Admin Panel (HTMX + Cloudflare Pages)
+# 05 — Admin Panel (HTMX di `/admin/`)
+
+> URL produksi: `https://seosementara.org/admin/` — model domain: [09](./09-model-domain-host-dan-subdomain.md)
 
 ## 1. Peran
 
-Panel admin adalah antarmuka operator untuk mengelola CMS. **Tidak** ada logika bisnis kritis di browser — HTMX memanggil API Golang di mini CPU dan menukar fragmen HTML.
+Panel admin adalah antarmuka **banyak pekerja** yang mengelola:
+
+- **Ribuan domain portfolio** (record di database)
+- Konten, SEO, media, job batch per domain
+- **Host & subdomain produk** (`/admin/setup/host`)
+
+Logika bisnis di backend Go — HTMX hanya memanggil endpoint **sama origin** (`/api/admin/*`).
 
 ## 2. Stack UI
 
 | Komponen | Pilihan |
 |----------|---------|
-| Markup | HTML5 semantic |
-| Interaktivitas | **HTMX** (hx-get, hx-post, hx-swap, hx-trigger) |
-| Styling | CSS vanilla atau utility ringan (tanpa framework berat) |
-| Icons | SVG inline atau sprite |
-| Build | Opsional: `templ` (Go) generate HTML saat CI, deploy static ke Pages |
-| Hosting | **Cloudflare Pages** |
+| Markup | HTML5 + partial templates |
+| Interaktivitas | **HTMX** |
+| Styling | CSS ringan |
+| URL base | `/admin/` (prefix wajib) |
+| Hosting | Dilayani **origin mini CPU** (bukan hostname terpisah) |
+| Sumber repo | Folder `Frontend-admin/` |
 
-**Tidak memakai:** React/Vue/Angular penuh — menjaga bundle kecil dan cocok edge.
+## 3. Routing Admin
 
-## 3. Pola HTMX Utama
+| Path | Halaman |
+|------|---------|
+| `/admin/login` | Login pekerja |
+| `/admin/` | Dashboard |
+| `/admin/sites` | Daftar domain portfolio (paginated) |
+| `/admin/posts` | Konten domain aktif |
+| `/admin/setup/host` | Konfigurasi host & subdomain |
+| `/admin/users` | Manajemen pekerja |
 
-### 3.1 List dengan pagination
+Semua link internal memakai prefix `/admin/` — hindari path absolut tanpa prefix.
+
+## 4. Pola HTMX (Sama Origin)
 
 ```html
-<div id="post-list"
-     hx-get="/api/admin/posts?site_id=1&page=1"
+<div id="site-list"
+     hx-get="/api/admin/managed-domains?page=1&limit=50"
      hx-trigger="load"
      hx-swap="innerHTML">
-  <!-- skeleton -->
 </div>
 ```
 
-Backend mengembalikan **partial HTML** (bukan JSON) untuk admin, atau JSON + client template — **keputusan:** partial HTML dari Go `html/template` direkomendasikan agar satu sumber template.
+Keuntungan same-origin:
 
-### 3.2 Form inline edit
+- Cookie session tanpa masalah CORS cross-domain
+- Tidak perlu `API_BASE_URL` ke host lain
 
-```html
-<form hx-post="/api/admin/posts/123"
-      hx-target="#post-editor"
-      hx-swap="outerHTML">
-```
-
-### 3.3 Notifikasi & polling job
+### Site switcher (domain portfolio)
 
 ```html
-<div hx-get="/api/admin/jobs/45/status"
-     hx-trigger="every 2s"
-     hx-swap="innerHTML">
+<select name="managed_domain_id"
+        hx-post="/api/admin/session/active-domain"
+        hx-swap="none">
+  <!-- opsi dari search, bukan load 1000 option sekaligus -->
+</select>
 ```
 
-Hentikan polling saat status `completed` (HX-Trigger header atau `htmx:afterSwap`).
+Gunakan **combobox search** (ketik → `hx-get` autocomplete), bukan `<select>` 1000 item.
 
-## 4. Layout Halaman
+## 5. Skala Ribuan Domain
+
+| UI | Pola |
+|----|------|
+| Daftar domain | Pagination + filter + indexed search |
+| Bulk action | Pilih filter → konfirmasi → job ID → poll progress |
+| Dashboard | Angka agregat dari cache — bukan `COUNT(*)` tiap load |
+| Assign pekerja | Admin assign subset domain ke user |
+
+## 6. Skala Banyak Pekerja
+
+| Kebutuhan | Implementasi |
+|-----------|--------------|
+| Login simultan | Session per user, Redis/store session |
+| RBAC | Middleware + hide menu sidebar |
+| Audit | Log siapa ubah domain X |
+| Scope | User hanya lihat domain yang di-assign |
+
+## 7. Layout
 
 ```
+https://seosementara.org/admin/
 ┌─────────────────────────────────────────────┐
-│ Topbar: logo, site switcher, user menu      │
+│ Topbar: logo, site switcher (portfolio), user│
 ├──────────┬──────────────────────────────────┤
-│ Sidebar  │ Main content (HTMX swap target)  │
-│ (menu    │                                  │
-│  03)     │                                  │
+│ Sidebar  │ #main (HTMX target)              │
+│ Dashboard│                                  │
+│ Situs    │                                  │
+│ Konten   │                                  │
+│ Setup    │                                  │
+│  └ Host  │                                  │
 └──────────┴──────────────────────────────────┘
 ```
 
-- **Site switcher:** set cookie/header `X-Site-ID` untuk semua request berikutnya
-- Sidebar: render menu sesuai RBAC (hide item tanpa permission)
+## 8. Autentikasi
 
-## 5. Pemetaan Menu → Halaman
-
-| Menu (lihat 03) | Route Pages (contoh) | Partial target |
-|-----------------|----------------------|----------------|
-| Dashboard | `/admin/` | `#main` |
-| Daftar post | `/admin/posts` | `#main` |
-| Edit post | `/admin/posts/{id}` | `#editor` |
-| Media | `/admin/media` | `#main` |
-| SEO bulk | `/admin/seo/bulk` | `#main` |
-| Jobs | `/admin/jobs` | `#main` |
-
-Routing: Cloudflare Pages `_redirects` atau Functions ringan jika perlu.
-
-## 6. Autentikasi di Edge
-
-1. Halaman `/admin/login` — form HTMX POST ke `https://api.../api/admin/auth/login`
-2. Backend set `Set-Cookie` (Secure, HttpOnly, SameSite=None untuk cross-site Pages→API)
-3. HTMX config global:
-
-```html
-<body hx-headers='{"X-Requested-With": "XMLHttpRequest"}' ...>
+```http
+POST /api/admin/auth/login
+→ Set-Cookie session (HttpOnly, Secure, SameSite=Lax)
 ```
 
-4. Request berikutnya `hx-include` cookie otomatis (same-site policy — pertimbangkan subdomain atau Tunnel sama root domain).
+Redirect setelah login: `HX-Redirect: /admin/`
 
-**Catatan:** cross-origin Pages → API memerlukan CORS + credentials; idealnya `admin.domain.com` dan `api.domain.com` under satu registrable domain.
+Middleware: semua `/admin/*` kecuali login → cek session.
 
-## 7. Struktur Folder (Usulan)
+## 9. Struktur Folder
 
 ```
 Frontend-admin/
-├── public/
-│   ├── index.html
-│   ├── css/
-│   └── js/htmx.min.js
-├── partials/          # jika pre-render
-├── _redirects
-└── wrangler.toml      # Pages config
+├── templates/
+│   ├── layouts/admin.html
+│   ├── pages/
+│   │   ├── dashboard.html
+│   │   ├── sites/
+│   │   └── setup/
+│   │       └── host.html
+│   └── partials/
+├── static/css/
+└── static/js/htmx.min.js
 ```
 
-## 8. Performa di Cloudflare Pages
-
-| Praktik | Alasan |
-|---------|--------|
-| Asset CSS/JS cache panjang | Immutable hash filename |
-| Fragment kecil | Swap cepat, sedikit HTML |
-| Debounce search | `hx-trigger="keyup changed delay:300ms"` |
-| Tidak fetch ribuan row | Pagination server-side wajib |
-
-## 9. Aksesibilitas & UX
-
-- Focus management setelah swap (`htmx:focus-scroll`)
-- Pesan error dari `HX-Trigger` atau fragment alert
-- Konfirmasi destructive: `hx-confirm="Yakin hapus?"`
-
-## 10. Environment Pages
-
-| Variable | Contoh |
-|----------|--------|
-| `API_BASE_URL` | `https://api.seosementara.example` |
-| `APP_NAME` | Seosementara Admin |
-
-Set di Cloudflare dashboard → Settings → Environment variables.
-
-## 11. Dokumen Terkait
+## 10. Dokumen Terkait
 
 - Menu lengkap → [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)
+- Model domain → [09](./09-model-domain-host-dan-subdomain.md)
 - API → [07-api-dan-integrasi.md](./07-api-dan-integrasi.md)
-- Arsitektur → [02-arsitektur-dan-infrastruktur.md](./02-arsitektur-dan-infrastruktur.md)

@@ -1,128 +1,143 @@
 # 02 — Arsitektur dan Infrastruktur
 
-## 1. Gambaran Deployment
+> **Model domain lengkap:** [09-model-domain-host-dan-subdomain.md](./09-model-domain-host-dan-subdomain.md)
+
+## 1. Gambaran Deployment (Revisi)
+
+Satu ekosistem hostname **`seosementara.org`** (nama contoh) — backend, admin, dan frontend publik **satu origin** di mini CPU, dengan Cloudflare di depan sebagai DNS + proxy + cache.
 
 ```mermaid
 flowchart TB
   subgraph internet [Internet]
-    Visitor[Pengunjung]
-    Operator[Admin Operator]
+    Worker[Pekerja - ribuan domain dikelola]
+    Visitor[Pengunjung seosementara.org]
+    SubVisitor[Pengunjung subdomain]
   end
-  subgraph cloudflare [Cloudflare]
-    PagesAdmin[Pages - Admin Panel]
-    PagesUsers[Pages - Frontend Customer]
-    DNS[DNS / SSL]
+  subgraph cf [Cloudflare]
+    DNS["seosementara.org + *.seosementara.org"]
+    Cache[CDN Cache]
   end
-  subgraph home [Mini CPU - Self Hosted]
-    GoAPI[Go API Server]
-    Worker[Background Worker]
+  subgraph mini [Mini CPU - Golang]
+    Router[Router Host + Path]
+    Admin["/admin/* HTMX"]
+    Public["/ HTMX apex"]
+    SubApps["Subdomain HTMX"]
+    API["/api/*"]
+    BG[Worker Jobs]
     DB[(Database)]
-    FS[File Storage Media]
   end
-  Operator --> DNS --> PagesAdmin
-  Visitor --> DNS --> PagesUsers
-  PagesAdmin -->|API + Auth| GoAPI
-  PagesUsers -->|API Public| GoAPI
-  GoAPI --> DB
-  GoAPI --> FS
-  Worker --> DB
-  Worker --> FS
+  Worker --> DNS
+  Visitor --> DNS
+  SubVisitor --> DNS
+  DNS --> Cache --> Router
+  Router --> Admin
+  Router --> Public
+  Router --> SubApps
+  Router --> API
+  API --> DB
+  BG --> DB
 ```
 
 ## 2. Peran Setiap Komponen
 
-### 2.1 Mini CPU — Backend Golang
+### 2.1 Mini CPU — Backend Golang (Origin tunggal)
 
-**Fungsi:** satu-satunya mesin yang menyentuh database dan menjalankan logika bisnis.
-
-| Aspek | Rekomendasi awal |
-|-------|------------------|
-| OS | Linux (Debian/Ubuntu minimal) |
-| Proses | `api` (HTTP) + `worker` (job queue) — bisa satu binary dua mode |
-| Reverse proxy | Caddy atau Nginx (TLS termination, rate limit) |
-| Port | Hanya expose 443 ke internet; SSH terbatas/VPN |
-| Resource | Monitor CPU/RAM; batasi worker concurrency (mis. 2–4 goroutine job) |
-
-**Mengapa tidak host admin/users di mini CPU?**
-
-- Traffic publik dan admin UI lebih cocok di edge (Cloudflare Pages) — CDN global, SSL otomatis, tanpa membebani CPU rumah.
-- Mini CPU fokus ke API + DB + batch — beban yang bisa diprediksi.
-
-### 2.2 Cloudflare Pages — Admin Panel
-
-| Aspek | Detail |
+| Tugas | Detail |
 |-------|--------|
-| Isi | HTML statis + partial HTMX, CSS, JS minimal |
-| Build | Opsional: templating saat build (Go `templ`, atau hand-written HTML) |
-| Env | `API_BASE_URL` menunjuk ke domain API mini CPU (HTTPS) |
-| Auth | Cookie/token dikelola via HTMX request ke API; tidak simpan secret di repo |
+| HTTP server | Melayani **semua** route: `/admin/`, `/`, subdomain, `/api/` |
+| Router | `Host` header + `path` → template HTMX yang benar |
+| Worker | Job batch untuk ribuan domain portfolio |
+| DB | Domain portfolio, konten, config host/subdomain, user pekerja |
 
-### 2.3 Cloudflare Pages — Frontend Customer
+| Aspek | Rekomendasi |
+|-------|-------------|
+| Reverse proxy | Caddy/Nginx di depan Go (opsional jika Go langsung listen) |
+| TLS | Cloudflare Tunnel atau Full SSL |
+| Concurrency worker | 2–4 job paralel (sesuaikan mini CPU) |
 
-| Aspek | Detail |
+### 2.2 Cloudflare (Edge)
+
+| Fungsi | Detail |
+|--------|--------|
+| DNS apex | `seosementara.org` → Tunnel / origin |
+| DNS wildcard | `*.seosementara.org` → Tunnel / origin |
+| Cache | Static asset + response publik (hati-hati jangan cache `/admin/` dengan cookie) |
+| Tunnel | Disarankan untuk mini CPU di belakang NAT |
+
+**Bukan:** ribuan custom domain di Pages untuk setiap domain portfolio.
+
+### 2.3 Folder repo `Frontend-admin/` & `Frontend-Users/`
+
+Sumber **template** HTMX/CSS:
+
+- Di-embed ke Go (`embed.FS`) **atau**
+- Di-copy saat build/deploy ke mini CPU
+
+Routing dilakukan Go — bukan proyek hostname terpisah per domain customer.
+
+## 3. Peta Path & Host
+
+| Request | Handler |
+|---------|---------|
+| `seosementara.org/` | Frontend customer (apex) |
+| `seosementara.org/admin/*` | Admin panel HTMX |
+| `seosementara.org/api/admin/*` | API admin |
+| `seosementara.org/api/public/*` | API publik |
+| `bola.seosementara.org/*` | Template subdomain (config DB) |
+| `cdn.seosementara.org/*` | Template subdomain CDN |
+| … | Didaftarkan di **admin/setup/host** |
+
+Lihat contoh subdomain di [09](./09-model-domain-host-dan-subdomain.md).
+
+## 4. Domain Portfolio vs Domain Produk
+
+| | Domain produk | Domain portfolio |
+|--|---------------|------------------|
+| Jumlah | Sedikit (1 apex + N subdomain) | **Ribuan** |
+| DNS | Wildcard ke origin kita | Bisa di hosting lain (WP, dll.) |
+| Frontend HTMX | Ya | **Tidak** — hanya data di admin |
+| Contoh | `url.seosementara.org` | `toko-abc.com`, `blog-xyz.net` |
+
+## 5. Skala: Ribuan Domain + Banyak Pekerja
+
+| Area | Strategi |
+|------|----------|
+| Admin list domain | Pagination 50, search indexed, filter status |
+| Site switcher | Pekerja pilih 1 domain aktif → semua form scoped `managed_domain_id` |
+| RBAC | Peran + daftar domain yang boleh diakses |
+| Session | Banyak login simultan; audit log |
+| Bulk | Job async — tidak satu request untuk 1000 domain |
+
+## 6. Penyimpanan
+
+| Jenis | Lokasi |
 |-------|--------|
-| Isi | Template HTMX per tema/situs |
-| Multi-site | Satu proyek Pages dengan routing per domain, atau beberapa proyek Pages per kelompok domain |
-| Data | Hampir semua konten di-fetch dari API; halaman sangat cacheable di edge |
+| DB | PostgreSQL/SQLite di mini CPU |
+| `hosts` table | Config subdomain → template |
+| `managed_domains` | Ribuan domain portfolio |
+| Media | Lokal atau R2 (`cdn.` subdomain bisa expose aset) |
+| Cache | Redis/in-memory + Cloudflare cache rules |
 
-## 3. Jalur Jaringan dan Keamanan
+## 7. Aturan Cache Cloudflare
 
-### 3.1 DNS
+| Path / Host | Cache |
+|-------------|-------|
+| `/admin/*` | **Bypass** (private) |
+| `/api/admin/*` | Bypass |
+| `/` publik | Cache sesuai `Cache-Control` |
+| Subdomain publik | Per-host rule |
+| Static `/assets/*` | Long cache |
 
-- `api.seosementara.example` → tunnel atau IP rumah (Cloudflare Tunnel disarankan untuk mini CPU di belakang NAT)
-- `admin.seosementara.example` → Cloudflare Pages (admin)
-- `*.customer-domain.com` → Cloudflare Pages (users) atau proxy ke Pages project
+## 8. Lingkungan
 
-### 3.2 Cloudflare Tunnel (Disarankan)
+| Env | URL contoh |
+|-----|------------|
+| Local | `localhost:8080/admin/` |
+| Staging | `staging.seosementara.org` |
+| Production | `seosementara.org` |
 
-Mini CPU sering berada di jaringan rumah tanpa IP publik stabil. **cloudflared** tunnel:
+## 9. Dokumen Terkait
 
-- Menghindari buka port router
-- TLS end-to-end
-- DDoS protection di edge
-
-### 3.3 CORS dan Origin
-
-| Origin | Akses API |
-|--------|-----------|
-| Admin Pages URL | `/api/admin/*` + credentials |
-| Customer Pages URL | `/api/public/*` read + form terbatas |
-| Lainnya | Ditolak |
-
-## 4. Penyimpanan
-
-| Jenis | Lokasi | Catatan |
-|-------|--------|---------|
-| Data relasional | Mini CPU (PostgreSQL/SQLite) | Indeks pada `site_id`, `slug`, `status` |
-| Media file | Lokal mini CPU atau R2 | R2 mengurangi beban disk rumah |
-| Cache response | Redis lokal atau in-memory | TTL + invalidasi saat publish |
-| Log | File rotasi + opsional forward | Jangan log isi konten sensitif |
-
-## 5. Skalabilitas dalam Batas Mini CPU
-
-| Risiko | Mitigasi |
-|--------|----------|
-| CPU spike saat batch | Queue + max concurrent jobs |
-| RAM habis saat query besar | `LIMIT` wajib, cursor pagination |
-| Disk penuh (media) | Kuota per situs, kompresi gambar, offload ke R2 |
-| 503 timeout | Job async; response API < 2 detik untuk read |
-
-## 6. Lingkungan (Environments)
-
-| Env | Backend | Pages |
-|-----|---------|-------|
-| Local dev | `go run` di laptop | `wrangler pages dev` |
-| Staging | Mini CPU atau VM kecil | Preview branch Pages |
-| Production | Mini CPU | Production branch Pages |
-
-## 7. Backup dan Recovery
-
-- Database: dump harian otomatis ke storage eksternal
-- Media: sync ke R2 atau NAS
-- Konfigurasi: infrastruktur sebagai kode (script systemd, Caddyfile) di repo terpisah
-
-## 8. Dokumen Terkait
-
-- Backend detail → [04-backend-golang.md](./04-backend-golang.md)
-- API & CORS → [07-api-dan-integrasi.md](./07-api-dan-integrasi.md)
-- Admin / Users UI → [05](./05-admin-panel-htmx.md), [06](./06-frontend-users-htmx.md)
+- Model domain → [09](./09-model-domain-host-dan-subdomain.md)
+- Menu Setup → Host → [03](./03-menu-dan-modul-cms.md)
+- Backend routing → [04](./04-backend-golang.md)

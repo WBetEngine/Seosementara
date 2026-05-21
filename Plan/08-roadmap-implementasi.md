@@ -7,11 +7,12 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Item | Output | Folder |
 |------|--------|--------|
 | Repo layout | Backend, Frontend-admin, Frontend-Users, Plan | root |
-| Dokumentasi | File Plan 01–08 | `Plan/` |
-| Infrastruktur mini CPU | Go binary, DB, reverse proxy, Tunnel | ops |
-| Cloudflare Pages | Dua project (admin + users), env vars | CF dashboard |
+| Dokumentasi | File Plan 01–09 | `Plan/` |
+| Model domain | [09](./09-model-domain-host-dan-subdomain.md) disepakati | `Plan/` |
+| Infrastruktur | Go di mini CPU + Cloudflare DNS wildcard + Tunnel | ops |
+| Routing | `Host` + `/admin/` + `/` + subdomain | Backend |
 
-**Selesai jika:** health check API OK, Pages deploy hello-world memanggil API.
+**Selesai jika:** `seosementara.org/health` OK, `/admin/login` tampil, satu subdomain contoh respon.
 
 ---
 
@@ -21,7 +22,9 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 |------|--------|
 | Migrasi DB | sites, users, posts, pages, taxonomies |
 | Auth admin | Login, session, logout |
-| CRUD situs | List/create/update |
+| CRUD managed-domains | List/search/create (pagination) |
+| CRUD hosts | Setup subdomain → template |
+| Router Host+Path | `/admin/`, apex, subdomain |
 | CRUD post (draft/publish) | Pagination wajib |
 | Public read API | home + post by slug |
 | RBAC dasar | Super Admin, Editor |
@@ -44,16 +47,16 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 ---
 
-## Fase 3 — Frontend Customer HTMX
+## Fase 3 — Frontend Publik HTMX
 
 | Item | Detail |
 |------|--------|
-| Shell HTML per tema | Beranda, single post, arsip |
-| Resolve site by host | Multi-domain |
-| Meta SEO di HTML | Title, OG, canonical |
-| Cache header public API | TTL + invalidasi on publish |
+| Apex `seosementara.org/` | Beranda, halaman statis |
+| Subdomain contoh | Minimal 2: `url.`, `cdn.` atau `bola.` |
+| Admin Setup → Host | CRUD host + pilih template |
+| Cache publik | Cloudflare + invalidasi on publish |
 
-**Selesai jika:** pengunjung membaca artikel published dengan performa baik di edge.
+**Selesai jika:** pengunjung akses apex + satu subdomain; pekerja bisa tambah host baru dari admin.
 
 ---
 
@@ -126,6 +129,9 @@ Catat keputusan di bagian bawah file ini setelah final.
 |---------|-----------|---------|
 | 2026-05-21 | Backend: **Golang** | Mini CPU |
 | 2026-05-21 | Admin & Users UI: **HTMX** | Cloudflare Pages |
+| 2026-05-21 | Admin di **`/admin/`** pada domain produk | Bukan per-domain portfolio |
+| 2026-05-21 | Frontend publik = **apex + subdomain** | Setup di `/admin/setup/host` |
+| 2026-05-21 | Portfolio = **ribuan domain di DB** | Banyak pekerja, pagination wajib |
 | | | |
 
 ---

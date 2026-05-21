@@ -18,7 +18,22 @@
 /health            → No auth
 ```
 
-## 3. Autentikasi
+## 3. Routing Request (Host + Path)
+
+Backend memilih handler berdasarkan:
+
+1. **`Host`** — `seosementara.org` vs `bola.seosementara.org` (lookup tabel `hosts`)
+2. **`Path`** — `/admin/`, `/api/`, `/` 
+
+| Host | Path | Handler |
+|------|------|---------|
+| apex | `/admin/*` | HTML admin HTMX |
+| apex | `/api/admin/*` | JSON/HTML admin API |
+| apex | `/api/public/*` | API publik apex |
+| apex | `/` | HTML publik apex |
+| subdomain | `/*` | HTML/API sesuai `template_id` di Setup → Host |
+
+## 3b. Autentikasi
 
 ### Login admin
 
@@ -49,27 +64,44 @@ X-Site-ID: 1
 POST /api/admin/auth/logout
 ```
 
-## 4. CORS (Cloudflare Pages → Mini CPU)
+## 4. CORS
 
-| Header | Nilai |
-|--------|-------|
-| `Access-Control-Allow-Origin` | Origin admin/users Pages (whitelist) |
-| `Access-Control-Allow-Credentials` | `true` |
-| `Access-Control-Allow-Methods` | GET, POST, PUT, PATCH, DELETE, OPTIONS |
-| `Access-Control-Allow-Headers` | Content-Type, X-Site-ID, HX-Request |
+Dengan model **sama origin** (`seosementara.org` untuk `/admin/` dan `/api/`), CORS **minimal** untuk HTMX admin.
 
-Preflight `OPTIONS` harus di-handle cepat (< 50ms).
+| Skenario | CORS |
+|----------|------|
+| HTMX `/admin/` → `/api/admin/` | Tidak perlu (same origin) |
+| Subdomain → API apex | Opsional: tentukan apakah API terpusat di apex saja |
+| Integrasi eksternal | Whitelist origin khusus |
+
+Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hanya untuk host produk yang dikenal.
+
+### Header sesi admin
+
+| Header | Fungsi |
+|--------|--------|
+| `X-Managed-Domain-ID` | Domain portfolio yang sedang aktif di UI |
+| `HX-Request` | Deteksi partial response |
 
 ## 5. Endpoint Admin (Ringkas)
 
-### Situs
+### Domain portfolio (ribuan)
 
 | Method | Path | Deskripsi |
 |--------|------|-----------|
-| GET | `/api/admin/sites` | List paginated |
-| POST | `/api/admin/sites` | Buat situs |
-| GET | `/api/admin/sites/{id}` | Detail |
-| PATCH | `/api/admin/sites/{id}` | Update |
+| GET | `/api/admin/managed-domains` | List paginated + search |
+| POST | `/api/admin/managed-domains` | Tambah domain portfolio |
+| GET | `/api/admin/managed-domains/{id}` | Detail |
+| PATCH | `/api/admin/managed-domains/{id}` | Update |
+
+### Setup → Host (subdomain produk)
+
+| Method | Path | Deskripsi |
+|--------|------|-----------|
+| GET | `/api/admin/hosts` | List host/subdomain |
+| POST | `/api/admin/hosts` | Daftarkan host baru |
+| PATCH | `/api/admin/hosts/{id}` | Update template / enabled |
+| DELETE | `/api/admin/hosts/{id}` | Nonaktifkan |
 
 ### Post
 
