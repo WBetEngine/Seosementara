@@ -121,13 +121,15 @@ Lihat contoh subdomain di [09](./09-model-domain-host-dan-subdomain.md).
 | Subdomain publik | Per-host rule |
 | Static `/assets/*` | Long cache |
 
-## 8. Lingkungan
+## 8. Lingkungan & Deploy
 
 | Env | URL contoh |
 |-----|------------|
 | Local | `localhost:8080/admin/` |
 | Staging | `staging.seosementara.org` |
 | Production | `seosementara.org` |
+
+Runbook lengkap: **[16-deploy-dan-lingkungan.md](./16-deploy-dan-lingkungan.md)**.
 
 ## 9. Dokumen Terkait
 

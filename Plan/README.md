@@ -59,3 +59,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 0.7 | 2026-05-21 | RBAC, login aman, setup backend, setup meta (11–14) |
 | 0.8 | 2026-05-21 | Integrasi Cloudflare dari admin: Tunnel, Pages, API key, .env |
 | 0.9 | 2026-05-21 | Semua setting backend di admin: RBAC, auth, rate limit selaras CF |
+| 1.0 | 2026-05-21 | Deploy & lingkungan dev/staging/prod (16) |

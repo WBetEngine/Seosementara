@@ -395,6 +395,7 @@ Setelah simpan: `POST /api/admin/setup/backend/reload` → invalidate settings c
 
 - [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md)
 - [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md)
+- [16-deploy-dan-lingkungan.md](./16-deploy-dan-lingkungan.md)
 - [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md)
 - [10-database-postgresql.md](./10-database-postgresql.md)
 - [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)

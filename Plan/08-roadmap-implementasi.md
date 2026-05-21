@@ -7,12 +7,13 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Item | Output | Folder |
 |------|--------|--------|
 | Repo layout | Backend, Frontend-admin, Frontend-Users, Plan | root |
-| Dokumentasi | File Plan 01–09 | `Plan/` |
+| Dokumentasi | File Plan 01–16 | `Plan/` |
 | Model domain | [09](./09-model-domain-host-dan-subdomain.md) disepakati | `Plan/` |
+| Lingkungan | Local + staging + prod — [16](./16-deploy-dan-lingkungan.md) | ops |
 | Infrastruktur | Go di mini CPU + Cloudflare DNS wildcard + Tunnel | ops |
 | Routing | `Host` + `/admin/` + `/` + subdomain | Backend |
 
-**Selesai jika:** `seosementara.org/health` OK, `/admin/login` tampil, satu subdomain contoh respon.
+**Selesai jika:** local & staging deploy OK; smoke test [16](./16-deploy-dan-lingkungan.md) §11 lulus.
 
 ---
 
