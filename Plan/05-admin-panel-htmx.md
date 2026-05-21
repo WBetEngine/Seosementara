@@ -21,7 +21,7 @@ Logika bisnis di backend Go — HTMX hanya memanggil endpoint **sama origin** (`
 | Interaktivitas | **HTMX** |
 | Styling | CSS ringan |
 | URL base | `/admin/` (prefix wajib) |
-| Hosting | Dilayani **origin mini CPU** (bukan hostname terpisah) |
+| Hosting | **Cloudflare Pages** — env dari Setup Cloudflare [15](./15-setup-cloudflare-integrasi.md) |
 | Sumber repo | Folder `Frontend-admin/` |
 
 ## 3. Routing Admin

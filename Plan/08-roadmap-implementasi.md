@@ -64,13 +64,14 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 ---
 
-## Fase 4 — Setup Meta, Backend, SEO lanjutan
+## Fase 4 — Setup Cloudflare, Meta, Backend
 
 | Item | Detail |
 |------|--------|
-| Setup backend UI | [13](./13-setup-backend-dan-sistem.md) |
+| Cloudflare API + Tunnel + Pages | [15](./15-setup-cloudflare-integrasi.md) |
+| Domain .env + sync Pages | `PRIMARY_DOMAIN`, `API_BASE_URL` |
+| Setup backend operasional | [13](./13-setup-backend-dan-sistem.md) |
 | Meta global + host + domain | [14](./14-setup-meta-dan-seo.md) |
-| Bulk SEO | Job queue |
 
 ---
 
