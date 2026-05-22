@@ -96,17 +96,19 @@ Gunakan **combobox search** (ketik → `hx-get` autocomplete), bukan `<select>` 
 
 ## 7. Layout
 
+> **Desain lengkap:** tiga dashboard (Global / Admin / Domain), navigasi berkelompok, Setup submenu, responsif mobile — [27-admin-panel-desain-ui-navigasi.md](./27-admin-panel-desain-ui-navigasi.md). **Bukan** toko online (tanpa Cart/Toko).
+
 ```
 https://seosementara.org/admin/
 ┌─────────────────────────────────────────────┐
 │ Topbar: logo, site switcher (portfolio), user│
 ├──────────┬──────────────────────────────────┤
 │ Sidebar  │ #main (HTMX target)              │
-│ Dashboard│                                  │
-│ Situs    │                                  │
+│ Ringkasan│  (3 dashboard — lihat Plan/27)   │
+│ Domain   │                                  │
 │ Konten   │                                  │
-│ Setup    │                                  │
-│  └ Host  │                                  │
+│ Tools    │                                  │
+│ Platform │  Setup + subnav                  │
 └──────────┴──────────────────────────────────┘
 ```
 

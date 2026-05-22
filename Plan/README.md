@@ -34,6 +34,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 24 | [24-meta-akun-bm-pixel-dan-optimasi-iklan.md](./24-meta-akun-bm-pixel-dan-optimasi-iklan.md) | **Realita BM/personal/Fanpage**, SOP BM putus, fitur optimasi biaya |
 | 25 | [25-pixel-data-lengkap-emq.md](./25-pixel-data-lengkap-emq.md) | **Data selaras Meta 2026:** tabel resmi `user_data`, hash, wajib website |
 | 26 | [26-meta-sumber-resmi-pixel-capi.md](./26-meta-sumber-resmi-pixel-capi.md) | **Peta 3 URL resmi Meta:** standard events, Pixel dev, CAPI business |
+| 27 | [27-admin-panel-desain-ui-navigasi.md](./27-admin-panel-desain-ui-navigasi.md) | **Desain admin UI:** 3 dashboard, navigasi grup, Setup submenu, responsif — **bukan toko** |
 
 ## Ringkasan Stack
 
@@ -84,3 +85,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 2.1 | 2026-05-22 | Data pixel lengkap vs IP-only, tier EMQ, enricher (25) |
 | 2.2 | 2026-05-22 | Plan/25 v2: verifikasi dokumentasi resmi Meta CAPI 2026 |
 | 2.3 | 2026-05-22 | Plan/26: peta URL Help + Meta Pixel + CAPI business (26) |
+| 2.4 | 2026-05-22 | Plan/27: desain admin — 3 dashboard, nav berkelompok, tanpa Cart/Toko (27) |

@@ -5,10 +5,10 @@ Dokumen ini mendefinisikan struktur menu **Admin Panel**. Setiap item menu memet
 ## 1. Struktur Navigasi Utama
 
 ```
-Dashboard
-├── Ringkasan global
-├── Aktivitas terbaru
-└── Peringatan sistem
+Ringkasan (3 dashboard — detail [27](./27-admin-panel-desain-ui-navigasi.md))
+├── Dashboard Admin          → semua pekerja (+ SA)
+├── Dashboard Domain         → per domain aktif (site switcher)
+└── Dashboard Global         → Super Admin saja
 
 Situs (Domain Portfolio)
 ├── Daftar domain saya
@@ -99,13 +99,13 @@ Bantuan
 
 ## 2. Deskripsi Menu per Modul
 
-### 2.1 Dashboard
+### 2.1 Dashboard (tiga konteks — [27](./27-admin-panel-desain-ui-navigasi.md))
 
-| Submenu | Fungsi |
-|---------|--------|
-| Ringkasan global | Jumlah situs, post published/draft, job aktif |
-| Aktivitas terbaru | 20 event terakhir (publish, edit, login) |
-| Peringatan sistem | Disk hampir penuh, job gagal, API health |
+| Dashboard | URL | Siapa | Fungsi |
+|-----------|-----|-------|--------|
+| **Admin** | `/admin/dashboard` | Worker + SA | Ringkasan akun: domain milik/dibagikan, notifikasi, job saya |
+| **Domain** | `/admin/dashboard/domain` | Akses domain | Post/SEO/shortlink/pixel untuk **satu** domain aktif |
+| **Global** | `/admin/dashboard/global` | **Super Admin only** | Seluruh platform: health, total domain, job gagal sistem |
 
 **Query:** agregat ter-cache (transient 5 menit), bukan hitung penuh tabel tanpa filter.
 
