@@ -1,135 +1,317 @@
-# 20 — Pixel Admin (Facebook, TikTok, Google Ads)
+# 20 — Pixel Hub: Kolaborasi dengan Facebook, TikTok & Google Ads
 
-> Halaman admin **`/admin/pixel/*`** untuk **setup**, **komunikasi** ke platform iklan, dan **analitik** per kanal.  
-> Selaras: [13-setup-backend](./13-setup-backend-dan-sistem.md), [11-rbac](./11-rbac-dan-permission-share.md), [14-setup-meta](./14-setup-meta-dan-seo.md), [19-modul-url-shortlink](./19-modul-url-shortlink.md).
-
-## 1. Tujuan
-
-| Tujuan | Keterangan |
-|--------|------------|
-| Satu tempat kelola pixel | Admin tidak bolak-balik ke Business Manager / Google / TikTok untuk rutinitas |
-| Tiga kanal terpisah | UI & credential terpisah — tidak dicampur |
-| **Komunikasi dua arah** | Client snippet + **server-side API** (Events API / CAPI / Google) |
-| Skala domain | Ribuan domain portfolio — pixel global, per domain, atau per grup |
-| Analisis | Dashboard per kanal di halaman masing-masing |
+> Modul **`/admin/pixel/*`** bukan sekadar form “tempel Pixel ID”. Ini adalah **wadah kolaborasi** antara tim Anda dan platform iklan — setara peran **Stape.io**, **GTM Server-Side**, atau **Meta CAPI Gateway**, tetapi **native** di CMS Seosementara, dioptimalkan untuk **ribuan domain** dari satu panel.  
+> Selaras: [13](./13-setup-backend-dan-sistem.md), [11](./11-rbac-dan-permission-share.md), [14](./14-setup-meta-dan-seo.md), [15](./15-setup-cloudflare-integrasi.md), [19](./19-modul-url-shortlink.md).
 
 ---
 
-## 2. Struktur Menu & URL Admin
+## 1. Apa yang Dimaksud “Pixel” (Pemahaman Bersama)
 
-```
-/admin/pixel/                    → ringkasan semua kanal (kartu FB / TT / GAds)
-│
-├── /admin/pixel/facebook/       → Modul Meta (Facebook) Pixel
-│   ├── setup                    → Pixel ID, CAPI token, domain verify
-│   ├── events                   → log event terkirim + test event
-│   ├── domains                  → assign pixel ke domain portfolio
-│   └── analytics                → grafik & metrik (sync API + internal)
-│
-├── /admin/pixel/tiktok/         → Modul TikTok Pixel
-│   ├── setup
-│   ├── events
-│   ├── domains
-│   └── analytics
-│
-└── /admin/pixel/gads/           → Modul Google Ads / Google tag
-    ├── setup                    → Conversion ID, labels, GA4 link
-    ├── events
-    ├── domains
-    └── analytics
-```
+**Pixel** (Meta / TikTok) atau **tag konversi** (Google Ads) adalah sistem **pelacakan event** — kunjungan, klik, lead, pembelian — agar algoritma iklan bisa **optimasi** (CPA lebih murah, audience lebih tepat).
 
-Sidebar admin: grup **Pixel** dengan tiga submenu (ikon + badge status koneksi hijau/merah).
+| Istilah | Arti praktis |
+|---------|----------------|
+| **Browser pixel** | Skrip JS (`fbq`, `ttq`, `gtag`) di browser pengunjung → kirim ke platform |
+| **Server-side / CAPI** | Server Anda kirim event ke API platform (Meta CAPI, TikTok Events API, Google Enhanced Conversions) |
+| **Event** | Satu aksi terukur: `PageView`, `Lead`, `Purchase`, … |
+| **Dedup** | Meta/Google menghindari hitung ganda jika browser + server kirim event sama (`event_id`, `fbc`/`fbp`) |
+| **First-party** | Request tracking dari **domain Anda** (`pelacak.seosementara.org`), bukan `connect.facebook.net` — lebih sulit diblokir adblock |
+
+**Mengapa orang memakai layanan pihak ketiga (Stape, GTM SS, CAPIG)?**  
+Bukan karena “pixel pintar” secara ajaib — melainkan karena mereka menyelesaikan **enam masalah operasional** di bawah. **Pixel Hub CMS** hadir untuk menggantikan kebutuhan berlangganan itu **tanpa** kehilangan kontrol data.
+
+---
+
+## 2. Visi: Pixel Hub sebagai Wadah Kolaborasi
 
 ```mermaid
 flowchart TB
-  subgraph admin [Admin Panel]
-    P[/admin/pixel]
+  subgraph visitor [Pengunjung]
+    Site[Situs / shortlink / landing]
+  end
+  subgraph firstparty [First-party - domain Anda]
+    JS[sseo-track.js ~3KB]
+    Collect[POST /collect]
+  end
+  subgraph hub [Pixel Hub - Mini CPU]
+    Ingest[Ingest + validasi + consent]
+    Queue[Antrian pixel_dispatch]
+    Map[Event catalog - 1 definisi N platform]
+    Privacy[Hash PII + filter bot]
+    Dispatch[Fan-out CAPI]
+  end
+  subgraph admin [Admin - Kolaborasi Tim]
+    Overview[/admin/pixel]
     FB[/admin/pixel/facebook]
     TT[/admin/pixel/tiktok]
     GA[/admin/pixel/gads]
+    Catalog[/admin/pixel/events]
   end
-  subgraph platforms [Platform APIs]
-    Meta[Meta Graph / CAPI]
+  subgraph platforms [Platform Iklan]
+    Meta[Meta CAPI + Events Manager]
     TikTok[TikTok Events API]
-    Google[Google Ads / GA4 Data API]
+    Google[Google Ads + GA4 MP]
   end
-  subgraph emit [Sumber Event]
-    Web[Snippet di halaman publik]
-    URL[Redirect shortlink url.*]
-    Srv[Backend server-side]
-  end
-  P --> FB
-  P --> TT
-  P --> GA
+  Site --> JS
+  JS --> Collect
+  Collect --> Ingest
+  Ingest --> Queue
+  Queue --> Map
+  Map --> Privacy
+  Privacy --> Dispatch
+  Dispatch --> Meta
+  Dispatch --> TikTok
+  Dispatch --> Google
+  Overview --> hub
   FB --> Meta
   TT --> TikTok
   GA --> Google
-  Web --> Srv
-  URL --> Srv
-  Srv --> Meta
-  Srv --> TikTok
-  Srv --> Google
 ```
 
----
-
-## 3. Konsep: Cara Pixel “Berkomunikasi”
-
-| Lapisan | Fungsi | Platform |
-|---------|--------|----------|
-| **Browser (client)** | Script pixel di `<head>` — PageView, klik | FB `fbq`, TikTok `ttq`, Google `gtag` |
-| **Server (server-side)** | Event API — lebih akurat, tidak terblokir adblock | Meta CAPI, TikTok Events API, Google Enhanced Conversions |
-| **Internal CMS** | Log event + korelasi domain / shortlink | Tabel `pixel_events` |
-
-**Prinsip:** Admin panel menyimpan **credential + pixel ID** → backend **mengirim** event ke platform + menampilkan **status & statistik** dari sync API.
+| Peran halaman | Bukan hanya… | Melainkan… |
+|---------------|--------------|------------|
+| `/admin/pixel/` | Dashboard kosong | **Status hub**: recovery rate vs adblock, antrian, error CAPI, perbandingan kanal |
+| `/admin/pixel/facebook/` | Form Pixel ID | **Ruang kerja Meta**: koneksi CAPI, test Events Manager, diagnosa match rate, assign ribuan domain |
+| `/admin/pixel/tiktok/` | Idem | **Ruang kerja TikTok** |
+| `/admin/pixel/gads/` | Idem | **Ruang kerja Google** |
+| `/admin/pixel/events/` | - | **Katalog event** — definisi sekali, terjemah ke FB + TT + GAds |
 
 ---
 
-## 4. Scope Penempatan Pixel
+## 3. Enam Masalah Industri → Solusi Native di CMS
 
-| Scope | Contoh | Dipakai saat |
-|-------|--------|--------------|
-| **Global produk** | Satu pixel Seosementara | `seosementara.org`, subdomain produk |
-| **Per domain portfolio** | Pixel klien `rezekibelanja.com` | Preview / landing / (fase 2) situs publik domain |
-| **Per shortlink** | Event `Click` saat redirect [19] | `url.seosementara.org/...` |
-| **Per kampanye ads** | Modul `ads.*` [18] | Landing kampanye |
+| # | Masalah (yang Anda jelaskan) | Solusi Pixel Hub |
+|---|------------------------------|------------------|
+| **1** | Ad-blocker & iOS (ITP) memblokir `connect.facebook.net` | **First-party endpoint**: `pelacak.seosementara.org` (atau `t.{domain-klien}`) via Cloudflare DNS + Tunnel/Worker [15]. Browser hanya memuat **`sseo-track.js`** dari domain sendiri |
+| **2** | CAPI rumit — butuh backend, queue, maintenance | **Built-in**: Go service + worker `pixel_dispatch` + retry + dead-letter. Admin: **aktifkan CAPI** tanpa coding — sama seperti “klik di Stape” |
+| **3** | Ribuan domain — edit pixel satu-satu mustahil | **Mass assign** dari `/admin/pixel/*/domains` + policy template (grup domain → satu set pixel). Ubah config sekali → propagasi ke semua domain terikat |
+| **4** | Banyak skrip pixel = PageSpeed anjlok | Mode default **`server_first`**: satu skrip ringan di browser; **fan-out** ke FB/TT/Google di server. Mode `hybrid` opsional untuk dedup browser+CAPI |
+| **5** | Privasi GDPR — data mentah ke Meta | **Privacy gateway** di server: hash SHA256 email/telp, strip field sensitif, consent flag, log audit sebelum kirim |
+| **6** | Empat platform = empat logika event | **Event catalog**: definisi `purchase` sekali → mapping otomatis ke `Purchase` (FB), `CompletePayment` (TT), `purchase` (Google) |
+
+### Positioning vs layanan pihak ketiga
+
+| Layanan eksternal | Yang mereka jual | Yang CMS lakukan sendiri |
+|-------------------|------------------|---------------------------|
+| Stape.io / GTM Server-Side | First-party + CAPI hosting | Subdomain `pelacak.*` + Tunnel + hub Go |
+| Meta CAPIG | CAPI tanpa kode | Tab Setup Facebook + token di `pixel_credentials` |
+| Segment / CDP | Satu event → banyak destinasi | Tabel `pixel_event_definitions` + `pixel_platform_mappings` |
+| Cloudflare Zaraz | Tag di edge | **Opsional** fase 3 — bisa dipakai bersamaan atau diganti hub Go |
+
+**Keuntungan native:** tidak ada biaya per-event pihak ketiga, data tetap di PostgreSQL Anda, mass deploy selaras modul domain portfolio.
+
+---
+
+## 4. Mode Operasi (Pilih di `/admin/pixel/hub/settings`)
+
+| Mode | Browser | Server | Kapan dipakai |
+|------|---------|--------|---------------|
+| **`server_first`** *(disarankan)* | Hanya `sseo-track.js` → POST collect | CAPI ke semua platform aktif | Skala besar, SEO, adblock tinggi |
+| **`hybrid`** | `sseo-track.js` + optional `fbq`/`ttq`/`gtag` tipis | CAPI + dedup `event_id` | Perlu sinyal browser untuk EMQ Meta |
+| **`legacy_client`** | Skrip penuh platform di `<head>` | Opsional backup CAPI | Migrasi dari setup lama |
+
+Toggle per **scope** (global / domain portfolio / shortlink).
+
+---
+
+## 5. Arsitektur First-Party & Collect API
+
+### 5.1 Hostname pelacakan
+
+| Pola | Contoh | Catatan |
+|------|--------|---------|
+| Subdomain produk | `pelacak.seosementara.org` | Satu untuk semua domain portfolio |
+| Per domain klien (fase 2) | `t.rezekibelanja.com` | CNAME → Cloudflare → Worker/Tunnel |
+| Path di apex | `seosementara.org/t/collect` | Fallback jika subdomain belum siap |
+
+Setup DNS & route dari [15-setup-cloudflare](./15-setup-cloudflare-integrasi.md) tab **Pixel / Tracking**.
+
+### 5.2 Alur satu event
+
+1. Pengunjung membuka halaman → `sseo-track.js` kirim `POST /collect` dengan `event: page_view`, `url`, `domain_id`, `session_id`, `_fbp`/`_fbc` jika ada cookie.
+2. **Ingest** (Go): validasi origin, bot score CF (header), cek consent.
+3. Tulis `pixel_events` status `pending`.
+4. Worker **`pixel_dispatch`**: enrich user_data (IP, UA), hash PII, map ke platform, kirim batch API.
+5. Update status `sent` / `failed` + `platform_event_id`.
+
+**Shortlink [19]:** event `click` hanya enqueue — **tidak** blocking redirect HTTP 302.
+
+### 5.3 Skrip browser (ringan)
+
+```html
+<script async src="https://pelacak.seosementara.org/sseo-track.js"
+        data-site="{{.SiteKey}}"
+        data-consent="{{.ConsentRequired}}"></script>
+```
+
+```javascript
+// sseo-track.js - konsep
+window.sseo = window.sseo || { q: [] };
+window.sseo.track = (name, props) => {
+  navigator.sendBeacon('/collect', JSON.stringify({ event: name, ...props, ts: Date.now() }));
+};
+sseo.track('page_view', { path: location.pathname });
+```
+
+**Tidak** memuat `connect.facebook.net` di mode `server_first`.
+
+---
+
+## 6. Event Catalog — Satu Sumber, Banyak Platform
+
+Halaman **`/admin/pixel/events/`** (shared, bukan duplikat di tiap kanal).
+
+| Kolom katalog | Contoh |
+|---------------|--------|
+| `canonical_name` | `purchase` |
+| `label_id` | `evt_purchase_01` |
+| Trigger | `manual`, `shortlink_click`, `form_submit`, `webhook` |
+| Aktif di platform | checkbox FB / TT / GAds |
+
+Tabel mapping:
 
 ```sql
-CREATE TABLE pixel_configs (
+CREATE TABLE pixel_event_definitions (
   id              BIGSERIAL PRIMARY KEY,
-  platform        TEXT NOT NULL CHECK (platform IN ('facebook','tiktok','gads')),
-  scope           TEXT NOT NULL CHECK (scope IN ('global','managed_domain','shortlink')),
-  managed_domain_id BIGINT REFERENCES managed_domains(id) ON DELETE CASCADE,
-  name            TEXT NOT NULL,
+  canonical_name  TEXT NOT NULL UNIQUE,
+  label           TEXT NOT NULL,
+  description     TEXT,
+  trigger_type    TEXT NOT NULL,
   is_active       BOOLEAN NOT NULL DEFAULT true,
-  -- platform-specific IDs (non-secret)
-  external_ids    JSONB NOT NULL DEFAULT '{}',
-  -- secrets encrypted
-  credentials_ref TEXT,  -- pointer ke pixel_credentials
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE pixel_platform_mappings (
+  id                    BIGSERIAL PRIMARY KEY,
+  event_definition_id   BIGINT NOT NULL REFERENCES pixel_event_definitions(id),
+  platform              TEXT NOT NULL CHECK (platform IN ('facebook','tiktok','gads')),
+  platform_event_name   TEXT NOT NULL,
+  extra_params          JSONB NOT NULL DEFAULT '{}',
+  UNIQUE (event_definition_id, platform)
 );
 ```
 
-Contoh `external_ids`:
+Contoh baris mapping untuk `purchase`:
 
-```json
-// facebook
-{ "pixel_id": "1234567890", "business_id": "..." }
+| Platform | `platform_event_name` |
+|----------|----------------------|
+| facebook | `Purchase` |
+| tiktok | `CompletePayment` |
+| gads | `purchase` (+ conversion label di `extra_params`) |
 
-// tiktok
-{ "pixel_code": "CXXXX", "advertiser_id": "..." }
-
-// gads
-{ "conversion_id": "AW-xxx", "conversion_label": "abc123", "ga4_measurement_id": "G-XXXX" }
-```
+Halaman **facebook/tiktok/gads** menampilkan mapping **read-only** + link “Edit di Event Catalog” — kolaborasi terpusat, konfigurasi per-platform hanya untuk **credential & pixel ID**.
 
 ---
 
-## 5. Kredensial (Terenkripsi)
+## 7. Struktur Menu Admin (Diperbarui)
+
+```
+/admin/pixel/
+├── overview              → KPI hub: events/hari, gagal CAPI, recovery vs blocked estimate
+├── hub/
+│   ├── settings          → Mode server_first / hybrid, hostname pelacak, consent
+│   ├── privacy           → Hash rules, field allowlist, retention
+│   └── deploy            → Mass deploy snippet ke domain (batch job)
+├── events/               → Event catalog + mapping 3 platform
+│
+├── facebook/             → Kolaborasi Meta
+│   ├── setup             → Pixel ID, CAPI token, test event code
+│   ├── connection        → Status token, EMQ score, link Events Manager
+│   ├── domains           → Assign + template mass
+│   ├── diagnostics       → Failed events, dedup, adblock recovery %
+│   └── analytics         → Internal + sync API
+│
+├── tiktok/               → Pola sama
+└── gads/                 → Pola sama (+ tab GA4)
+```
+
+Sidebar: **Pixel** → Overview | Event Catalog | Facebook | TikTok | Google Ads.
+
+---
+
+## 8. Halaman Kolaborasi per Platform
+
+Setiap `/admin/pixel/{facebook|tiktok|gads}/` adalah **ruang kerja** dengan platform tersebut — bukan sekadar CRUD.
+
+### 8.1 Tab Setup & Connection
+
+| Fitur | Manfaat kolaborasi |
+|-------|-------------------|
+| Pixel / Conversion ID | Sinkron dengan Events Manager / TikTok Ads / Google Ads UI |
+| Credential CAPI / OAuth | Disimpan terenkripsi; tombol **Test koneksi** |
+| **Test Event** | Kirim event uji → tampil di Events Manager (kode test) |
+| **Buka di platform** | Deep link ke dashboard eksternal untuk verifikasi domain |
+| Status badge | `connected` / `token_expired` / `rate_limited` |
+
+### 8.2 Tab Domains (mass)
+
+| Aksi | Perilaku |
+|------|----------|
+| Assign pixel ke 1 domain | Dropdown domain portfolio |
+| Assign ke grup | Filter tag owner / grup bisnis |
+| **Propagasi** | Job `pixel_deploy_snippet` update meta domain tanpa edit kode manual |
+| Preview | “Simulasi event” untuk domain terpilih |
+
+### 8.3 Tab Diagnostics
+
+| Metrik | Interpretasi |
+|--------|--------------|
+| Events `pending` > 5 menit | Worker backlog — scale batch |
+| `failed` rate | Token salah / payload invalid |
+| Browser vs server count | Estimasi data yang “hilang” sebelum hub |
+| Recovery rate | Setelah first-party — target naik vs baseline legacy |
+
+### 8.4 Tab Analytics
+
+Kombinasi **log internal** (`pixel_events`) + **sync berkala** API platform (terbatas di tier gratis — tampilkan disclaimer + link eksternal).
+
+---
+
+## 9. Privacy Gateway (Satpam Data)
+
+Sebelum fan-out ke Meta/TikTok/Google:
+
+| Langkah | Aturan |
+|---------|--------|
+| Consent | Jika `consent_required`: hanya kirim `marketing` setelah cookie/HTMX banner |
+| Normalisasi email | lowercase, trim → SHA256 |
+| Telepon | E.164 → SHA256 |
+| Strip | Jangan kirim nama lengkap mentah kecuali Enhanced Conversions Google (hash wajib) |
+| Bot | CF `cf-bot-score` > threshold → mark `dropped_bot` |
+| Audit | `pixel_privacy_log` (opsional) — siapa kirim apa, tanpa PII mentah |
+
+Halaman: `/admin/pixel/hub/privacy`.
+
+---
+
+## 10. Schema Database (Lengkap)
 
 ```sql
+CREATE TABLE pixel_hub_settings (
+  id                    BIGSERIAL PRIMARY KEY,
+  tracking_hostname     TEXT NOT NULL DEFAULT 'pelacak.seosementara.org',
+  default_mode          TEXT NOT NULL DEFAULT 'server_first'
+                        CHECK (default_mode IN ('server_first','hybrid','legacy_client')),
+  consent_required      BOOLEAN NOT NULL DEFAULT false,
+  collect_path          TEXT NOT NULL DEFAULT '/collect',
+  script_version        TEXT NOT NULL DEFAULT '1',
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE pixel_configs (
+  id                BIGSERIAL PRIMARY KEY,
+  platform          TEXT NOT NULL CHECK (platform IN ('facebook','tiktok','gads')),
+  scope             TEXT NOT NULL CHECK (scope IN ('global','managed_domain','shortlink')),
+  managed_domain_id BIGINT REFERENCES managed_domains(id) ON DELETE CASCADE,
+  name              TEXT NOT NULL,
+  is_active         BOOLEAN NOT NULL DEFAULT true,
+  mode_override     TEXT CHECK (mode_override IN ('server_first','hybrid','legacy_client')),
+  external_ids      JSONB NOT NULL DEFAULT '{}',
+  credentials_ref   BIGINT REFERENCES pixel_credentials(id),
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE pixel_credentials (
   id                BIGSERIAL PRIMARY KEY,
   platform          TEXT NOT NULL,
@@ -141,183 +323,14 @@ CREATE TABLE pixel_credentials (
   updated_by        BIGINT REFERENCES users(id),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-```
 
-| Platform | Secret yang disimpan | Validasi di Setup |
-|----------|----------------------|-------------------|
-| **Facebook** | CAPI **Access Token** (+ optional app secret) | Test event ke Meta |
-| **TikTok** | Events API **Access Token** | Test event |
-| **Google Ads** | OAuth refresh token / service account JSON | List conversions |
-
-Sama seperti Cloudflare [15]: **tidak** tampilkan secret penuh di UI — masked + tombol **Test koneksi**.
-
----
-
-## 6. Halaman `/admin/pixel/facebook/`
-
-### 6.1 Setup
-
-| Field | Keterangan |
-|-------|------------|
-| Pixel ID | Dari Events Manager Meta |
-| CAPI Access Token | Server-side |
-| Test Event Code | Mode debug Meta |
-| Aktifkan CAPI | Toggle |
-| Aktifkan browser pixel | Toggle snippet |
-| Domain portfolio | Multi-select / search assign |
-
-Tombol:
-
-- **Simpan & uji koneksi** → `POST .../facebook/test`
-- **Kirim event uji** → `PageView` test ke Meta
-
-### 6.2 Events (log internal)
-
-| Kolom | Sumber |
-|-------|--------|
-| Waktu | `pixel_events` |
-| Event name | `PageView`, `Lead`, `Purchase`, … |
-| Domain / link | `managed_domain_id` / `url_link_id` |
-| Status kirim | `sent`, `failed`, `pending` |
-| Platform response | `event_id` Meta / error |
-
-### 6.3 Analytics
-
-| Metrik | Sumber |
-|--------|--------|
-| Event terkirim 7/30 hari | Internal DB |
-| Match rate CAPI vs browser (jika ada) | Meta API |
-| Top domain by events | Agregat CMS |
-| Sync dari Meta | Job harian (Insights API terbatas — gunakan Events Manager export atau Marketing API) |
-
-**Catatan:** Meta tidak memberikan semua data real-time di API gratis — kombinasikan **internal log** + **sync berkala** + link ke Events Manager (buka eksternal).
-
-### 6.4 Komunikasi teknis (Facebook)
-
-| Arah | API |
-|------|-----|
-| CMS → Meta | [Conversions API](https://developers.facebook.com/docs/marketing-api/conversions-api) `POST /{pixel-id}/events` |
-| Meta → CMS | Webhook (opsional fase 2) — jarang dipakai |
-| Browser → Meta | Snippet `fbq` diinjeksi dari template |
-
-Payload minimal server-side:
-
-```json
-{
-  "event_name": "PageView",
-  "event_time": 1716300000,
-  "action_source": "website",
-  "event_source_url": "https://rezekibelanja.com/",
-  "user_data": { "client_ip_address": "...", "client_user_agent": "..." }
-}
-```
-
----
-
-## 7. Halaman `/admin/pixel/tiktok/`
-
-### 7.1 Setup
-
-| Field | Keterangan |
-|-------|------------|
-| Pixel Code | TikTok Events Manager |
-| Events API Access Token | Server-side |
-| Aktifkan browser pixel | `ttq` snippet |
-
-### 7.2 Analytics & Events
-
-Struktur sama dengan Facebook — tabel `pixel_events` dengan `platform = tiktok`.
-
-### 7.3 Komunikasi teknis (TikTok)
-
-| Arah | API |
-|------|-----|
-| CMS → TikTok | Events API 2.0 — `POST` event batch |
-| Browser → TikTok | TikTok Pixel JS |
-
-Event contoh: `ViewContent`, `ClickButton`, `CompletePayment` — mapping dari aksi CMS (publish, shortlink click).
-
----
-
-## 8. Halaman `/admin/pixel/gads/`
-
-### 8.1 Setup
-
-| Field | Keterangan |
-|-------|------------|
-| Google Ads Conversion ID | `AW-xxxxxxxx` |
-| Conversion label(s) | Per tipe konversi |
-| GA4 Measurement ID | `G-xxxxxxxx` (opsional, analitik) |
-| Google Tag ID | Untuk gtag.js |
-| OAuth / Service Account | Untuk upload konversi server-side |
-
-### 8.2 Analytics
-
-| Metrik | Sumber |
-|--------|--------|
-| Conversions (uploaded) | Internal + Google Ads API |
-| Clicks vs conversions | Google Ads reporting sync |
-| Per domain | Label suffix atau custom parameters |
-
-### 8.3 Komunikasi teknis (Google)
-
-| Arah | API / metode |
-|------|----------------|
-| Browser | gtag.js — `gtag('config', 'AW-...')`, `gtag('event', 'conversion', {...})` |
-| Server | **Enhanced Conversions** / Offline conversion upload / GA4 Measurement Protocol |
-| CMS → Google | Google Ads API `uploadClickConversions` atau GA4 `mp/collect` |
-
-**`gads`** di menu = **Google Ads conversions** + **Google tag (gtag)** — bisa satu halaman dengan tab **Ads** | **GA4**.
-
----
-
-## 9. Injeksi Snippet (Browser Pixel)
-
-### 9.1 Dari mana script dimuat
-
-| Target | Cara |
-|--------|------|
-| Apex / subdomain produk | Partial `<head>` dari [14] — `meta.global.pixels` |
-| Domain portfolio (preview/publik) | `managed_domain_meta.pixels` |
-| Shortlink redirect page | Opsional intermediate page 200ms + fire event |
-
-Backend render:
-
-```html
-{{if .Pixels.Facebook.Active}}
-<script>!function(f,b,e,v,n,t,s){...}(...);
-fbq('init', '{{.Pixels.Facebook.PixelID}}');
-fbq('track', 'PageView');
-</script>
-{{end}}
-```
-
-TikTok & gtag — template terpisah per platform di `Frontend-admin` tidak dipakai untuk publik; publik di `Frontend-Users` atau HTML dari Go.
-
-### 9.2 Consent (disarankan fase 2)
-
-| Mode | Perilaku |
-|------|----------|
-| Tanpa consent | Fire langsung (MVP internal) |
-| Dengan consent | HTMX banner → load pixel setelah setuju |
-
----
-
-## 10. Event Internal → Platform (Mapping)
-
-| Aksi di CMS | Facebook | TikTok | Google Ads |
-|-------------|----------|--------|------------|
-| Shortlink klik [19] | `ViewContent` / custom | `Click` | `conversion` click |
-| Publish post | `PageView` (jika URL live) | `ViewContent` | - |
-| Form lead | `Lead` | `SubmitForm` | `generate_lead` |
-| Purchase (fase 2) | `Purchase` | `CompletePayment` | `purchase` |
-
-```sql
 CREATE TABLE pixel_events (
   id                BIGSERIAL PRIMARY KEY,
-  platform          TEXT NOT NULL,
+  canonical_event   TEXT,
+  platform          TEXT,  -- NULL = belum di-map; terisi per baris fan-out
   pixel_config_id   BIGINT REFERENCES pixel_configs(id),
   event_name        TEXT NOT NULL,
+  event_id          TEXT,   -- dedup UUID
   managed_domain_id BIGINT,
   url_link_id       BIGINT,
   payload           JSONB NOT NULL,
@@ -327,118 +340,113 @@ CREATE TABLE pixel_events (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_pixel_events_platform_time
-  ON pixel_events (platform, created_at DESC);
+CREATE INDEX idx_pixel_events_status_created
+  ON pixel_events (status, created_at)
+  WHERE status = 'pending';
 ```
-
-Worker job: `pixel_dispatch` — batch kirim `pending` ke Meta/TikTok/Google.
 
 ---
 
-## 11. RBAC [11]
+## 11. Worker & Performa (Skala Ribuan Domain)
+
+| Job | Fungsi | Batasan |
+|-----|--------|---------|
+| `pixel_dispatch` | Kirim batch pending → platform APIs | Batch 50–100, interval 5–10 dtk |
+| `pixel_deploy_snippet` | Update flag/meta domain untuk inject script | Chunk 200 domain/job |
+| `pixel_sync_analytics` | Pull ringkasan API (harian) | Rate limit API platform |
+
+**Prinsip skala:** tidak ada loop 3000 domain di request HTTP — semua propagasi via **job queue** [13].
+
+---
+
+## 12. RBAC [11]
 
 | Permission | Label |
 |------------|-------|
-| `pixel.view` | Lihat semua halaman pixel |
-| `pixel.facebook.manage` | Setup + kirim test Facebook |
-| `pixel.tiktok.manage` | Setup TikTok |
-| `pixel.gads.manage` | Setup Google |
-| `pixel.analytics` | Lihat analitik semua kanal |
-
-| Role | Akses |
-|------|-------|
-| Super Admin | Semua |
-| Platform Manager | `pixel.*` tanpa credential delete global (opsional) |
-| Pekerja | Hanya pixel domain milik + share (scope `managed_domain`) |
+| `pixel.view` | Overview + diagnostics read |
+| `pixel.hub.manage` | Settings, privacy, deploy mass |
+| `pixel.events.manage` | Event catalog |
+| `pixel.facebook.manage` | Credential + test Meta |
+| `pixel.tiktok.manage` | Credential + test TikTok |
+| `pixel.gads.manage` | Credential + test Google |
+| `pixel.analytics` | Semua tab analytics |
 
 ---
 
-## 12. API Admin (Ringkas)
+## 13. API (Ringkas)
 
-| Method | Path |
-|--------|------|
-| GET | `/api/admin/pixel/overview` |
-| GET/PATCH | `/api/admin/pixel/facebook/setup` |
-| POST | `/api/admin/pixel/facebook/test` |
-| POST | `/api/admin/pixel/facebook/events/test` |
-| GET | `/api/admin/pixel/facebook/analytics` |
-| GET | `/api/admin/pixel/facebook/events` |
-| GET/PATCH | `/api/admin/pixel/tiktok/setup` |
-| POST | `/api/admin/pixel/tiktok/test` |
-| GET | `/api/admin/pixel/tiktok/analytics` |
-| GET/PATCH | `/api/admin/pixel/gads/setup` |
-| POST | `/api/admin/pixel/gads/test` |
-| GET | `/api/admin/pixel/gads/analytics` |
-| GET/PATCH | `/api/admin/pixel/domains/{domain_id}` | Assign configs per domain |
-
----
-
-## 13. UI HTMX [17]
-
-| Pola | Pemakaian |
-|------|-----------|
-| Tab dalam platform | Setup | Events | Domains | Analytics |
-| Test connection | `hx-post` → swap alert success/error |
-| Grafik | Server return partial `<canvas>` data atau library ringan |
-| Assign domain | Combobox search + checklist pixel aktif |
-| Status koneksi | Badge di sidebar submenu |
+| Method | Path | Fungsi |
+|--------|------|--------|
+| POST | `/collect` | Ingest first-party (publik, rate limit) |
+| GET | `/sseo-track.js` | Skrip ringan (cache CF) |
+| GET/PATCH | `/api/admin/pixel/hub/settings` | Mode & hostname |
+| GET/POST | `/api/admin/pixel/events` | Katalog |
+| POST | `/api/admin/pixel/hub/deploy` | Mass deploy job |
+| GET/PATCH | `/api/admin/pixel/facebook/setup` | Meta credential |
+| POST | `/api/admin/pixel/facebook/test` | Test CAPI |
+| GET | `/api/admin/pixel/facebook/diagnostics` | Errors & recovery |
+| GET | `/api/admin/pixel/facebook/analytics` | Agregat |
+| * | `/api/admin/pixel/tiktok/*` | Paralel TikTok |
+| * | `/api/admin/pixel/gads/*` | Paralel Google |
 
 ---
 
 ## 14. Integrasi Cloudflare [15]
 
-| Fitur CF | Manfaat pixel |
-|----------|---------------|
-| Zaraz (opsional) | Ganti inject manual — kelola FB/Google/TikTok di edge |
-| Bot score | Filter event bot sebelum kirim CAPI |
-| Analytics | Banding traffic CF vs event pixel |
-
-Setup opsional di `/admin/setup/cloudflare/` tab **Zaraz** — fase 3. MVP: inject dari Go/Pages.
-
----
-
-## 15. Skenario & Dampak
-
-| # | Skenario | Dampak |
-|---|----------|--------|
-| P1 | Token CAPI expired | Event gagal — banner merah di Setup |
-| P2 | 3000 domain, pixel berbeda | Banyak `pixel_configs` — index `managed_domain_id` |
-| P3 | Kirim event sync blocking redirect | Shortlink lambat — **async worker** wajib |
-| P4 | Pekerja lihat pixel domain lain | Kebocoran — filter owner/share |
-| P5 | Duplikat PageView browser+CAPI | Meta dedup pakai `event_id` + `fbc`/`fbp` |
-| P6 | GDPR | Tanpa consent — risiko hukum EU |
+| Komponen | Peran |
+|----------|-------|
+| DNS `pelacak.*` | First-party hostname |
+| Tunnel / Worker route | `/collect` → Go ingest |
+| Cache `sseo-track.js` | Edge cache, TTL panjang + purge saat versi naik |
+| Bot Management | Filter sebelum enqueue |
+| Zaraz (opsional fase 4) | Alternatif edge — hub Go tetap sumber kebenaran event internal |
 
 ---
 
-## 16. Roadmap
+## 15. Mapping Aksi CMS → Event
 
-| Fase | Deliverable |
-|------|-------------|
-| MVP | UI 3 halaman Setup + credential + test event Facebook saja |
-| Fase 2 | TikTok + GAds setup + `pixel_events` log |
-| Fase 3 | Analytics sync + per-domain assign + shortlink events |
-| Fase 4 | Consent banner + Cloudflare Zaraz opsi |
+| Aksi CMS | Canonical | FB | TikTok | Google |
+|----------|-----------|-----|--------|--------|
+| Shortlink klik [19] | `click` | `ViewContent` | `Click` | conversion click |
+| Page view | `page_view` | `PageView` | `Pageview` | `page_view` |
+| Form lead | `lead` | `Lead` | `SubmitForm` | `generate_lead` |
+| Purchase | `purchase` | `Purchase` | `CompletePayment` | `purchase` |
+
+Semua bisa di-override di Event Catalog tanpa ubah kode Go.
 
 ---
 
-## 17. Checklist Implementasi
+## 16. Roadmap Implementasi
 
-- [ ] Menu sidebar Pixel + 3 submenu
-- [ ] Tabel `pixel_configs`, `pixel_credentials`, `pixel_events`
-- [ ] Halaman `/admin/pixel/facebook/setup` + test CAPI
-- [ ] Worker `pixel_dispatch`
-- [ ] Snippet inject hook di template publik
+| Fase | Deliverable | Mengatasi masalah # |
+|------|-------------|---------------------|
+| **MVP** | `sseo-track.js` + `/collect` + hub settings + Facebook CAPI + `pixel_dispatch` | 1, 2 |
+| **Fase 2** | Event catalog + mapping TikTok & GAds + halaman diagnostics | 6 |
+| **Fase 3** | Mass deploy domains + privacy hash + consent banner | 3, 5 |
+| **Fase 4** | Analytics sync + hybrid dedup + per-domain `t.{domain}` | 4, 1 |
+| **Fase 5** | Cloudflare Zaraz opsi / EMQ tuning | 1, 4 |
+
+---
+
+## 17. Checklist
+
+- [ ] `pixel_hub_settings` + hostname `pelacak.*` di CF
+- [ ] Endpoint `POST /collect` + `sseo-track.js`
+- [ ] Worker `pixel_dispatch` + retry
+- [ ] UI `/admin/pixel/` overview + `/admin/pixel/hub/settings`
+- [ ] UI kolaborasi `/admin/pixel/facebook/*` (setup, connection, diagnostics)
+- [ ] Event catalog `/admin/pixel/events/`
+- [ ] Mass deploy job
+- [ ] Privacy gateway (hash + consent)
+- [ ] TikTok & GAds fan-out
 - [ ] RBAC permissions
-- [ ] Ulang untuk TikTok & GAds
 
 ---
 
 ## 18. Dokumen Terkait
 
 - [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)
+- [08-roadmap-implementasi.md](./08-roadmap-implementasi.md)
 - [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md)
-- [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md)
-- [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md)
 - [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md)
-- [17-kontrak-htmx-dan-komponen-ui.md](./17-kontrak-htmx-dan-komponen-ui.md)
 - [19-modul-url-shortlink.md](./19-modul-url-shortlink.md)

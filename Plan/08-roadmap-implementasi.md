@@ -103,13 +103,15 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 ---
 
-## Fase 6b — Pixel Admin (Facebook, TikTok, GAds)
+## Fase 6b — Pixel Hub (kolaborasi FB, TikTok, GAds)
 
 | Item | Detail |
 |------|--------|
-| Halaman `/admin/pixel/*` | [20](./20-pixel-admin-facebook-tiktok-gads.md) |
-| MVP | Facebook Setup + CAPI test + event log |
-| Fase lanjut | TikTok, GAds, analytics sync, shortlink events |
+| Doc | [20](./20-pixel-admin-facebook-tiktok-gads.md) — menggantikan peran Stape/GTM SS/CAPIG secara native |
+| MVP | `pelacak.*` first-party + `sseo-track.js` + `/collect` + CAPI Facebook + worker `pixel_dispatch` |
+| Fase 2 | Event catalog + fan-out TikTok & GAds |
+| Fase 3 | Mass deploy ribuan domain + privacy hash + consent |
+| Fase 4 | Diagnostics, hybrid dedup, analytics sync |
 
 ---
 

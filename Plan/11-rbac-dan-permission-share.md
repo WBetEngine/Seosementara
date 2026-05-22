@@ -147,11 +147,13 @@ Detail hierarki meta: [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md).
 | `reports.view` | Lihat laporan domain | ✓ | ✓ | ✓ |
 | `tools.url.create` | Buat shortlink manual | | ✓ | ✓ |
 | `tools.url.view` | Lihat statistik shortlink | ✓ | ✓ | ✓ |
-| `pixel.view` | Lihat halaman pixel | ✓ | | |
-| `pixel.facebook.manage` | Setup & test Facebook Pixel / CAPI | ✓ | | |
-| `pixel.tiktok.manage` | Setup & test TikTok Pixel | ✓ | | |
-| `pixel.gads.manage` | Setup & test Google Ads / gtag | ✓ | | |
-| `pixel.analytics` | Analitik semua kanal | ✓ | | |
+| `pixel.view` | Overview hub & diagnostics (read) | ✓ | | |
+| `pixel.hub.manage` | Settings first-party, privacy, mass deploy | ✓ | | |
+| `pixel.events.manage` | Event catalog & mapping platform | ✓ | | |
+| `pixel.facebook.manage` | Kolaborasi Meta: CAPI, test, domains | ✓ | | |
+| `pixel.tiktok.manage` | Kolaborasi TikTok | ✓ | | |
+| `pixel.gads.manage` | Kolaborasi Google Ads / GA4 | ✓ | | |
+| `pixel.analytics` | Tab analytics semua kanal | ✓ | | |
 
 ### 4.6 Larangan (tidak pernah via share)
 

@@ -54,11 +54,13 @@ Tools / Shortlink → [19-modul-url-shortlink.md](./19-modul-url-shortlink.md)
 ├── Buat shortlink manual (form di admin — bukan otomatis)
 └── Analitik klik + Cloudflare
 
-Pixel → [20-pixel-admin-facebook-tiktok-gads.md](./20-pixel-admin-facebook-tiktok-gads.md)
-├── /admin/pixel/              → Ringkasan kanal
-├── /admin/pixel/facebook/     → Setup, events, domains, analytics
-├── /admin/pixel/tiktok/       → Setup, events, domains, analytics
-└── /admin/pixel/gads/         → Setup, events, domains, analytics (Google Ads)
+Pixel Hub → [20-pixel-admin-facebook-tiktok-gads.md](./20-pixel-admin-facebook-tiktok-gads.md)
+├── /admin/pixel/              → Overview hub (recovery, antrian, status kanal)
+├── /admin/pixel/hub/          → Settings first-party, privacy, mass deploy
+├── /admin/pixel/events/       → Event catalog (1 definisi → FB + TikTok + GAds)
+├── /admin/pixel/facebook/     → Kolaborasi Meta: setup, CAPI, domains, diagnostics
+├── /admin/pixel/tiktok/       → Kolaborasi TikTok
+└── /admin/pixel/gads/         → Kolaborasi Google Ads + GA4
 
 Operasi Massal
 ├── Batch publish / unpublish
