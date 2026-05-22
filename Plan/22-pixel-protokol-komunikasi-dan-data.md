@@ -2,7 +2,7 @@
 
 > Spesifikasi **kontrak data** dan **alur komunikasi** antar lapisan: browser → Hub → platform iklan.  
 > Supaya kolaborasi pixel **pas** (konsisten), **kuat** (tahan adblock, dedup, retry), dan **lengkap** (EMQ).  
-> Facebook Pro: [21](./21-pixel-facebook-pro.md) · Hub umum: [20](./20-pixel-admin-facebook-tiktok-gads.md)
+> Facebook Pro: [21](./21-pixel-facebook-pro.md) · **CAPI Meta: [23](./23-meta-conversions-api-kedalaman.md)** · Hub umum: [20](./20-pixel-admin-facebook-tiktok-gads.md)
 
 ---
 
@@ -262,6 +262,8 @@ Sama canonical schema — `source.type = server`.
 ## 6. Mapping ke Platform (N-to-M)
 
 ### 6.1 Facebook (Meta CAPI)
+
+> Detail lengkap parameter, hash, EMQ, dedup, test events: **[23-meta-conversions-api-kedalaman.md](./23-meta-conversions-api-kedalaman.md)**
 
 | canonical_name | `event_name` Meta | `custom_data` tambahan |
 |----------------|-------------------|------------------------|

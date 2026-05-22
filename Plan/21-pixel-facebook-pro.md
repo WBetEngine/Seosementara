@@ -1,7 +1,7 @@
 # 21 — Pixel Facebook Pro (Spesifikasi Profesional)
 
 > **Dokumen perencanaan** — bukan panduan coding. Mendefinisikan fitur tingkat **Pro** untuk kolaborasi dengan **Meta** (Facebook Pixel + Conversions API).  
-> Arsitektur hub: [20](./20-pixel-admin-facebook-tiktok-gads.md) · Protokol & data: [22](./22-pixel-protokol-komunikasi-dan-data.md)
+> Arsitektur hub: [20](./20-pixel-admin-facebook-tiktok-gads.md) · Protokol & data: [22](./22-pixel-protokol-komunikasi-dan-data.md) · **CAPI kedalaman: [23](./23-meta-conversions-api-kedalaman.md)**
 
 ---
 
@@ -192,7 +192,7 @@ Duplikat tidak mengurangi kualitas kampanye — justru **menjaga** EMQ dan mengh
 
 ### 3.4 Payload CAPI — data lengkap (standar Pro)
 
-Lihat tabel penuh di [22](./22-pixel-protokol-komunikasi-dan-data.md) § Meta CAPI.
+Lihat **[23 — CAPI kedalaman](./23-meta-conversions-api-kedalaman.md)** (user_data, EMQ, dedup, test events, troubleshooting) dan [22](./22-pixel-protokol-komunikasi-dan-data.md) §6.1.
 
 **Minimal Pro (setiap PageView):**
 

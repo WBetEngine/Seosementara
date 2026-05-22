@@ -1,7 +1,7 @@
 # 20 — Pixel Hub: Kolaborasi dengan Facebook, TikTok & Google Ads
 
 > Modul **`/admin/pixel/*`** bukan sekadar form “tempel Pixel ID”. Ini adalah **wadah kolaborasi** antara tim Anda dan platform iklan — setara peran **Stape.io**, **GTM Server-Side**, atau **Meta CAPI Gateway**, tetapi **native** di CMS Seosementara, dioptimalkan untuk **ribuan domain** dari satu panel.  
-> **Spesifikasi Pro (fitur lengkap, data, komunikasi):** [21 Facebook Pro](./21-pixel-facebook-pro.md) · [22 Protokol & data](./22-pixel-protokol-komunikasi-dan-data.md)  
+> **Spesifikasi Pro:** [21 Facebook Pro](./21-pixel-facebook-pro.md) · [22 Protokol & data](./22-pixel-protokol-komunikasi-dan-data.md) · **[23 CAPI Meta](./23-meta-conversions-api-kedalaman.md)**  
 > Selaras: [13](./13-setup-backend-dan-sistem.md), [11](./11-rbac-dan-permission-share.md), [14](./14-setup-meta-dan-seo.md), [15](./15-setup-cloudflare-integrasi.md), [19](./19-modul-url-shortlink.md).
 
 ---

@@ -29,7 +29,8 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 19 | [19-modul-url-shortlink.md](./19-modul-url-shortlink.md) | **Shortlink:** auto per domain, manual, tracking + CF |
 | 20 | [20-pixel-admin-facebook-tiktok-gads.md](./20-pixel-admin-facebook-tiktok-gads.md) | **Pixel Hub:** kolaborasi FB/TikTok/GAds, CAPI, first-party, event catalog |
 | 21 | [21-pixel-facebook-pro.md](./21-pixel-facebook-pro.md) | **Pixel Facebook Pro:** fitur profesional, kolaborasi Meta, data per tab |
-| 22 | [22-pixel-protokol-komunikasi-dan-data.md](./22-pixel-protokol-komunikasi-dan-data.md) | **Protokol & data lengkap:** canonical event, CAPI, pipeline, schema DB |
+| 22 | [22-pixel-protokol-komunikasi-dan-data.md](./22-pixel-protokol-komunikasi-dan-data.md) | **Protokol & data lengkap:** canonical event, pipeline, schema DB |
+| 23 | [23-meta-conversions-api-kedalaman.md](./23-meta-conversions-api-kedalaman.md) | **Meta CAPI:** auth, payload, EMQ, dedup, test events, troubleshooting |
 
 ## Ringkasan Stack
 
@@ -73,3 +74,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 1.4 | 2026-05-21 | Pixel Hub: first-party, CAPI, event catalog, vs layanan pihak ketiga (20) |
 | 1.5 | 2026-05-21 | Rencana implementasi awal Pixel Facebook (21) |
 | 1.6 | 2026-05-22 | Spec Pro Facebook + protokol komunikasi & data lengkap (21, 22) |
+| 1.7 | 2026-05-22 | Kedalaman Meta Conversions API — CAPI (23) |
