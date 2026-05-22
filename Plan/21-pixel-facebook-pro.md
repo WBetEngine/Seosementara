@@ -15,6 +15,8 @@
 
 **Tujuan Pro:** tim marketing dan operator CMS bisa **berkolaborasi penuh** dengan Events Manager Meta tanpa bolak-balik dashboard eksternal untuk rutinitas, sambil menjaga **kelengkapan data** dan **kekuatan sinyal** (Event Match Quality) untuk iklan lebih murah dan stabil.
 
+> **Penting:** Pixel yang hanya mengirim **IP + User-Agent** ke CAPI hampir **tidak berguna** untuk optimasi iklan Meta. Pro wajib mengumpulkan **`fbp`/`fbc`**, hash **email/telepon**, **`external_id`**, dan data commerce — lihat **[25-pixel-data-lengkap-emq.md](./25-pixel-data-lengkap-emq.md)**.
+
 ---
 
 ## 2. Ruang Kerja Admin — Fitur per Tab

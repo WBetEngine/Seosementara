@@ -417,7 +417,8 @@ Untuk segmen domain grey yang **Anda** yang kelola budget iklan.
 
 ## 15. Fitur “Lebih murah & tertarget” — Checklist per Domain
 
-Setelah pixel & BM sehat, pastikan ini aktif di Hub (bukan hanya di Ads Manager):
+Setelah pixel & BM sehat, pastikan ini aktif di Hub (bukan hanya di Ads Manager).  
+**Data lengkap (bukan IP saja):** [25](./25-pixel-data-lengkap-emq.md).
 
 | # | Item | Model S1 | Model S2 |
 |---|------|----------|----------|
@@ -425,7 +426,10 @@ Setelah pixel & BM sehat, pastikan ini aktif di Hub (bukan hanya di Ads Manager)
 | 2 | `server_first` atau hybrid dengan dedup | ✓ | ✓ |
 | 3 | `event_source_url` = hostname domain benar | ✓ | ✓ |
 | 4 | `Purchase` / `Lead` + value jika ada | ✓ | ✓ |
-| 5 | EMQ: fbp + hash em pada konversi | ✓ | ✓ |
+| 5 | **`fbp` + `fbc`** (bukan hanya IP) | ✓ | ✓ |
+| 6 | **Hash `em` / `ph`** pada Lead & Purchase | ✓ | ✓ |
+| 7 | `external_id` jika ada login | ✓ | opsional |
+| 8 | Diagnostics: **&lt; 10% event tier D** (IP+UA saja) | ✓ | ✓ |
 | 6 | Di Ads: retargeting 7–30 hari | Owner | Platform |
 | 7 | Di Ads: lookalike 1–3% pembeli | Owner | Platform |
 | 8 | Exclude pembeli 180 hari pada prospecting | Owner | Platform |
