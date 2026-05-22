@@ -10,16 +10,12 @@ Ringkasan (3 dashboard — detail [27](./27-admin-panel-desain-ui-navigasi.md))
 ├── Dashboard Domain         → per domain aktif (site switcher)
 └── Dashboard Global         → Super Admin saja
 
-Situs (Domain Portfolio)
-├── Daftar domain saya
-├── Domain dibagikan ke saya
-├── Tambah domain baru
-├── Detail domain
-│   ├── Pengaturan per domain
-│   ├── Berbagi akses (share ke admin lain)
-│   ├── Undangan menunggu persetujuan (owner)
-│   └── DNS & catatan operasi
-└── (Super Admin) Semua domain
+Domain (Domain Portfolio — managed_domain)
+├── Domain saya
+├── Dibagikan ke saya
+├── Tambah domain
+├── (Super Admin) Semua domain
+└── Drawer Kelola domain (dari list): Edit domain, Edit tema, Kepemilikan, Pembagian, Edit SEO per domain → [27](./27-admin-panel-desain-ui-navigasi.md) §4.2
 
 Konten
 ├── Post
@@ -38,23 +34,23 @@ Media
 ├── Upload
 └── Pengaturan optimasi gambar
 
-SEO
-├── Meta global per situs
-├── Meta per konten (bulk editor)
+SEO (Domain Panel — hanya managed_domain portfolio, bukan host produk)
+├── Meta default per domain
+├── Meta per konten (di editor Konten)
 ├── Sitemap & robots
 ├── Redirect manager
 └── Schema / structured data
+(Kelola cepat: drawer domain → Edit SEO — [27](./27-admin-panel-desain-ui-navigasi.md))
 
 Pengguna & Akses (ringkas — kelola penuh di Setup Backend)
 ├── Profil saya / sesi saya
 └── Log aktivitas (jika berhak)
 
-Tools / Shortlink → [19-modul-url-shortlink.md](./19-modul-url-shortlink.md)
-├── Daftar shortlink (auto + manual)
-├── Buat shortlink manual (form di admin — bukan otomatis)
-└── Analitik klik + Cloudflare
+Plugins → [27](./27-admin-panel-desain-ui-navigasi.md) §4.4
+├── Shortlink → [19-modul-url-shortlink.md](./19-modul-url-shortlink.md)
+└── Pixel Hub → [20-pixel-admin-facebook-tiktok-gads.md](./20-pixel-admin-facebook-tiktok-gads.md)
 
-Pixel Hub → [20-pixel-admin-facebook-tiktok-gads.md](./20-pixel-admin-facebook-tiktok-gads.md)
+(Operasi massal & Jobs — belum di menu; tambah setelah ada Plan modul)
 ├── /admin/pixel/              → Overview hub (recovery, antrian, status kanal)
 ├── /admin/pixel/hub/          → Settings first-party, privacy, mass deploy
 ├── /admin/pixel/events/       → Event catalog (1 definisi → FB + TikTok + GAds)
@@ -62,23 +58,12 @@ Pixel Hub → [20-pixel-admin-facebook-tiktok-gads.md](./20-pixel-admin-facebook
 ├── /admin/pixel/tiktok/       → Kolaborasi TikTok
 └── /admin/pixel/gads/         → Kolaborasi Google Ads + GA4
 
-Operasi Massal
-├── Batch publish / unpublish
-├── Bulk update meta SEO
-├── Import / export konten
-└── Sinkronisasi (jika ada integrasi eksternal)
-
-Jobs / Antrian
-├── Job berjalan
-├── Riwayat job
-└── Gagal & retry
-
 Laporan
 ├── Statistik konten per situs
 ├── Status publish
 └── Ringkasan error API
 
-Setup (Super Admin / role dengan permission setup.*)
+Settings (Read / Edit / Write — Super Admin / permission settings.*) → [27](./27-admin-panel-desain-ui-navigasi.md) §5
 ├── Backend → [13](./13-setup-backend-dan-sistem.md) **PUSAT**
 │   ├── Ringkasan & health
 │   ├── RBAC (peran admin, pengguna, permission sistem)
@@ -88,9 +73,10 @@ Setup (Super Admin / role dengan permission setup.*)
 │   ├── Media & storage
 │   └── API / webhook / Turnstile
 ├── Cloudflare → [15](./15-setup-cloudflare-integrasi.md)
-├── Host / Subdomain + meta host → [09], [14]
-├── Meta global → [14](./14-setup-meta-dan-seo.md)
+├── Host / Subdomain produk (bukan portfolio) → [09], [14]
+├── Meta global apex → [14](./14-setup-meta-dan-seo.md)
 └── Notifikasi platform
+(Path: `/admin/settings/*` — bukan `/admin/setup/*`)
 
 Bantuan
 ├── Dokumentasi internal

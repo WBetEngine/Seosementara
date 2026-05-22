@@ -107,8 +107,8 @@ https://seosementara.org/admin/
 │ Ringkasan│  (3 dashboard — lihat Plan/27)   │
 │ Domain   │                                  │
 │ Konten   │                                  │
-│ Tools    │                                  │
-│ Platform │  Setup + subnav                  │
+│ Plugins  │  Shortlink, Pixel Hub            │
+│ Settings │  Read/Edit/Write sistem          │
 └──────────┴──────────────────────────────────┘
 ```
 
