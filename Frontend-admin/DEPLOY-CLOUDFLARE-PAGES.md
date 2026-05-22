@@ -28,6 +28,23 @@ Nanti jika pakai Tailwind/ bundler, barulah **Build command** diisi (mis. `npm c
 
 ## 2. Setup sekali di Cloudflare Dashboard
 
+### Opsi A — Layar “Create a Worker” + Git (screenshot Anda)
+
+| Field | Isi |
+|-------|-----|
+| **Project name** | `seosementara-admin` (atau `Seosementara` — bebas) |
+| **Build command** | *(kosongkan)* — prototype tidak perlu npm build |
+| **Deploy command** | `cd Frontend-admin && npx wrangler deploy` |
+| **Builds for non-production branches** | Opsional — centang jika ingin preview tiap branch |
+| **Advanced settings** → Root directory | `Frontend-admin` *(jika ada)* |
+| **Production branch** | `main` |
+
+`wrangler.toml` di `Frontend-admin/` sudah pakai `[assets] directory = "./public"`.
+
+Jangan pakai deploy command default `npx wrangler deploy` **tanpa** `cd Frontend-admin` — wrangler.toml ada di subfolder.
+
+### Opsi B — Pages klasik (Connect to Git)
+
 1. Login [Cloudflare Dashboard](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
 2. Authorize GitHub → pilih repo **`WBetEngine/Seosementara`** (atau nama repo Anda).
 3. **Create project** — isi seperti tabel:
