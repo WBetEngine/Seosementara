@@ -1,7 +1,7 @@
 # Deploy UI admin statis via Workers (Git → npx wrangler deploy)
 # Panduan: DEPLOY-CLOUDFLARE-PAGES.md
 
-name = "seosementara-admin-ui"
+name = "seosementara"
 compatibility_date = "2024-01-01"
 
 # File statis dari folder public/ (HTML, CSS, JS admin)
