@@ -45,6 +45,19 @@ public/
 
 Template Go lama masih di `templates/pixel/facebook/` — akan diintegrasikan ke shell baru.
 
-## Deploy Pages (free)
+## Deploy ke Cloudflare Pages (dari GitHub `main`)
 
-Output folder = `public`. Hubungkan repo ke Cloudflare Pages; route `seosementara.org/admin/*`.
+**Tidak ada build** untuk prototype ini — deploy langsung folder `public/`.
+
+Push ke `main` **otomatis deploy hanya setelah** proyek Pages di-connect ke repo GitHub (sekali).
+
+Panduan lengkap: **[DEPLOY-CLOUDFLARE-PAGES.md](./DEPLOY-CLOUDFLARE-PAGES.md)**
+
+Ringkas setting Cloudflare:
+
+| Setting | Nilai |
+|---------|--------|
+| Root directory | `Frontend-admin` |
+| Build command | *(kosong)* |
+| Build output | `public` |
+| Branch | `main` |
