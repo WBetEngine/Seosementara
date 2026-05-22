@@ -1,0 +1,21 @@
+{{define "pixel/facebook/overview.html"}}{{template "pixel_head" .}}
+<section>
+  <h2>Overview</h2>
+  {{if .Diag}}
+  <div class="grid-stats">
+    <div class="stat"><span class="label">24j diterima</span><span class="value">{{.Diag.Received24h}}</span></div>
+    <div class="stat"><span class="label">24j terkirim</span><span class="value">{{.Diag.Sent24h}}</span></div>
+    <div class="stat"><span class="label">24j gagal</span><span class="value">{{.Diag.Failed24h}}</span></div>
+    <div class="stat"><span class="label">Antrian</span><span class="value">{{.Diag.PendingCount}}</span></div>
+    <div class="stat"><span class="label">Koneksi</span><span class="value badge">{{.Diag.ConnectionState}}</span></div>
+  </div>
+  {{else}}
+  <p>Belum ada data diagnostik.</p>
+  {{end}}
+  {{if .Config}}
+  <p>Pixel ID aktif: <strong>{{.Config.PixelID}}</strong> — CAPI {{if .Config.CAPIEnabled}}aktif{{else}}nonaktif{{end}}</p>
+  {{else}}
+  <p class="warn">Setup Facebook belum dikonfigurasi. <a href="/admin/pixel/facebook/setup">Mulai setup</a></p>
+  {{end}}
+</section>
+{{template "pixel_foot" .}}{{end}}

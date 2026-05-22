@@ -1,0 +1,11 @@
+{{define "pixel_nav"}}
+<nav class="pixel-tabs">
+  <a href="/admin/pixel/facebook/" class="{{if eq .Tab "overview"}}active{{end}}">Overview</a>
+  <a href="/admin/pixel/facebook/setup" class="{{if eq .Tab "setup"}}active{{end}}">Setup</a>
+  <a href="/admin/pixel/facebook/connection" class="{{if eq .Tab "connection"}}active{{end}}">Connection</a>
+  <a href="/admin/pixel/facebook/domains" class="{{if eq .Tab "domains"}}active{{end}}">Domains</a>
+  <a href="/admin/pixel/facebook/diagnostics" class="{{if eq .Tab "diagnostics"}}active{{end}}">Diagnostics</a>
+  <a href="/admin/pixel/facebook/events" class="{{if eq .Tab "events"}}active{{end}}">Events</a>
+  <a href="/admin/pixel/facebook/analytics" class="{{if eq .Tab "analytics"}}active{{end}}">Analytics</a>
+</nav>
+{{end}}

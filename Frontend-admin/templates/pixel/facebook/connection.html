@@ -1,0 +1,18 @@
+{{define "pixel/facebook/connection.html"}}{{template "pixel_head" .}}
+<section>
+  <h2>Connection — status kolaborasi Meta</h2>
+  {{if .Config}}
+  <ul class="connection-list">
+    <li>Pixel ID: <code>{{.Config.PixelID}}</code></li>
+    <li>Status validasi: <span class="badge">{{.Config.ValidationStatus}}</span></li>
+    <li>CAPI: {{if .Config.CAPIEnabled}}enabled{{else}}disabled{{end}}</li>
+    <li>Test Event Code: {{if .Config.TestEventCode}}{{.Config.TestEventCode}}{{else}}—{{end}}</li>
+  </ul>
+  <button hx-post="/api/admin/pixel/facebook/test-connection" hx-target="#conn-log" hx-swap="innerHTML">Refresh uji koneksi</button>
+  <a href="{{.EventsManagerURL}}" target="_blank" rel="noopener">Events Manager ↗</a>
+  <pre id="conn-log"></pre>
+  {{else}}
+  <p class="warn">Lengkapi <a href="/admin/pixel/facebook/setup">setup</a> terlebih dahulu.</p>
+  {{end}}
+</section>
+{{template "pixel_foot" .}}{{end}}

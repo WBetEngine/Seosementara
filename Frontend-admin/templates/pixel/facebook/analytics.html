@@ -1,0 +1,13 @@
+{{define "pixel/facebook/analytics.html"}}{{template "pixel_head" .}}
+<section>
+  <h2>Analytics</h2>
+  <p class="muted">Agregat internal 24 jam. Sync penuh Events Manager via link eksternal.</p>
+  {{if .Diag}}
+  <div class="grid-stats">
+    <div class="stat"><span class="label">Diterima</span><span class="value">{{.Diag.Received24h}}</span></div>
+    <div class="stat ok"><span class="label">Terkirim</span><span class="value">{{.Diag.Sent24h}}</span></div>
+    <div class="stat err"><span class="label">Gagal</span><span class="value">{{.Diag.Failed24h}}</span></div>
+  </div>
+  {{end}}
+</section>
+{{template "pixel_foot" .}}{{end}}
