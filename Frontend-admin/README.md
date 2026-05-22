@@ -28,6 +28,9 @@ public/
 │   ├── index.html          # Shell: sidebar, topbar, #main, #app-drawer
 │   ├── login.html
 │   └── _partials/          # Fragment HTMX (mock data)
+│       ├── pixel/          # Port templates/pixel/facebook (7 tab)
+│       ├── domain-*.html   # Tab domain
+│       └── seo-*, pages, … # Semua modul menu
 ├── static/
 │   ├── css/admin.css
 │   └── js/admin-shell.js
@@ -44,9 +47,16 @@ public/
 - Responsif: sidebar drawer di mobile
 - Settings: subnav + list + drawer edit
 
-## Pixel Facebook (kode lama)
+## Pixel Facebook — dipakai di prototype
 
-Template Go lama masih di `templates/pixel/facebook/` — akan diintegrasikan ke shell baru.
+| Sumber Go (backend) | Prototype statis (Workers) |
+|---------------------|----------------------------|
+| `templates/pixel/facebook/*.html` | `public/admin/_partials/pixel/*.html` |
+
+Menu **Pixel Hub** → 7 tab (Overview … Analytics) = port konten template ke shell admin v2.  
+Saat Backend aktif, handler tetap bisa render template Go; UI final satu shell (`index.html`).
+
+Lihat `templates/pixel/facebook/README.md`.
 
 ## Deploy ke Cloudflare Pages (dari GitHub `main`)
 

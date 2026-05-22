@@ -1,0 +1,32 @@
+<div class="breadcrumb">
+  <span>Admin</span><span class="breadcrumb__sep">/</span><span>SEO</span><span class="breadcrumb__sep">/</span><span>Redirect</span>
+</div>
+<div class="page-header page-header--with-icon">
+  <div class="page-header__icon"><svg class="icon icon--lg"><use href="#i-link"/></svg></div>
+  <div>
+    <h1 class="page-title">Redirect manager</h1>
+    <p class="page-sub">301/302 per domain — edit via drawer</p>
+  </div>
+  <button type="button" class="btn btn-primary"
+    hx-get="/admin/_partials/drawer-redirect.html"
+    hx-target="#app-drawer" hx-swap="innerHTML">+ Redirect</button>
+</div>
+<div class="panel">
+  <div class="panel__body table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Dari</th><th>Ke</th><th>Tipe</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td>/lama-artikel</td><td>/artikel/baru</td><td>301</td>
+          <td><button type="button" class="btn btn-sm btn-outline"
+            hx-get="/admin/_partials/drawer-redirect.html" hx-target="#app-drawer" hx-swap="innerHTML">Edit</button></td>
+        </tr>
+        <tr>
+          <td>/promo2024</td><td>/promo/2026</td><td>302</td>
+          <td><button type="button" class="btn btn-sm btn-outline"
+            hx-get="/admin/_partials/drawer-redirect.html" hx-target="#app-drawer" hx-swap="innerHTML">Edit</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,40 @@
+<div class="breadcrumb">
+  <span>Admin</span><span class="breadcrumb__sep">/</span><span>Konten</span><span class="breadcrumb__sep">/</span><span>Halaman</span>
+</div>
+<div class="page-header page-header--with-icon">
+  <div class="page-header__icon"><svg class="icon icon--lg"><use href="#i-file"/></svg></div>
+  <div>
+    <h1 class="page-title">Halaman</h1>
+    <p class="page-sub">Domain aktif: rezekibelanja.com · halaman statis &amp; landing</p>
+  </div>
+  <button type="button" class="btn btn-primary"
+    hx-get="/admin/_partials/drawer-page.html"
+    hx-target="#app-drawer" hx-swap="innerHTML">+ Halaman baru</button>
+</div>
+<div class="panel">
+  <div class="panel__body table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Judul</th><th>Slug</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Tentang kami</td><td>/tentang</td>
+          <td><span class="badge badge-success">Published</span></td>
+          <td><button type="button" class="btn btn-sm btn-outline"
+            hx-get="/admin/_partials/drawer-page.html" hx-target="#app-drawer" hx-swap="innerHTML">Edit</button></td>
+        </tr>
+        <tr>
+          <td>Kontak</td><td>/kontak</td>
+          <td><span class="badge badge-success">Published</span></td>
+          <td><button type="button" class="btn btn-sm btn-outline"
+            hx-get="/admin/_partials/drawer-page.html" hx-target="#app-drawer" hx-swap="innerHTML">Edit</button></td>
+        </tr>
+        <tr>
+          <td>Kebijakan privasi</td><td>/privacy</td>
+          <td><span class="badge badge-muted">Draft</span></td>
+          <td><button type="button" class="btn btn-sm btn-outline"
+            hx-get="/admin/_partials/drawer-page.html" hx-target="#app-drawer" hx-swap="innerHTML">Edit</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

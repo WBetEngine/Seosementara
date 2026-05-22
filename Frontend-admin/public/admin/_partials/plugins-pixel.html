@@ -11,50 +11,60 @@
     <svg class="icon icon--lg"><use href="#i-target"/></svg>
   </div>
   <div>
-    <h1 class="page-title">Pixel Hub</h1>
-    <p class="page-sub">Facebook, TikTok, Google Ads — CAPI &amp; kolaborasi per domain</p>
+    <h1 class="page-title">Pixel Hub — Facebook Pro</h1>
+    <p class="page-sub">Konten dari <code>templates/pixel/facebook/</code> · kolaborasi Meta CAPI (mock data)</p>
   </div>
 </div>
 
-<div class="plugin-grid">
-  <article class="plugin-card">
-    <div class="plugin-card__icon">
-      <svg class="icon icon--lg"><use href="#i-target"/></svg>
-    </div>
-    <h3>Facebook Pixel + CAPI</h3>
-    <p>Pixel browser &amp; server-side events. Status: <strong>Terhubung</strong></p>
-    <button type="button" class="btn btn-outline btn-sm" disabled>Buka konfigurasi (besok)</button>
+<div class="plugin-grid" style="margin-bottom:1rem">
+  <article class="plugin-card" style="border-color:var(--accent)">
+    <h3>Facebook</h3>
+    <p>7 modul aktif di tab bawah (Overview → Analytics)</p>
   </article>
-  <article class="plugin-card">
-    <div class="plugin-card__icon">
-      <svg class="icon icon--lg"><use href="#i-target"/></svg>
-    </div>
-    <h3>TikTok Pixel</h3>
-    <p>Belum dikonfigurasi untuk domain ini.</p>
-    <button type="button" class="btn btn-outline btn-sm" disabled>Hubungkan</button>
+  <article class="plugin-card" style="opacity:0.65">
+    <h3>TikTok</h3>
+    <p>Placeholder — fase berikutnya</p>
   </article>
-  <article class="plugin-card">
-    <div class="plugin-card__icon">
-      <svg class="icon icon--lg"><use href="#i-target"/></svg>
-    </div>
+  <article class="plugin-card" style="opacity:0.65">
     <h3>Google Ads</h3>
-    <p>Conversion tag &amp; remarketing — placeholder.</p>
-    <button type="button" class="btn btn-outline btn-sm" disabled>Hubungkan</button>
+    <p>Placeholder — fase berikutnya</p>
   </article>
 </div>
 
-<div class="panel" style="margin-top:1.25rem">
-  <div class="panel__head">Event terbaru (contoh)</div>
-  <div class="panel__body table-wrap">
-    <table class="data-table">
-      <thead>
-        <tr><th>Waktu</th><th>Event</th><th>Channel</th><th>Status CAPI</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>2 menit lalu</td><td>PageView</td><td>FB</td><td><span class="badge badge-success">OK</span></td></tr>
-        <tr><td>15 menit lalu</td><td>ViewContent</td><td>FB</td><td><span class="badge badge-success">OK</span></td></tr>
-        <tr><td>1 jam lalu</td><td>Lead</td><td>FB</td><td><span class="badge badge-warn">Retry</span></td></tr>
-      </tbody>
-    </table>
-  </div>
+<nav class="page-tabs pixel-fb-tabs" role="tablist" aria-label="Facebook Pixel">
+  <button type="button" class="is-active" data-page-tab="overview"
+    hx-get="/admin/_partials/pixel/overview.html"
+    hx-target="#pixel-tab-panel" hx-swap="innerHTML"
+    hx-push-url="/admin/plugins/pixel/facebook">Overview</button>
+  <button type="button" data-page-tab="setup"
+    hx-get="/admin/_partials/pixel/setup.html"
+    hx-target="#pixel-tab-panel" hx-swap="innerHTML"
+    hx-push-url="/admin/plugins/pixel/facebook/setup">Setup</button>
+  <button type="button" data-page-tab="connection"
+    hx-get="/admin/_partials/pixel/connection.html"
+    hx-target="#pixel-tab-panel" hx-swap="innerHTML"
+    hx-push-url="/admin/plugins/pixel/facebook/connection">Connection</button>
+  <button type="button" data-page-tab="domains"
+    hx-get="/admin/_partials/pixel/domains.html"
+    hx-target="#pixel-tab-panel" hx-swap="innerHTML"
+    hx-push-url="/admin/plugins/pixel/facebook/domains">Domains</button>
+  <button type="button" data-page-tab="diagnostics"
+    hx-get="/admin/_partials/pixel/diagnostics.html"
+    hx-target="#pixel-tab-panel" hx-swap="innerHTML"
+    hx-push-url="/admin/plugins/pixel/facebook/diagnostics">Diagnostics</button>
+  <button type="button" data-page-tab="events"
+    hx-get="/admin/_partials/pixel/events.html"
+    hx-target="#pixel-tab-panel" hx-swap="innerHTML"
+    hx-push-url="/admin/plugins/pixel/facebook/events">Events</button>
+  <button type="button" data-page-tab="analytics"
+    hx-get="/admin/_partials/pixel/analytics.html"
+    hx-target="#pixel-tab-panel" hx-swap="innerHTML"
+    hx-push-url="/admin/plugins/pixel/facebook/analytics">Analytics</button>
+</nav>
+
+<div id="pixel-tab-panel"
+  hx-get="/admin/_partials/pixel/overview.html"
+  hx-trigger="load"
+  hx-swap="innerHTML">
+  <p class="empty-state">Memuat…</p>
 </div>

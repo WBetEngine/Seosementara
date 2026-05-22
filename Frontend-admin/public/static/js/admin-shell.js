@@ -54,6 +54,9 @@
       var match =
         route === r ||
         (r !== "/" && route.indexOf(r) === 0);
+      if (r === "/admin/plugins/pixel" && route.indexOf("/admin/plugins/pixel") === 0) {
+        match = true;
+      }
       el.classList.toggle("is-active", match);
     });
   }
@@ -79,13 +82,29 @@
 
   function syncPageTabsFromUrl(scope) {
     var path = window.location.pathname;
-    var map = {
+    var key = null;
+
+    var domainMap = {
       "/admin/domain/shared": "shared",
       "/admin/domain/add": "add",
       "/admin/domain/all": "all",
       "/admin/domain": "mine",
     };
-    var key = map[path] || (path.indexOf("/admin/domain/") === 0 ? path.split("/").pop() : null);
+    if (domainMap[path]) {
+      key = domainMap[path];
+    } else if (path.indexOf("/admin/plugins/pixel/facebook") === 0) {
+      var pixelMap = {
+        "/admin/plugins/pixel/facebook/setup": "setup",
+        "/admin/plugins/pixel/facebook/connection": "connection",
+        "/admin/plugins/pixel/facebook/domains": "domains",
+        "/admin/plugins/pixel/facebook/diagnostics": "diagnostics",
+        "/admin/plugins/pixel/facebook/events": "events",
+        "/admin/plugins/pixel/facebook/analytics": "analytics",
+        "/admin/plugins/pixel/facebook": "overview",
+      };
+      key = pixelMap[path] || "overview";
+    }
+
     if (!key) return;
     qsa("[data-page-tab]", scope).forEach(function (t) {
       t.classList.toggle("is-active", t.getAttribute("data-page-tab") === key);
@@ -163,8 +182,15 @@
       initDrawerTabs(target);
     }
 
-    if (target.id === "main" || target.id === "page-tab-panel") {
-      var root = target.id === "main" ? target : target.closest("#main") || document;
+    if (
+      target.id === "main" ||
+      target.id === "page-tab-panel" ||
+      target.id === "pixel-tab-panel"
+    ) {
+      var root =
+        target.id === "main"
+          ? target
+          : target.closest("#main") || document.getElementById("main") || document;
       initPageTabs(root);
       if (window.innerWidth < 1024) closeSidebar();
     }

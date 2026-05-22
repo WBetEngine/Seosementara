@@ -106,24 +106,30 @@
             </button>
           </li>
           <li>
-            <button type="button" class="nav-link" disabled>
+            <button type="button" class="nav-link" data-nav="/admin/pages"
+              hx-get="/admin/_partials/pages.html"
+              hx-target="#main" hx-swap="innerHTML"
+              hx-push-url="/admin/pages">
               <svg class="icon" aria-hidden="true"><use href="#i-file"/></svg>
               Halaman
-              <span class="nav-link__badge nav-link__badge--soon">Segera</span>
             </button>
           </li>
           <li>
-            <button type="button" class="nav-link" disabled>
+            <button type="button" class="nav-link" data-nav="/admin/categories"
+              hx-get="/admin/_partials/categories.html"
+              hx-target="#main" hx-swap="innerHTML"
+              hx-push-url="/admin/categories">
               <svg class="icon" aria-hidden="true"><use href="#i-file"/></svg>
               Kategori &amp; tag
-              <span class="nav-link__badge nav-link__badge--soon">Segera</span>
             </button>
           </li>
           <li>
-            <button type="button" class="nav-link" disabled>
+            <button type="button" class="nav-link" data-nav="/admin/media"
+              hx-get="/admin/_partials/media.html"
+              hx-target="#main" hx-swap="innerHTML"
+              hx-push-url="/admin/media">
               <svg class="icon" aria-hidden="true"><use href="#i-file"/></svg>
               Media
-              <span class="nav-link__badge nav-link__badge--soon">Segera</span>
             </button>
           </li>
         </ul>
@@ -133,24 +139,30 @@
         <div class="nav-group__title">SEO &amp; pertumbuhan</div>
         <ul class="nav-group__items">
           <li>
-            <button type="button" class="nav-link" disabled>
+            <button type="button" class="nav-link" data-nav="/admin/seo/meta"
+              hx-get="/admin/_partials/seo-meta.html"
+              hx-target="#main" hx-swap="innerHTML"
+              hx-push-url="/admin/seo/meta">
               <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
               Meta &amp; schema
-              <span class="nav-link__badge nav-link__badge--soon">Segera</span>
             </button>
           </li>
           <li>
-            <button type="button" class="nav-link" disabled>
+            <button type="button" class="nav-link" data-nav="/admin/seo/sitemap"
+              hx-get="/admin/_partials/seo-sitemap.html"
+              hx-target="#main" hx-swap="innerHTML"
+              hx-push-url="/admin/seo/sitemap">
               <svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg>
               Sitemap &amp; robots
-              <span class="nav-link__badge nav-link__badge--soon">Segera</span>
             </button>
           </li>
           <li>
-            <button type="button" class="nav-link" disabled>
+            <button type="button" class="nav-link" data-nav="/admin/seo/redirect"
+              hx-get="/admin/_partials/seo-redirect.html"
+              hx-target="#main" hx-swap="innerHTML"
+              hx-push-url="/admin/seo/redirect">
               <svg class="icon" aria-hidden="true"><use href="#i-link"/></svg>
               Redirect
-              <span class="nav-link__badge nav-link__badge--soon">Segera</span>
             </button>
           </li>
         </ul>
@@ -202,10 +214,12 @@
             </button>
           </li>
           <li>
-            <button type="button" class="nav-link" disabled>
+            <button type="button" class="nav-link" data-nav="/admin/settings/host"
+              hx-get="/admin/_partials/settings-host.html"
+              hx-target="#main" hx-swap="innerHTML"
+              hx-push-url="/admin/settings/host">
               <svg class="icon" aria-hidden="true"><use href="#i-server"/></svg>
               Host &amp; subdomain
-              <span class="nav-link__badge nav-link__badge--soon">Segera</span>
             </button>
           </li>
         </ul>
@@ -243,7 +257,7 @@
 
     <div class="admin-content">
       <div class="alert alert-info">
-        <strong>Prototype UI v2</strong> — navigasi &amp; desain diperbarui. Data contoh; API Go menyusul.
+        <strong>Prototype UI v2</strong> — semua menu aktif. Pixel Facebook = port dari <code>templates/pixel/facebook/</code>.
       </div>
       <main id="main"
         hx-get="/admin/_partials/dashboard-admin.html"

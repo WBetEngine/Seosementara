@@ -1,0 +1,48 @@
+<div class="panel">
+  <div class="panel__head">Domains — mass assign</div>
+  <div class="panel__body">
+    <p style="margin:0 0 1rem;color:var(--text-muted);font-size:0.875rem">
+      Assign pixel global ke domain portfolio (<code>managed_domain</code>).
+    </p>
+    <form class="form-grid" style="max-width:520px;margin-bottom:1.25rem" onsubmit="return false">
+      <div class="form-row">
+        <label>Managed Domain ID</label>
+        <input type="number" name="managed_domain_id" value="42" required />
+      </div>
+      <div class="form-row">
+        <label>Hostname</label>
+        <input name="hostname" value="rezekibelanja.com" required />
+      </div>
+      <div class="form-row" style="grid-column:1/-1">
+        <button type="button" class="btn btn-primary">Assign domain</button>
+      </div>
+    </form>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>ID</th><th>Domain</th><th>Status</th><th>Deployed</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>42</td>
+            <td>rezekibelanja.com</td>
+            <td><span class="badge badge-success">aktif</span></td>
+            <td>2026-05-20 14:00</td>
+          </tr>
+          <tr>
+            <td>88</td>
+            <td>tips-kesehatan.net</td>
+            <td><span class="badge badge-success">aktif</span></td>
+            <td>2026-05-18 09:30</td>
+          </tr>
+          <tr>
+            <td>91</td>
+            <td>promo2025.net</td>
+            <td><span class="badge badge-muted">nonaktif</span></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

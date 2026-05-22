@@ -1,0 +1,48 @@
+<div class="panel">
+  <div class="panel__head">
+    <span>Event log</span>
+    <form style="display:flex;gap:0.5rem;align-items:center" onsubmit="return false">
+      <select style="padding:0.4rem 0.6rem;border:1px solid var(--border);border-radius:6px;font-size:0.85rem">
+        <option value="">Semua status</option>
+        <option>pending</option>
+        <option selected>sent</option>
+        <option>failed</option>
+      </select>
+      <button type="button" class="btn btn-sm btn-outline">Filter</button>
+    </form>
+  </div>
+  <div class="panel__body table-wrap">
+    <p style="margin:0 0 0.75rem;font-size:0.85rem;color:var(--text-muted)">Total: 1.284 event (50 per halaman)</p>
+    <table class="data-table">
+      <thead>
+        <tr><th>ID</th><th>Event</th><th>Status</th><th>Waktu</th><th>Error</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>98421</td>
+          <td>PageView</td>
+          <td><span class="badge badge-success">sent</span></td>
+          <td>2026-05-22 08:14</td>
+          <td>—</td>
+          <td><button type="button" class="btn btn-sm btn-outline" disabled>Replay</button></td>
+        </tr>
+        <tr>
+          <td>98420</td>
+          <td>ViewContent</td>
+          <td><span class="badge badge-success">sent</span></td>
+          <td>2026-05-22 08:12</td>
+          <td>—</td>
+          <td><button type="button" class="btn btn-sm btn-outline" disabled>Replay</button></td>
+        </tr>
+        <tr>
+          <td>98419</td>
+          <td>Lead</td>
+          <td><span class="badge badge-warn">failed</span></td>
+          <td>2026-05-22 08:10</td>
+          <td>Invalid parameter</td>
+          <td><button type="button" class="btn btn-sm btn-outline">Replay</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
