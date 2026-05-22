@@ -75,3 +75,5 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 1.5 | 2026-05-21 | Rencana implementasi awal Pixel Facebook (21) |
 | 1.6 | 2026-05-22 | Spec Pro Facebook + protokol komunikasi & data lengkap (21, 22) |
 | 1.7 | 2026-05-22 | Kedalaman Meta Conversions API — CAPI (23) |
+| 1.8 | 2026-05-22 | CAPI: hybrid vs server_first + multi-pixel ribuan domain (23 §19–20) |
+| 1.9 | 2026-05-22 | Akun BM putus, pixel tidak transferable, optimasi iklan (24) |
