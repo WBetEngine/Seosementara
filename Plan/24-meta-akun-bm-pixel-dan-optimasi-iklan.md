@@ -201,8 +201,254 @@ Pixel Hub **tidak mengganti** Ads Manager — tetapi **menjaga kualitas data** m
 
 ---
 
-## 9. Dokumen terkait
+## 9. Pola Bisnis di Seosementara (Empat Model)
+
+Platform ini mengelola **domain produk** (`seosementara.org` + subdomain) dan **ribuan `managed_domains`** (portfolio milik pekerja). Pixel Meta **tidak satu untuk semua**.
+
+| Kode | Nama | Siapa punya BM | Siapa punya Pixel | Cocok untuk |
+|------|------|---------------|-------------------|-------------|
+| **S0** | Platform only | BM **Seosementara** | Pixel produk (1) | Iklan untuk `seosementara.org`, `url.*`, `ads.*` saja |
+| **S1** | **Owner-native** *(disarankan)* | **Owner domain** (pekerja/klien) | 1 pixel per owner (atau per domain) | Ribuan domain portfolio, BM sering beda-beda |
+| **S2** | Agency pool | BM **Seosementara** + sub-segment | 1 pixel per **grup** (10–50 domain) | Anda yang bayar iklan untuk banyak domain grey |
+| **S3** | Single mega pixel | Satu BM pusat | Satu pixel untuk semua domain | **Tidak disarankan** — risiko suspend massal |
+
+```mermaid
+flowchart TD
+  Q{Siapa yang bayar iklan FB?}
+  Q -->|Owner domain sendiri| S1[S1 Owner-native]
+  Q -->|Platform / agensi pusat| S2[S2 Agency pool]
+  Q -->|Hanya brand seosementara.org| S0[S0 Platform]
+  Q -->|Satu BM untuk semua grey| S3[S3 - hindari]
+```
+
+**Keputusan default produk:** **S0** untuk trafik produk + **S1** untuk setiap `managed_domain` yang beriklan. **S2** hanya jika kontrak bisnis menyatakan platform yang mengelola BM.
+
+---
+
+## 10. Tabel — Siapa Punya Pixel Siapa
+
+### 10.1 Matriks kepemilikan
+
+| Entitas CMS / Meta | Owner BM | Owner Pixel ID | Token CAPI | Fanpage untuk iklan | Catatan |
+|--------------------|----------|----------------|------------|---------------------|---------|
+| `seosementara.org` (apex) | BM Platform | `pixel_platform` | System User BM Platform | Fanpage produk | Model **S0** |
+| Subdomain `ads.*`, `url.*` | BM Platform | Sama atau pixel `ads` terpisah | System User BM Platform | Fanpage kampanye | Event shortlink → CAPI [19] |
+| `managed_domain` #1 … #N | **Owner domain** *(S1)* atau BM Pool *(S2)* | `pixel_configs` terikat assignment | Token BM yang punya pixel | Fanpage **milik owner** — bukan BM platform | Lihat baris domain |
+| Grup domain “Fashion ID” | BM Pool segmen | `pixel_group_fashion` | System User segmen | Bisa banyak fanpage | Model **S2** |
+
+### 10.2 Per record `managed_domains` (wajib diisi di admin)
+
+| Field CMS (usulan) | Contoh | Siapa mengisi |
+|--------------------|--------|---------------|
+| `meta_ownership_model` | `S1` / `S2` | Super Admin / owner |
+| `meta_bm_id` | `987654321` | Owner (BM miliknya) |
+| `meta_bm_label` | “BM Toko Andi” | Owner |
+| `meta_pixel_config_id` | FK → `pixel_configs` | Owner + approve platform |
+| `meta_fanpage_id` | ID fanpage iklan | Owner |
+| `meta_ad_account_id` | `act_123` | Owner |
+| `meta_incident_status` | `ok` / `bm_restricted` | Otomatis + manual |
+
+### 10.3 Tabel contoh (fiktif, 5 domain)
+
+| managed_domain | Owner pekerja | Model | BM | Pixel ID | Fanpage | Yang kirim CAPI |
+|----------------|---------------|-------|-----|----------|---------|-----------------|
+| rezekibelanja.com | Andi | S1 | BM Andi | `111222333` | FP Toko Andi | Hub → BM Andi |
+| fashionmurah.id | Budi | S1 | BM Budi | `444555666` | FP Budi Shop | Hub → BM Budi |
+| promo2025.net | CMS Pool | S2 | BM Seosementara | `777888999` | FP Agensi Promo | Hub → BM Platform |
+| seosementara.org | Platform | S0 | BM Platform | `000111222` | FP Seosementara | Hub → BM Platform |
+| *(domain baru)* | Citra | S1 | *(belum ada)* | — | — | Event antri di Hub sampai setup |
+
+**Aturan emas:** Jangan isi Pixel ID BM Andi ke domain milik Budi — EMQ dan policy kacau, risiko suspend naik.
+
+### 10.4 Hubungan dengan RBAC [11]
+
+| Role | Lihat pixel | Ubah Pixel ID / token |
+|------|-------------|------------------------|
+| Super Admin | Semua | Semua |
+| Owner domain | Hanya `meta_pixel_config_id` domain sendiri | Hanya domain sendiri *(jika `pixel.facebook.manage`)* |
+| Pekerja share | Read-only atau tidak | Tidak |
+| Platform Manager | Pool S2 + S0 | Pool + platform |
+
+---
+
+## 11. SOP — Model S1 (Owner-native) *(disarankan)*
+
+### 11.1 Onboarding domain baru + pixel
+
+| # | Langkah | Di Meta (owner) | Di CMS `/admin/pixel/facebook/` |
+|---|---------|-----------------|----------------------------------|
+| 1 | Owner buat / punya BM sendiri | Business Manager | - |
+| 2 | Buat Pixel di Events Manager | Pixel ID dicatat | - |
+| 3 | Buat System User + token CAPI | Generate token | - |
+| 4 | Owner buka tab Setup (domain scope) | - | Paste Pixel ID + token |
+| 5 | Uji Test Event Code | Test Events | Tombol **Uji koneksi** |
+| 6 | Assign domain | - | Domains → assign `managed_domain_id` |
+| 7 | Verifikasi domain di Meta | DNS / meta tag | Centang di CMS |
+| 8 | Aktifkan `server_first` | - | Mode default [23 §19] |
+| 9 | Monitor 48 jam | Events Manager live | Diagnostics |
+
+**SLA internal:** setup selesai ≤ 24 jam setelah domain aktif beriklan.
+
+### 11.2 Owner sudah punya pixel lama di BM yang masih sehat
+
+| # | Langkah |
+|---|---------|
+| 1 | Jangan buat pixel baru — pakai Pixel ID existing |
+| 2 | Buat token CAPI baru (token lama mungkin expire) |
+| 3 | Hub assignment ke domain; `event_source_url` = hostname domain |
+| 4 | Matikan snippet `fbq` tema lama → ganti first-party Hub |
+
+### 11.3 Owner hanya punya akun personal + fanpage (belum ada BM)
+
+| # | Langkah |
+|---|---------|
+| 1 | **Wajib** buat BM — pixel tidak stabil di personal |
+| 2 | Klaim fanpage ke BM |
+| 3 | Baru buat pixel + System User |
+| 4 | Fanpage untuk identitas iklan; **jangan** simpan token dari login personal di CMS |
+
+---
+
+## 12. SOP — Model S2 (Agency pool / platform bayar iklan)
+
+Untuk segmen domain grey yang **Anda** yang kelola budget iklan.
+
+### 12.1 Struktur pool
+
+| Segmen | Max domain / pixel | BM |
+|--------|-------------------|-----|
+| Pool A — tier rendah | ≤ 30 domain | BM Platform A |
+| Pool B — tier mid | ≤ 30 domain | BM Platform B |
+| … | Rotate jika satu BM kena | BM cadangan |
+
+**Jangan** > 50–80 domain grey aktif per satu pixel (kebijakan risiko internal — sesuaikan dengan pengalaman policy).
+
+### 12.2 Onboarding domain ke pool
+
+| # | Langkah | CMS |
+|---|---------|-----|
+| 1 | Super Admin pilih grup `pixel_config_groups` | Buat / pilih grup |
+| 2 | Assign domain ke grup | `pixel_group_members` |
+| 3 | Pastikan `event_source_url` hostname domain benar | Routing [23 §20] |
+| 4 | `external_id` prefix per domain | `custom_data`: `site_key` = slug domain |
+| 5 | Dokumentasi fanpage mana yang dipakai iklan domain itu | Field `meta_fanpage_id` |
+
+### 12.3 Jika satu pool BM kena suspend
+
+| # | Langkah |
+|---|---------|
+| 1 | Tandai `meta_incident_status = bm_restricted` untuk semua domain di grup |
+| 2 | Pindah domain ke **grup BM cadangan** (pixel ID baru) |
+| 3 | Update `pixel_configs` + token — job mass deploy [21] |
+| 4 | Komunikasi ke owner: iklan pause sampai BM cadangan aktif |
+| 5 | **Jangan** replay bulanan event ke pixel baru tanpa review policy |
+
+---
+
+## 13. SOP Darurat — BM / Pixel Putus (Semua Model)
+
+### 13.1 Deteksi (otomatis + manual)
+
+| Sinyal | Deteksi |
+|--------|---------|
+| CAPI 401/403 | Worker + banner Connection merah |
+| `events_received: 0` berulang | Alert [23 §15] |
+| Owner lapor “iklan mati” | Tiket + cek `meta_incident_status` |
+| Events Manager kosong 24j | Manual check |
+
+### 13.2 Respons 0–4 jam
+
+| # | Aksi | PIC |
+|---|------|-----|
+| 1 | Pause scale budget iklan domain terdampak | Owner / media buyer |
+| 2 | Catat insiden di CMS: BM ID, pixel ID lama, waktu | Super Admin |
+| 3 | Cek apakah BM **restricted** sementara atau permanen | Owner login Meta |
+| 4 | Jika sementara: tunggu appeal Meta | - |
+| 5 | Jika permanen / tidak ada akses: **pixel baru** | Owner atau Platform |
+
+### 13.3 Respons 4–24 jam — pemulihan CAPI di Hub
+
+| # | Aksi | CMS |
+|---|------|-----|
+| 1 | Buat `pixel_configs` baru (jangan hapus config lama — arsip) | `is_active=false` pada lama |
+| 2 | Token System User **baru** | `pixel_credentials` baru |
+| 3 | Assign ke domain yang terdampak | Bulk assign job |
+| 4 | Test Event Code → uji `PageView` + `Purchase` | Connection tab |
+| 5 | Hapus `test_event_code` untuk produksi | Setup |
+| 6 | Monitor EMQ 7 hari | Analytics |
+
+### 13.4 Yang tidak bisa dipulihkan
+
+| Harapan | Realita |
+|---------|---------|
+| Pakai Pixel ID lama tanpa BM lama | Tidak bisa |
+| Lookalike audience di BM mati | Buat ulang di BM baru |
+| Learning phase kampanye | Reset — normal |
+| Histori Events Manager lama | Tidak pindah otomatis |
+
+**Yang tetap ada di Anda:** log `pixel_events` di Hub untuk laporan internal per `managed_domain_id`.
+
+### 13.5 Checklist tiket insiden
+
+```markdown
+- [ ] Domain / grup terdampak didata
+- [ ] BM ID lama & baru tercatat
+- [ ] Pixel ID baru terpasang di Hub
+- [ ] Token CAPI baru valid (test connection OK)
+- [ ] Domain assignments diperbarui
+- [ ] Test Events OK
+- [ ] Produksi tanpa test_event_code
+- [ ] Owner diinformasi
+- [ ] Post-mortem: penyebab policy (jika diketahui)
+```
+
+---
+
+## 14. Fanpage vs BM vs Pixel — SOP Singkat
+
+| Situasi | Yang dilakukan |
+|---------|----------------|
+| Iklan dari fanpage A, pixel di BM owner | Normal — fanpage hanya identitas; CAPI ke pixel BM |
+| Fanpage hilang admin, BM masih OK | Pulihkan role fanpage; pixel **tetap** |
+| BM mati, fanpage masih ada | BM baru + pixel baru; fanpage diklaim ke BM baru |
+| Hanya personal admin, tanpa BM | **Stop** — wajib buat BM dulu sebelum scale spend |
+
+---
+
+## 15. Fitur “Lebih murah & tertarget” — Checklist per Domain
+
+Setelah pixel & BM sehat, pastikan ini aktif di Hub (bukan hanya di Ads Manager):
+
+| # | Item | Model S1 | Model S2 |
+|---|------|----------|----------|
+| 1 | CAPI aktif + System User token | ✓ | ✓ |
+| 2 | `server_first` atau hybrid dengan dedup | ✓ | ✓ |
+| 3 | `event_source_url` = hostname domain benar | ✓ | ✓ |
+| 4 | `Purchase` / `Lead` + value jika ada | ✓ | ✓ |
+| 5 | EMQ: fbp + hash em pada konversi | ✓ | ✓ |
+| 6 | Di Ads: retargeting 7–30 hari | Owner | Platform |
+| 7 | Di Ads: lookalike 1–3% pembeli | Owner | Platform |
+| 8 | Exclude pembeli 180 hari pada prospecting | Owner | Platform |
+
+---
+
+## 16. Keputusan Resmi untuk Seosementara
+
+| Aspek | Keputusan |
+|-------|-----------|
+| Default portfolio | **S1** — owner bawa BM + pixel sendiri |
+| Platform marketing | **S0** — pixel terpisah untuk `seosementara.org` |
+| Grey mass iklan pusat | **S2** — max ~30 domain / pixel / BM, BM cadangan wajib |
+| Dilarang default | **S3** — satu pixel semua domain |
+| Token produksi | System User only |
+| Saat BM putus | SOP §13 — ganti pixel di Hub, data internal tetap |
+| Dokumentasi wajib per domain | §10.2 `meta_*` fields |
+
+---
+
+## 17. Dokumen terkait
 
 - [23-meta-conversions-api-kedalaman.md](./23-meta-conversions-api-kedalaman.md)
 - [21-pixel-facebook-pro.md](./21-pixel-facebook-pro.md)
+- [09-model-domain-host-dan-subdomain.md](./09-model-domain-host-dan-subdomain.md)
 - [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md) — owner per domain

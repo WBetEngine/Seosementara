@@ -30,7 +30,8 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 20 | [20-pixel-admin-facebook-tiktok-gads.md](./20-pixel-admin-facebook-tiktok-gads.md) | **Pixel Hub:** kolaborasi FB/TikTok/GAds, CAPI, first-party, event catalog |
 | 21 | [21-pixel-facebook-pro.md](./21-pixel-facebook-pro.md) | **Pixel Facebook Pro:** fitur profesional, kolaborasi Meta, data per tab |
 | 22 | [22-pixel-protokol-komunikasi-dan-data.md](./22-pixel-protokol-komunikasi-dan-data.md) | **Protokol & data lengkap:** canonical event, pipeline, schema DB |
-| 23 | [23-meta-conversions-api-kedalaman.md](./23-meta-conversions-api-kedalaman.md) | **Meta CAPI:** auth, payload, EMQ, dedup, test events, troubleshooting |
+| 23 | [23-meta-conversions-api-kedalaman.md](./23-meta-conversions-api-kedalaman.md) | **Meta CAPI:** auth, payload, EMQ, dedup, hybrid, multi-pixel |
+| 24 | [24-meta-akun-bm-pixel-dan-optimasi-iklan.md](./24-meta-akun-bm-pixel-dan-optimasi-iklan.md) | **Realita BM/personal/Fanpage**, SOP BM putus, fitur optimasi biaya |
 
 ## Ringkasan Stack
 
@@ -77,3 +78,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 1.7 | 2026-05-22 | Kedalaman Meta Conversions API — CAPI (23) |
 | 1.8 | 2026-05-22 | CAPI: hybrid vs server_first + multi-pixel ribuan domain (23 §19–20) |
 | 1.9 | 2026-05-22 | Akun BM putus, pixel tidak transferable, optimasi iklan (24) |
+| 2.0 | 2026-05-22 | SOP S0–S3, tabel siapa punya pixel, insiden BM putus (24 §9–16) |
