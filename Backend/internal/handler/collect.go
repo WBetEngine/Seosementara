@@ -15,16 +15,23 @@ type CollectHandler struct {
 }
 
 type collectBody struct {
-	Event   string         `json:"event"`
-	EventID string         `json:"event_id"`
-	URL     string         `json:"url"`
-	SiteKey string         `json:"site_key"`
-	DomainID *int64        `json:"managed_domain_id"`
-	FBP     string         `json:"fbp"`
-	FBC     string         `json:"fbc"`
-	Email   string         `json:"email"`
-	Phone   string         `json:"phone"`
-	Props   map[string]any `json:"props"`
+	Event        string         `json:"event"`
+	EventID      string         `json:"event_id"`
+	URL          string         `json:"url"`
+	SiteKey      string         `json:"site_key"`
+	DomainID     *int64         `json:"managed_domain_id"`
+	FBP          string         `json:"fbp"`
+	FBC          string         `json:"fbc"`
+	FBCLID       string         `json:"fbclid"`
+	Email        string         `json:"email"`
+	Phone        string         `json:"phone"`
+	PhoneCountry string         `json:"phone_country"`
+	FirstName    string         `json:"first_name"`
+	LastName     string         `json:"last_name"`
+	ExternalID   string         `json:"external_id"`
+	Country      string         `json:"country"`
+	LeadID       string         `json:"lead_id"`
+	Props        map[string]any `json:"props"`
 }
 
 func (h *CollectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -37,31 +44,38 @@ func (h *CollectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid json", http.StatusBadRequest)
 		return
 	}
-	ip := r.Header.Get("X-Forwarded-For")
-	if ip == "" {
-		ip = strings.Split(r.RemoteAddr, ":")[0]
+	ip := clientIP(r)
+	ua := r.UserAgent()
+	if body.URL == "" {
+		body.URL = r.Header.Get("Referer")
 	}
 	props := body.Props
 	if props == nil {
 		props = map[string]any{}
 	}
-	props["url"] = body.URL
-	props["client_ip"] = ip
-	props["user_agent"] = r.UserAgent()
-	props["fbp"] = body.FBP
-	props["fbc"] = body.FBC
-	if body.Email != "" {
-		props["email_hash"] = body.Email
-	}
-	if body.Phone != "" {
-		props["phone_hash"] = body.Phone
+	if body.LeadID != "" {
+		props["lead_id"] = body.LeadID
 	}
 
 	in := store.CollectInput{
-		Event: body.Event, EventID: body.EventID, URL: body.URL,
-		SiteKey: body.SiteKey, ManagedDomainID: body.DomainID,
-		FBP: body.FBP, FBC: body.FBC, ClientIP: ip, UserAgent: r.UserAgent(),
-		Props: props,
+		Event:           body.Event,
+		EventID:         body.EventID,
+		URL:             body.URL,
+		SiteKey:         body.SiteKey,
+		ManagedDomainID: body.DomainID,
+		FBP:             body.FBP,
+		FBC:             body.FBC,
+		FBCLID:          body.FBCLID,
+		ClientIP:        ip,
+		UserAgent:       ua,
+		Email:           body.Email,
+		Phone:           body.Phone,
+		PhoneCountry:    body.PhoneCountry,
+		FirstName:       body.FirstName,
+		LastName:        body.LastName,
+		ExternalID:      body.ExternalID,
+		Country:         body.Country,
+		Props:           props,
 	}
 	if in.EventID == "" {
 		in.EventID = uuid.New().String()
@@ -72,5 +86,20 @@ func (h *CollectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "queued_id": id})
+	_ = json.NewEncoder(w).Encode(map[string]any{"ok": true, "queued_id": id, "event_id": in.EventID})
+}
+
+func clientIP(r *http.Request) string {
+	ip := r.Header.Get("X-Forwarded-For")
+	if ip != "" {
+		if i := strings.Index(ip, ","); i > 0 {
+			ip = strings.TrimSpace(ip[:i])
+		}
+		return ip
+	}
+	host := r.RemoteAddr
+	if i := strings.LastIndex(host, ":"); i > 0 {
+		return host[:i]
+	}
+	return host
 }

@@ -13,9 +13,9 @@ import (
 )
 
 type FacebookService struct {
-	Store    store.PixelStore
-	CAPI     *facebook.CAPIClient
-	EncKey   []byte
+	Store  store.PixelStore
+	CAPI   *facebook.CAPIClient
+	EncKey []byte
 }
 
 func NewFacebookService(st store.PixelStore, capi *facebook.CAPIClient, encKey []byte) *FacebookService {
@@ -45,7 +45,6 @@ func (s *FacebookService) TestConnection(ctx context.Context) (map[string]any, e
 	if err != nil {
 		return nil, err
 	}
-	// Send minimal PageView test via CAPI
 	res, err := s.sendTestEvent(ctx, cfg, token, "PageView")
 	if err != nil {
 		_ = s.Store.UpdateCredentialValidation(ctx, *cfg.CredentialsID, "error")
@@ -79,16 +78,17 @@ func (s *FacebookService) SendTestEvent(ctx context.Context, eventName string) (
 }
 
 func (s *FacebookService) sendTestEvent(ctx context.Context, cfg *store.FacebookConfig, token, eventName string) (*facebook.EventsResponse, error) {
-	ev := facebook.ServerEvent{
-		EventName:      eventName,
-		EventTime:      time.Now().Unix(),
-		EventID:        uuid.New().String(),
-		ActionSource:   "website",
-		EventSourceURL: "https://seosementara.org/admin/pixel/facebook/",
-		UserData: facebook.UserData{
-			ClientIPAddress: "127.0.0.1",
-			ClientUserAgent: "Seosementara-PixelHub/1.0",
-		},
+	props := map[string]any{
+		"url":        "https://seosementara.org/admin/pixel/facebook/",
+		"client_ip":  "127.0.0.1",
+		"user_agent": "Seosementara-PixelHub/1.0 (CAPI test)",
+		"fbp":        facebook.EnsureFBP(""),
+	}
+	facebook.EnrichCollectProps(props, "", "", "", "", "test-connection", "", "", facebook.DefaultPhoneCountry)
+
+	ev, err := facebook.BuildServerEvent(eventName, uuid.New().String(), time.Now().Unix(), props)
+	if err != nil {
+		return nil, err
 	}
 	payload := facebook.EventsPayload{Data: []facebook.ServerEvent{ev}}
 	if cfg.TestEventCode != "" {
@@ -112,12 +112,11 @@ func (s *FacebookService) IngestCollect(ctx context.Context, in store.CollectInp
 	in.Props["user_agent"] = in.UserAgent
 	in.Props["fbp"] = in.FBP
 	in.Props["fbc"] = in.FBC
-	if in.Email != "" {
-		in.Props["email_hash"] = facebook.HashPII(in.Email)
+	if in.FBCLID != "" {
+		in.Props["fbclid"] = in.FBCLID
 	}
-	if in.Phone != "" {
-		in.Props["phone_hash"] = facebook.HashPII(in.Phone)
-	}
+	facebook.EnrichCollectProps(in.Props, in.Email, in.Phone, in.FirstName, in.LastName, in.ExternalID, in.Country, in.FBCLID, in.PhoneCountry)
+
 	payload, _ := json.Marshal(in.Props)
 	ev := store.PixelEvent{
 		EventName:       name,
@@ -147,12 +146,25 @@ func mapCanonicalToFacebook(e string) string {
 		return "Lead"
 	case "purchase":
 		return "Purchase"
+	case "view_content", "viewcontent":
+		return "ViewContent"
+	case "add_to_cart", "addtocart":
+		return "AddToCart"
+	case "initiate_checkout":
+		return "InitiateCheckout"
+	case "complete_registration":
+		return "CompleteRegistration"
+	case "search":
+		return "Search"
+	case "contact":
+		return "Contact"
 	case "click":
 		return "ViewContent"
 	default:
 		if e == "" {
 			return "PageView"
 		}
+		// PascalCase custom names as-is
 		return e
 	}
 }
@@ -175,29 +187,15 @@ func (s *FacebookService) DispatchPending(ctx context.Context, batch int) (sent,
 	for _, pe := range pending {
 		var props map[string]any
 		_ = json.Unmarshal(pe.Payload, &props)
-		url, _ := props["url"].(string)
-		ip, _ := props["client_ip"].(string)
-		ua, _ := props["user_agent"].(string)
-		fbp, _ := props["fbp"].(string)
-		fbc, _ := props["fbc"].(string)
-		email, _ := props["email_hash"].(string)
-		phone, _ := props["phone_hash"].(string)
 
-		ev := facebook.ServerEvent{
-			EventName:      pe.EventName,
-			EventTime:      pe.CreatedAt.Unix(),
-			EventID:        pe.EventID,
-			ActionSource:   "website",
-			EventSourceURL: url,
-			UserData: facebook.UserData{
-				ClientIPAddress: ip,
-				ClientUserAgent: ua,
-				FBP:             fbp,
-				FBC:             fbc,
-				EmailHash:       email,
-				PhoneHash:       phone,
-			},
+		ev, buildErr := facebook.BuildServerEvent(pe.EventName, pe.EventID, pe.CreatedAt.Unix(), props)
+		if buildErr != nil {
+			_ = s.Store.MarkEventFailed(ctx, pe.ID, buildErr.Error())
+			_ = s.Store.IncrementDailyStat(ctx, cfg.ID, "failed")
+			failed++
+			continue
 		}
+
 		payload := facebook.EventsPayload{Data: []facebook.ServerEvent{ev}}
 		if cfg.TestEventCode != "" {
 			payload.TestEventCode = cfg.TestEventCode
@@ -209,8 +207,7 @@ func (s *FacebookService) DispatchPending(ctx context.Context, batch int) (sent,
 			failed++
 			continue
 		}
-		trace := res.FBTraceID
-		_ = s.Store.MarkEventSent(ctx, pe.ID, trace)
+		_ = s.Store.MarkEventSent(ctx, pe.ID, res.FBTraceID)
 		_ = s.Store.IncrementDailyStat(ctx, cfg.ID, "sent")
 		sent++
 	}
@@ -246,18 +243,4 @@ func (s *FacebookService) AssignDomain(ctx context.Context, domainID int64, host
 		return fmt.Errorf("simpan setup Facebook terlebih dahulu")
 	}
 	return s.Store.AssignDomain(ctx, cfg.ID, domainID, hostname)
-}
-
-func (s *FacebookService) BuildCollectUserData(in store.CollectInput) map[string]any {
-	props := map[string]any{
-		"url": in.URL, "client_ip": in.ClientIP, "user_agent": in.UserAgent,
-		"fbp": in.FBP, "fbc": in.FBC,
-	}
-	if in.Email != "" {
-		props["email_hash"] = facebook.HashPII(in.Email)
-	}
-	if in.Phone != "" {
-		props["phone_hash"] = facebook.HashPII(in.Phone)
-	}
-	return props
 }

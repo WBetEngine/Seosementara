@@ -53,10 +53,16 @@ type CollectInput struct {
 	ManagedDomainID *int64
 	FBP             string
 	FBC             string
+	FBCLID          string
 	ClientIP        string
 	UserAgent       string
 	Email           string
 	Phone           string
+	PhoneCountry    string // default 62 (ID)
+	FirstName       string
+	LastName        string
+	ExternalID      string
+	Country         string
 	Props           map[string]any
 }
 

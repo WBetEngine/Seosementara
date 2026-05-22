@@ -14,39 +14,30 @@ const graphAPIVersion = "v21.0"
 
 // CAPIClient sends events to Meta Conversions API.
 type CAPIClient struct {
-	HTTP     *http.Client
-	BaseURL  string
+	HTTP    *http.Client
+	BaseURL string
 }
 
 func NewCAPIClient() *CAPIClient {
 	return &CAPIClient{
-		HTTP: &http.Client{Timeout: 15 * time.Second},
+		HTTP:    &http.Client{Timeout: 15 * time.Second},
 		BaseURL: fmt.Sprintf("https://graph.facebook.com/%s", graphAPIVersion),
 	}
 }
 
-type UserData struct {
-	ClientIPAddress string `json:"client_ip_address,omitempty"`
-	ClientUserAgent string `json:"client_user_agent,omitempty"`
-	FBP             string `json:"fbp,omitempty"`
-	FBC             string `json:"fbc,omitempty"`
-	EmailHash       string `json:"em,omitempty"`
-	PhoneHash       string `json:"ph,omitempty"`
-}
-
 type ServerEvent struct {
-	EventName      string   `json:"event_name"`
-	EventTime      int64    `json:"event_time"`
-	EventID        string   `json:"event_id"`
-	ActionSource   string   `json:"action_source"`
-	EventSourceURL string   `json:"event_source_url,omitempty"`
-	UserData       UserData `json:"user_data"`
+	EventName      string         `json:"event_name"`
+	EventTime      int64          `json:"event_time"`
+	EventID        string         `json:"event_id"`
+	ActionSource   string         `json:"action_source"`
+	EventSourceURL string         `json:"event_source_url,omitempty"`
+	UserData       UserData       `json:"user_data"`
 	CustomData     map[string]any `json:"custom_data,omitempty"`
 }
 
 type EventsPayload struct {
-	Data         []ServerEvent `json:"data"`
-	TestEventCode string       `json:"test_event_code,omitempty"`
+	Data          []ServerEvent `json:"data"`
+	TestEventCode string        `json:"test_event_code,omitempty"`
 }
 
 type EventsResponse struct {
