@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="csrf" content="prototype-static" />
+  <title>Admin — Seosementara CMS</title>
+  <link rel="stylesheet" href="/static/css/admin.css" />
+  <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfCtof878TmWChes+LW2H7cZM9u1hEEAEPOZVuECMCbWq77qZ8s3d18zmBfw5z3" crossorigin="anonymous"></script>
+</head>
+<body class="admin-body" hx-headers='{"X-CSRF-Token": "prototype-static"}'>
+  <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div>
+
+  <aside id="admin-sidebar" class="admin-sidebar" aria-label="Navigasi utama">
+    <div class="admin-sidebar__brand">Seosementara</div>
+    <nav class="admin-sidebar__nav">
+      <div class="nav-group">
+        <button type="button" class="nav-group__title" aria-expanded="true">Ringkasan</button>
+        <ul class="nav-group__items">
+          <li>
+            <button type="button" class="nav-link is-active"
+              hx-get="/admin/_partials/dashboard-admin.html"
+              hx-target="#main" hx-swap="innerHTML" hx-push-url="/admin/">Dashboard Admin</button>
+          </li>
+          <li>
+            <button type="button" class="nav-link"
+              hx-get="/admin/_partials/dashboard-domain.html"
+              hx-target="#main" hx-swap="innerHTML">Dashboard Domain</button>
+          </li>
+          <li>
+            <button type="button" class="nav-link"
+              hx-get="/admin/_partials/dashboard-global.html"
+              hx-target="#main" hx-swap="innerHTML">
+              Dashboard Global <span class="nav-sa-only">(SA)</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="nav-group">
+        <button type="button" class="nav-group__title">Domain</button>
+        <ul class="nav-group__items">
+          <li>
+            <button type="button" class="nav-link"
+              hx-get="/admin/_partials/domains.html"
+              hx-target="#main" hx-swap="innerHTML">Domain saya</button>
+          </li>
+          <li><button type="button" class="nav-link" disabled>Dibagikan ke saya</button></li>
+          <li><button type="button" class="nav-link" disabled>Tambah domain</button></li>
+          <li>
+            <button type="button" class="nav-link"
+              hx-get="/admin/_partials/domains.html?view=all"
+              hx-target="#main" hx-swap="innerHTML">Semua domain <span class="nav-sa-only">(SA)</span></button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="nav-group">
+        <button type="button" class="nav-group__title">Konten</button>
+        <ul class="nav-group__items">
+          <li>
+            <button type="button" class="nav-link"
+              hx-get="/admin/_partials/posts.html"
+              hx-target="#main" hx-swap="innerHTML">Post</button>
+          </li>
+          <li><button type="button" class="nav-link" disabled>Halaman</button></li>
+          <li><button type="button" class="nav-link" disabled>Kategori &amp; tag</button></li>
+          <li><button type="button" class="nav-link" disabled>Media</button></li>
+        </ul>
+      </div>
+
+      <div class="nav-group">
+        <button type="button" class="nav-group__title">SEO &amp; pertumbuhan</button>
+        <ul class="nav-group__items">
+          <li><button type="button" class="nav-link" disabled>Meta &amp; schema</button></li>
+          <li><button type="button" class="nav-link" disabled>Sitemap &amp; robots</button></li>
+          <li><button type="button" class="nav-link" disabled>Redirect</button></li>
+        </ul>
+      </div>
+
+      <div class="nav-group">
+        <button type="button" class="nav-group__title">Plugins</button>
+        <ul class="nav-group__items">
+          <li>
+            <button type="button" class="nav-link"
+              hx-get="/admin/_partials/plugins.html"
+              hx-target="#main" hx-swap="innerHTML">Shortlink &amp; Pixel</button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="nav-group">
+        <button type="button" class="nav-group__title">Settings</button>
+        <ul class="nav-group__items">
+          <li>
+            <button type="button" class="nav-link"
+              hx-get="/admin/_partials/settings-rbac.html"
+              hx-target="#main" hx-swap="innerHTML">RBAC &amp; pengguna</button>
+          </li>
+          <li>
+            <button type="button" class="nav-link"
+              hx-get="/admin/_partials/settings-cloudflare.html"
+              hx-target="#main" hx-swap="innerHTML">Cloudflare</button>
+          </li>
+          <li><button type="button" class="nav-link" disabled>Host &amp; subdomain</button></li>
+        </ul>
+      </div>
+    </nav>
+    <div style="padding:1rem 1.25rem;font-size:0.75rem;color:var(--sidebar-muted)">
+      UI prototype · backend besok
+    </div>
+  </aside>
+
+  <div class="admin-main-wrap">
+    <header class="admin-topbar">
+      <button type="button" class="topbar-btn topbar-btn--menu" data-toggle-sidebar aria-label="Menu">☰</button>
+      <div class="site-switcher">
+        <input type="search" placeholder="Cari domain portfolio…" aria-label="Site switcher"
+          hx-get="/admin/_partials/site-switcher-results.html"
+          hx-trigger="keyup changed delay:300ms"
+          hx-target="#site-switcher-results" />
+        <div id="site-switcher-results"></div>
+      </div>
+      <button type="button" class="topbar-btn" aria-label="Notifikasi">🔔</button>
+      <div class="topbar-user">
+        <span>demo@seosementara.org</span>
+        <span class="topbar-user__role">Super Admin</span>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="alert alert-info">
+        <strong>Prototype UI</strong> — data contoh. Backend Go + API HTMX dilanjutkan besok.
+      </div>
+      <main id="main"
+        hx-get="/admin/_partials/dashboard-admin.html"
+        hx-trigger="load"
+        hx-swap="innerHTML">
+        <p class="empty-state">Memuat…</p>
+      </main>
+    </div>
+  </div>
+
+  <div id="drawer-backdrop" class="drawer-backdrop" aria-hidden="true"></div>
+  <aside id="app-drawer" class="app-drawer" aria-hidden="true" aria-label="Panel edit"></aside>
+
+  <script src="/static/js/admin-shell.js"></script>
+  <script>
+    document.querySelectorAll(".nav-link:not([disabled])").forEach(function (el) {
+      el.addEventListener("click", function () {
+        document.querySelectorAll(".nav-link").forEach(function (n) { n.classList.remove("is-active"); });
+        el.classList.add("is-active");
+      });
+    });
+  </script>
+</body>
+</html>

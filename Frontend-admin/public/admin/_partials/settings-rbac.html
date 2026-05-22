@@ -1,0 +1,52 @@
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Settings — RBAC</h1>
+    <p class="page-sub">Read / Edit / Write — pengguna &amp; peran sistem</p>
+  </div>
+</div>
+
+<div class="settings-layout">
+  <nav class="settings-subnav">
+    <a href="#" class="is-active">RBAC</a>
+    <a href="#" hx-get="/admin/_partials/settings-cloudflare.html" hx-target="#main" hx-swap="innerHTML">Cloudflare</a>
+    <a href="#" class="disabled">Auth</a>
+    <a href="#" class="disabled">Operasional</a>
+  </nav>
+
+  <div>
+    <div class="panel">
+      <div class="panel__head">Pengguna admin</div>
+      <div class="panel__body table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Email</th><th>Peran</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>demo@seosementara.org</td>
+              <td>super_admin</td>
+              <td><span class="badge badge-success">Aktif</span></td>
+              <td>
+                <button type="button" class="btn btn-sm btn-outline"
+                  hx-get="/admin/_partials/drawer-user.html"
+                  hx-target="#app-drawer"
+                  hx-swap="innerHTML">Edit</button>
+              </td>
+            </tr>
+            <tr>
+              <td>worker1@example.com</td>
+              <td>worker</td>
+              <td><span class="badge badge-success">Aktif</span></td>
+              <td>
+                <button type="button" class="btn btn-sm btn-outline"
+                  hx-get="/admin/_partials/drawer-user.html"
+                  hx-target="#app-drawer"
+                  hx-swap="innerHTML">Edit</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

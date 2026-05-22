@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login — Seosementara Admin</title>
+  <link rel="stylesheet" href="/static/css/admin.css" />
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card">
+      <h1>Seosementara CMS</h1>
+      <p>Masuk ke panel admin pekerja.</p>
+      <form action="/admin/index.html" method="get">
+        <div class="form-row" style="margin-bottom:1rem">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="username" required />
+        </div>
+        <div class="form-row" style="margin-bottom:1.25rem">
+          <label for="password">Kata sandi</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Masuk (prototype)</button>
+      </form>
+      <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">
+        Prototype: submit membuka <a href="/admin/index.html">dashboard</a> tanpa auth.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

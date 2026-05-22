@@ -1,0 +1,107 @@
+<div class="drawer-header">
+  <div>
+    <h2>rezekibelanja.com</h2>
+    <span class="drawer-mode">Edit</span>
+  </div>
+  <button type="button" class="btn-icon" data-close-drawer aria-label="Tutup">×</button>
+</div>
+
+<div class="drawer-read-strip">
+  <span><strong>Status:</strong> Aktif</span>
+  <span><strong>ID:</strong> 1042</span>
+  <span><strong>Ditambah:</strong> 2024-08-12</span>
+  <span><strong>Diubah:</strong> 2026-05-20</span>
+</div>
+
+<div class="drawer-body">
+  <nav class="drawer-tabs" role="tablist">
+    <button type="button" class="is-active" data-drawer-tab="domain">Domain</button>
+    <button type="button" data-drawer-tab="tema">Tema</button>
+    <button type="button" data-drawer-tab="owner">Kepemilikan</button>
+    <button type="button" data-drawer-tab="share">Pembagian</button>
+    <button type="button" data-drawer-tab="seo">SEO</button>
+  </nav>
+
+  <div data-drawer-panel="domain">
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Hostname</label>
+        <input type="text" value="rezekibelanja.com" readonly />
+      </div>
+      <div class="form-row">
+        <label>Status</label>
+        <select>
+          <option selected>Aktif</option>
+          <option>Maintenance</option>
+          <option>Nonaktif</option>
+        </select>
+      </div>
+      <div class="form-row" style="grid-column:1/-1">
+        <label>Catatan operasi</label>
+        <textarea placeholder="Catatan internal…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div data-drawer-panel="tema" hidden>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Template situs <span class="hint" title="Tema tampilan publik domain portfolio">(i)</span></label>
+        <select>
+          <option>Default blog</option>
+          <option>Landing minimal</option>
+          <option>Magazine</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Logo URL</label>
+        <input type="url" placeholder="https://…" />
+      </div>
+    </div>
+  </div>
+
+  <div data-drawer-panel="owner" hidden>
+    <div class="form-row">
+      <label>Owner saat ini</label>
+      <input type="text" value="demo@seosementara.org" readonly />
+    </div>
+    <p style="font-size:0.85rem;color:var(--text-muted)">Transfer kepemilikan — hanya Super Admin (besok: API).</p>
+  </div>
+
+  <div data-drawer-panel="share" hidden>
+    <p style="font-size:0.9rem">Undang co-admin dengan preset read / edit / co-admin.</p>
+    <button type="button" class="btn btn-outline btn-sm">+ Undang admin</button>
+  </div>
+
+  <div data-drawer-panel="seo" hidden>
+    <div class="form-grid">
+      <div class="form-row" style="grid-column:1/-1">
+        <label>Default meta title</label>
+        <input type="text" value="Rezeki Belanja — Tips &amp; Review" />
+      </div>
+      <div class="form-row" style="grid-column:1/-1">
+        <label>Default meta description</label>
+        <textarea rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <label>Robots default</label>
+        <select>
+          <option>index, follow</option>
+          <option>noindex, follow</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-footer">
+  <div class="drawer-footer__icons">
+    <button type="button" class="btn-icon btn-icon--danger" title="Nonaktifkan">🗑</button>
+    <button type="button" class="btn-icon" title="DNS catatan">📄</button>
+    <button type="button" class="btn-icon" title="Pixel">📊</button>
+  </div>
+  <div class="drawer-footer__actions">
+    <button type="button" class="btn btn-outline" data-close-drawer>Batal</button>
+    <button type="button" class="btn btn-primary">Simpan</button>
+  </div>
+</div>

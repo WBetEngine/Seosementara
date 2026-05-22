@@ -1,0 +1,8 @@
+{
+  "name": "seosementara-admin-ui",
+  "private": true,
+  "scripts": {
+    "dev": "npx --yes serve public -l 8788",
+    "pages:dev": "npx --yes wrangler pages dev public --port 8788"
+  }
+}
