@@ -477,10 +477,429 @@ Field yang **tidak** boleh masuk CAPI: email plain, telepon plain, nama plain (k
 
 ---
 
-## 19. Dokumen terkait
+## 19. Hybrid vs Server-Only (`server_first`) — Keputusan per Domain
+
+### 19.1 Tiga mode (ringkas)
+
+| Mode | Browser memuat | CAPI | Dedup |
+|------|----------------|------|-------|
+| **`server_first`** | Hanya `sseo-track.js` → `/collect` | Ya, satu-satunya jalur ke Meta | `event_id` untuk retry |
+| **`hybrid`** | `sseo-track.js` + **`fbq` tipis** (init + track + `eventID`) | Ya, paralel | **Wajib** `event_id` identik browser & CAPI |
+| **`legacy_client`** | Skrip `fbq` penuh dari Meta | Opsional backup | Sulit — hindari di Pro |
+
+**Default CMS:** `server_first` di `pixel_hub_settings.default_mode`.  
+**Override:** per `pixel_configs` atau per `managed_domain` (lihat §19.4).
+
+---
+
+### 19.2 Matriks keputusan — kapan pakai mode apa
+
+| Kondisi domain / bisnis | Mode disarankan | Alasan CAPI |
+|-------------------------|-----------------|-------------|
+| Shortlink only, redirect cepat | `server_first` | Tidak ada waktu load `fbq`; CAPI dari server saat klik |
+| Landing SEO, Core Web Vitals ketat | `server_first` | Satu skrip kecil; PageSpeed tidak kena `connect.facebook.net` |
+| Toko / checkout, EMQ rendah di server | `hybrid` | Browser bantu `fbp` + cookie Meta asli |
+| Kampanye iklan aktif + `fbclid` sering | `hybrid` | `fbc` dari browser lebih konsisten |
+| Migrasi dari tema lama yang sudah `fbq` | `hybrid` → lalu `server_first` | Transisi dedup dulu |
+| EU + consent ketat | `server_first` + consent gate | Kurangi skrip pihak ketiga di browser |
+| EMQ sudah ≥ 8/10 hanya dengan CAPI | `server_first` | Hybrid tidak menambah nilai, risiko duplikat |
+| Debug Events Manager tidak cocok | `hybrid` sementara | Bandingkan Browser vs Server di UI Meta |
+
+---
+
+### 19.3 Dampak ke payload CAPI per mode
+
+| Aspek | `server_first` | `hybrid` |
+|-------|----------------|----------|
+| Sumber `fbp` / `fbc` | Cookie dibaca `sseo-track.js`, dikirim di body `/collect` | Bisa dari cookie **dan** dari `fbq` internal |
+| `event_id` | Generate di Hub ingest | **Sama** dijawab ke browser via `data-event-id` / config |
+| `event_time` | Waktu ingest (dekat aksi user) | Samakan ± 2 detik dengan browser track |
+| Duplikat di Meta | Hanya risiko retry CAPI | Risiko browser+CAPI → **dedup wajib** |
+| Beban Meta API | 1 event per aksi | Tetap 1 setelah dedup (ideal) |
+| PageSpeed | Terbaik | Sedikit lebih berat (load `fbq`) |
+
+**Aturan emas hybrid:**  
+Jika `hybrid` aktif dan `event_id` tidak sama → Meta bisa hitung **2 konversi** atau EMQ kacau. Hub **harus** menolak dispatch CAPI jika browser branch gagal menyetel `event_id` (opsi strict Pro).
+
+---
+
+### 19.4 Hierarki override mode (per domain)
+
+```mermaid
+flowchart TD
+  G[pixel_hub_settings.default_mode]
+  P[pixel_configs.mode_override - scope global]
+  Gr[pixel_group_policy.mode]
+  D[managed_domain_meta.pixel_mode]
+  S[pixel_configs scope=managed_domain]
+  G --> P
+  P --> Gr
+  Gr --> D
+  D --> S
+  S --> R[Mode efektif untuk CAPI dispatch]
+```
+
+| Prioritas | Sumber | Contoh |
+|-----------|--------|--------|
+| 1 (tertinggi) | `pixel_configs` scope `managed_domain` | Domain `rezekibelanja.com` → `hybrid` |
+| 2 | `managed_domain_meta.pixel_mode` | JSON meta domain |
+| 3 | `pixel_group_policy` | Grup “e-commerce ID” → `hybrid` |
+| 4 | `pixel_configs` scope `global` | Default agensi |
+| 5 | `pixel_hub_settings.default_mode` | `server_first` |
+
+**Field meta domain (usulan):**
+
+```json
+{
+  "pixel_mode": "server_first",
+  "pixel_config_id": 12,
+  "hybrid_strict_dedup": true,
+  "capi_enabled": true
+}
+```
+
+---
+
+### 19.5 Implementasi hybrid di browser (konsep, tanpa coding)
+
+| Langkah | Pelaku |
+|---------|--------|
+| 1 | Hub generate `event_id` di respons `/collect` |
+| 2 | `sseo-track.js` simpan `event_id` untuk page |
+| 3 | Jika mode efektif = `hybrid`, load `fbq` **setelah** consent (jika ada) |
+| 4 | `fbq('init', pixelId)` sekali per page |
+| 5 | `fbq('track', eventName, {}, { eventID: event_id })` — **eventID** = `event_id` CAPI |
+| 6 | Hub dispatch CAPI dengan `event_id` identik |
+
+**Jangan** di hybrid: memuat pixel plugin tambahan, multiple `fbq('init')`, atau event_name berbeda browser vs server.
+
+---
+
+### 19.6 Perbandingan operasional
+
+| Metrik | `server_first` | `hybrid` | `legacy_client` |
+|--------|----------------|----------|-----------------|
+| Recovery dari adblock | Tinggi | Sedang–tinggi | Rendah |
+| EMQ maksimal | Tinggi jika data form lengkap | Sering **tertinggi** | Bervariasi |
+| Kompleksitas operator | Rendah | Sedang | Rendah awal, tinggi skala |
+| Risiko double count | Rendah | Sedang (jika dedup salah) | Tinggi |
+| Cocok 3000 domain | **Ya** (default) | Per grup / domain kunci | **Tidak** |
+
+---
+
+### 19.7 Migrasi mode (playbook)
+
+| Dari | Ke | Langkah |
+|------|-----|---------|
+| `legacy_client` | `hybrid` | Matikan snippet tema; aktifkan Hub + `fbq` tipis; uji dedup 48j |
+| `hybrid` | `server_first` | Monitor EMQ 7 hari; jika stabil, matikan `fbq`; CAPI saja |
+| `server_first` | `hybrid` | Hanya jika EMQ < 6 atau Meta sarankan browser signal |
+
+**Rollback:** simpan `mode_override` lama di audit log; propagasi massal via job [21] §2.4.
+
+---
+
+### 19.8 UI admin — keputusan per domain
+
+| Layar | Field | Validasi |
+|-------|-------|----------|
+| Domains → edit domain | Mode efektif (read-only computed) | Tampilkan sumber override |
+| Domains → edit domain | Override mode (select) | `server_first` / `hybrid` |
+| Setup global | Default mode | Tidak menimpa override domain |
+| Diagnostics | Split metrik per mode | Bandingkan EMQ hybrid vs server |
+
+**Alert:**
+
+| Kondisi | Pesan |
+|---------|-------|
+| Hybrid + dedup mismatch > 5% | “Periksa event_id browser vs CAPI” |
+| Server_first + EMQ < 4 | “Pertimbangkan hybrid atau tambah em/ph” |
+
+---
+
+## 20. Multi-Pixel — Banyak Advertiser di Ribuan Domain
+
+### 20.1 Pola organisasi (pilih satu atau campuran)
+
+| Pola | Deskripsi | Siapa |
+|------|-----------|-------|
+| **A — Satu pixel, banyak domain** | Satu Pixel ID Meta untuk semua domain portfolio | Agensi pusat, brand umbrella |
+| **B — Satu domain, satu pixel** | Setiap `managed_domain` punya Pixel ID sendiri | Advertiser independen |
+| **C — Satu domain, banyak pixel** | Beberapa pixel aktif (co-brand, A/B advertiser) | Marketplace / joint campaign |
+| **D — Banyak pixel, grup domain** | Pixel per grup bisnis (tag owner, vertical) | Ribuan domain tersegmentasi |
+
+**Seosementara** mendukung **B + D** sebagai default Pro; **A** untuk operasi pusat; **C** butuh aturan routing ketat (§20.5).
+
+---
+
+### 20.2 Struktur Meta (Business Manager)
+
+```mermaid
+flowchart TB
+  BM[Business Manager Seosementara / Klien]
+  BA1[Ad Account A]
+  BA2[Ad Account B]
+  P1[Pixel 111]
+  P2[Pixel 222]
+  P3[Pixel 333]
+  BM --> BA1
+  BM --> BA2
+  BA1 --> P1
+  BA2 --> P2
+  BA2 --> P3
+  D1[domain-a.com] -.-> P2
+  D2[domain-b.com] -.-> P2
+  D3[domain-c.com] -.-> P3
+```
+
+| Entitas Meta | Disimpan di CMS | Keterangan |
+|--------------|-----------------|------------|
+| Business Manager ID | `external_ids.business_id` | Opsional per pixel config |
+| Ad Account ID | `external_ids.ad_account_id` | Reporting spend (Enterprise) |
+| Pixel ID | `external_ids.pixel_id` | Unik per `pixel_configs` |
+| CAPI token | `pixel_credentials` | Bisa **per pixel** atau **per BM** (shared) |
+
+**Token shared vs per pixel:**
+
+| Strategi | Pro | Kontra |
+|----------|-----|--------|
+| Satu System User token per BM | Mudah rotasi massal | Scope luas — risiko keamanan |
+| Token per pixel | Isolasi advertiser | Banyak credential untuk 3000 domain |
+
+**Disarankan:** token **per Business Manager** + permission terbatas ke pixel dalam BM; untuk advertiser besar terpisah BM.
+
+---
+
+### 20.3 Model data CMS (multi-pixel)
+
+#### Tabel existing (diperluas konsep)
+
+| Tabel | Peran multi-pixel |
+|-------|-------------------|
+| `pixel_configs` | Satu baris = satu Pixel ID + credential ref |
+| `pixel_domain_assignments` | N:M domain ↔ pixel (`is_primary`, `priority`) |
+| `pixel_credentials` | 1:N configs bisa share credential_id |
+
+#### Tabel baru (usulan)
+
+```sql
+-- Grup domain untuk kebijakan pixel massal
+CREATE TABLE pixel_config_groups (
+  id            BIGSERIAL PRIMARY KEY,
+  name          TEXT NOT NULL,
+  description   TEXT,
+  default_mode  TEXT NOT NULL DEFAULT 'server_first',
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE pixel_group_members (
+  group_id           BIGINT NOT NULL REFERENCES pixel_config_groups(id) ON DELETE CASCADE,
+  managed_domain_id  BIGINT NOT NULL,
+  PRIMARY KEY (group_id, managed_domain_id)
+);
+
+-- Satu domain, banyak pixel: siapa menang
+CREATE TABLE pixel_routing_rules (
+  id                 BIGSERIAL PRIMARY KEY,
+  managed_domain_id  BIGINT NOT NULL,
+  pixel_config_id    BIGINT NOT NULL REFERENCES pixel_configs(id),
+  priority           INT NOT NULL DEFAULT 100,
+  match              JSONB NOT NULL DEFAULT '{}',
+  is_active          BOOLEAN NOT NULL DEFAULT true,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+**`pixel_domain_assignments` (kolom tambahan):**
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `is_primary` | bool | Pixel utama untuk CAPI default |
+| `priority` | int | Lebih kecil = lebih dulu |
+| `effective_from` | timestamptz | Jadwal kampanye |
+| `effective_to` | timestamptz | Akhir kampanye |
+
+---
+
+### 20.4 Routing event → pixel mana (CAPI)
+
+Saat `pixel_dispatch` jalan, Hub **memilih** `pixel_config_id` sebelum `POST /{pixel-id}/events`.
+
+```mermaid
+flowchart TD
+  E[canonical_event + managed_domain_id]
+  R1{Ada routing_rules?}
+  R2{Match event_name / canonical?}
+  R3{primary assignment?}
+  R4{global fallback?}
+  P1[pixel_config A]
+  P2[pixel_config B]
+  E --> R1
+  R1 -->|ya| R2
+  R2 -->|match| P1
+  R2 -->|tidak| R3
+  R1 -->|tidak| R3
+  R3 --> P1
+  R3 -->|kosong| R4
+  R4 --> P2
+```
+
+**Contoh `match` JSON di `pixel_routing_rules`:**
+
+```json
+{
+  "canonical_names": ["purchase", "lead"],
+  "channels": ["shortlink_redirect"],
+  "owner_tags": ["advertiser_x"]
+}
+```
+
+| Skenario | Aturan |
+|----------|--------|
+| Domain satu advertiser | Satu assignment `is_primary=true` |
+| Co-brand A + B | Dua pixel; `purchase` → pixel A, `lead` → pixel B via rules |
+| Agensi pusat | Pola A: semua domain → pixel global, bedakan `external_id` prefix |
+
+---
+
+### 20.5 Membedakan advertiser di CAPI (satu pixel, banyak domain)
+
+Jika **Pol A** (satu pixel untuk ribuan domain), Meta tetap menerima event tetapi **attribution** per domain lemah tanpa parameter tambahan.
+
+| Field CAPI | Cara bedakan domain |
+|------------|---------------------|
+| `event_source_url` | **Wajib** URL hostname domain yang benar |
+| `custom_data.content_name` | Slug domain atau kampanye |
+| `user_data.external_id` | `hash(owner_id + user_id)` — stabil per situs |
+| `custom_data` custom | `managed_domain_id`, `site_key` (custom property) |
+
+**Di admin:** laporan per `managed_domain_id` dari `pixel_events`, bukan hanya dari Meta UI.
+
+---
+
+### 20.6 Pola C — Satu domain, banyak pixel (hati-hati)
+
+| Risiko | Mitigasi |
+|--------|----------|
+| Double count Purchase | Satu pixel per `order_id` via routing; atau dedup berbeda `event_id` per pixel (2 konversi **sengaja** jika 2 advertiser bayar) |
+| Token campur | Credential terpisah per `pixel_config_id` |
+| EMQ terpecah | Setiap pixel punya checklist Connection sendiri |
+
+**Kebijakan bisnis yang harus disepakati:**
+
+| Model | Arti |
+|-------|------|
+| **Attribution split** | Satu purchase → kirim ke pixel A dan B (2x API call) |
+| **Winner-takes-all** | Routing rules pilih satu pixel |
+| **Primary + observer** | Primary kirim full; secondary hanya `PageView` |
+
+Tercatat di `pixel_routing_rules` + kontrak owner domain.
+
+---
+
+### 20.7 Skala ribuan domain — operasi massal
+
+| Operasi | Mekanisme | Batas |
+|---------|-----------|-------|
+| Assign pixel ke 500 domain | Job `pixel_bulk_assign` chunk 200 | Tidak di HTTP sync |
+| Ganti pixel grup “fashion” | Update `pixel_group_members` + deploy job | Invalidate cache snippet |
+| Rotasi token BM | Satu credential, semua configs refer | Grace 24j |
+| Nonaktif domain | `is_active=false` — stop CAPI, jangan hapus history | |
+
+**Index wajib:**
+
+```sql
+CREATE INDEX idx_pixel_domain_assign_domain
+  ON pixel_domain_assignments (managed_domain_id, is_active);
+
+CREATE INDEX idx_pixel_events_domain_time
+  ON pixel_events (managed_domain_id, created_at DESC)
+  WHERE platform = 'facebook';
+```
+
+---
+
+### 20.8 RBAC & isolasi advertiser
+
+| Role | Lihat pixel | Edit credential | Assign domain |
+|------|-------------|-----------------|---------------|
+| Super Admin | Semua | Ya | Semua |
+| Platform Manager | Semua | Ya (rotasi) | Semua |
+| Owner domain | Hanya pixel domain milik + share | Tidak (kecuali `pixel.manage` granted) | Domain sendiri |
+| Pekerja share | Pixel yang di-assign domain | Tidak | Tidak |
+
+**Filter query wajib:** `managed_domain_id IN (accessible_domains(user))` pada tab Events & Analytics.
+
+---
+
+### 20.9 Rate limit & beban multi-pixel
+
+| Faktor | Estimasi |
+|--------|----------|
+| 3000 domain, 10 pageview/hari/domain | ~30k event/hari |
+| 100 pixel configs aktif | 30k dispatch tetap 30k calls jika routing 1:1 |
+| Pol A (1 pixel) | **1x** API call per event — paling efisien |
+| Pol C (3 pixel/domain) | **3x** calls — perlu batch & queue |
+
+**Hub:**
+
+| Parameter | Nilai multi-pixel |
+|-----------|-------------------|
+| Worker concurrency | Per `pixel_config_id` queue atau fair round-robin |
+| 429 backoff | Per token BM, pause semua configs di BM itu |
+| Prioritas | `purchase` > `lead` > `page_view` |
+
+---
+
+### 20.10 Monitoring per pixel & per domain
+
+| Dashboard | Dimensi |
+|-----------|---------|
+| Connection | Per `pixel_config_id` — token, EMQ checklist |
+| Events | Filter `managed_domain_id` + `pixel_config_id` |
+| Analytics | Pivot: domain × event_name × sent/failed |
+| Billing proxy | Event count per owner (internal chargeback) |
+
+**Alert multi-pixel:**
+
+| Kondisi | Aksi |
+|---------|------|
+| Domain tanpa primary pixel | Warning di Domains |
+| Dua primary `is_primary=true` | Error blocking deploy |
+| Routing rule bentrok (same priority) | Warning + resolve UI |
+
+---
+
+### 20.11 Troubleshooting multi-pixel
+
+| Gejala | Penyebab | Solusi |
+|--------|----------|--------|
+| Event masuk pixel salah | Routing rule / priority | Perbaiki `pixel_routing_rules` |
+| Domain tidak terhitung di Ads | Pixel B aktif, primary A | Set primary atau unified reporting |
+| EMQ bagus di pixel A, jelek di B | Token B expired | Connection tab per config |
+| 403 hanya sebagian domain | Pixel tidak di BM token | Assign pixel ke BM atau token baru |
+| Duplikat purchase 2 pixel | Attribution split aktif | Sesuaikan kebijakan bisnis |
+
+---
+
+### 20.12 Checklist multi-pixel go-live
+
+- [ ] Pola A/B/C/D disepakati per segmen domain
+- [ ] Setiap `pixel_configs` punya Pixel ID + token valid di BM yang sama
+- [ ] Tiap domain aktif punya **tepat satu** `is_primary` (kecuali split disengaja)
+- [ ] Routing rules untuk co-brand / multi-pixel
+- [ ] `event_source_url` sesuai hostname domain portfolio
+- [ ] RBAC: owner hanya lihat pixel domain sendiri
+- [ ] Job mass assign diuji pada 200 domain sample
+- [ ] Rate limit simulation untuk puncak traffic
+
+---
+
+## 21. Dokumen terkait
 
 - [21-pixel-facebook-pro.md](./21-pixel-facebook-pro.md)
 - [22-pixel-protokol-komunikasi-dan-data.md](./22-pixel-protokol-komunikasi-dan-data.md)
+- [10-database-postgresql.md](./10-database-postgresql.md) — `managed_domains`
 - Meta Developers: [Conversions API](https://developers.facebook.com/docs/marketing-api/conversions-api)
 - Meta: [Parameters](https://developers.facebook.com/docs/marketing-api/conversions-api/parameters)
 - Meta: [Dedup](https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events)

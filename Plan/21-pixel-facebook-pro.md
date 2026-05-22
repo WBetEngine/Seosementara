@@ -78,17 +78,20 @@ Kolaborasi **status hidup** dengan Meta — bukan sekadar “connected / tidak�
 
 ### 2.4 Domains (`.../domains`)
 
-Mass collaboration untuk **ribuan domain portfolio**.
+Mass collaboration untuk **ribuan domain portfolio**.  
+**Mode pelacakan per domain:** [23 §19](./23-meta-conversions-api-kedalaman.md#19-hybrid-vs-server-only-server_first--keputusan-per-domain)  
+**Multi-pixel & routing:** [23 §20](./23-meta-conversions-api-kedalaman.md#20-multi-pixel--banyak-advertiser-di-ribuan-domain)
 
 | Fitur | Data | Perilaku |
 |-------|------|----------|
 | Pencarian domain | hostname, owner, tag, status | Pagination 50 |
-| Assign pixel ke domain | `pixel_domain_assignments` | Satu domain bisa 1 pixel aktif default |
-| Template grup | “Semua domain owner X” → pixel Y | Job batch, bukan loop manual |
-| Kebijakan inherit | global → override per domain | Child domain menimpa parent |
-| Status deploy | `pending` / `deployed` / `failed` | Snippet/meta terupdate via job |
-| Simulasi event | pilih domain → fire test `PageView` | Muncul di Events Manager dengan label domain |
-| Verifikasi domain Meta | checklist DNS / meta-tag | Status per domain |
+| Assign pixel ke domain | `pixel_domain_assignments` + `is_primary`, `priority` | Lihat multi-pixel §20 |
+| Override mode | `server_first` / `hybrid` per domain | Hierarki override §19.4 |
+| Template grup | `pixel_config_groups` + members | Job batch |
+| Routing co-brand | `pixel_routing_rules` | Event → pixel A/B |
+| Status deploy | `pending` / `deployed` / `failed` | Snippet/meta via job |
+| Simulasi event | per domain + pixel config | Test Events dengan `event_source_url` benar |
+| Verifikasi domain Meta | checklist DNS / meta-tag | Per hostname |
 
 ### 2.5 Diagnostics (`.../diagnostics`)
 
