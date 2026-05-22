@@ -12,13 +12,15 @@ import (
 	"time"
 
 	"github.com/WBetEngine/Seosementara/Backend/internal/config"
-	"github.com/WBetEngine/Seosementara/Backend/internal/crypto"
 	"github.com/WBetEngine/Seosementara/Backend/internal/handler"
+	authmw "github.com/WBetEngine/Seosementara/Backend/internal/middleware"
 	"github.com/WBetEngine/Seosementara/Backend/internal/pixel/facebook"
 	"github.com/WBetEngine/Seosementara/Backend/internal/pixel/service"
 	"github.com/WBetEngine/Seosementara/Backend/internal/pixel/store"
+	setupservice "github.com/WBetEngine/Seosementara/Backend/internal/setup/service"
+	setupstore "github.com/WBetEngine/Seosementara/Backend/internal/setup/store"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,9 +28,34 @@ func main() {
 	cfg := config.Load()
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	st, encKey := openStore(cfg, logger)
+	encKey, err := cfg.ResolveEncryptionKey()
+	if err != nil {
+		logger.Warn("encryption", "err", err, "msg", "dev key")
+		encKey, _ = devKey()
+	}
+
+	var pool *pgxpool.Pool
+	if cfg.DatabaseURL != "" {
+		pool, err = pgxpool.New(context.Background(), cfg.DatabaseURL)
+		if err != nil {
+			logger.Error("postgres", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("database", "type", "postgres")
+	}
+
+	var pixelSt store.PixelStore = store.NewMemoryStore()
+	var setupSt setupstore.SetupStore = setupstore.NewMemoryStore()
+	if pool != nil {
+		pixelSt = store.NewPostgresStore(pool)
+		setupSt = setupstore.NewPostgresStore(pool)
+	} else {
+		logger.Info("database", "type", "memory", "hint", "set DATABASE_URL for production")
+	}
+
 	capi := facebook.NewCAPIClient()
-	fbSvc := service.NewFacebookService(st, capi, encKey)
+	fbSvc := service.NewFacebookService(pixelSt, capi, encKey)
+	setupSvc := setupservice.NewSetupService(setupSt, encKey)
 
 	tpl, err := handler.LoadTemplates(cfg.AdminTemplatesDir)
 	if err != nil {
@@ -36,10 +63,11 @@ func main() {
 	}
 
 	adminFB := &handler.AdminPixelFacebook{Svc: fbSvc, Templates: tpl}
+	adminCF := &handler.AdminCloudflare{Svc: setupSvc, PartialsDir: cfg.AdminPartialsDir}
 	collect := &handler.CollectHandler{FB: fbSvc}
 
 	r := chi.NewRouter()
-	r.Use(middleware.RequestID, middleware.RealIP, middleware.Logger, middleware.Recoverer)
+	r.Use(chimw.RequestID, chimw.RealIP, chimw.Logger, chimw.Recoverer)
 
 	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("ok"))
@@ -61,6 +89,9 @@ func main() {
 		r.Post("/domains/assign", adminFB.APIAssignDomain)
 	})
 
+	guard := authmw.RequireSuperAdmin
+	handler.MountCloudflare(r, adminCF, guard)
+
 	// background dispatcher
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -81,38 +112,6 @@ func main() {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 	_ = srv.Shutdown(shutdownCtx)
-}
-
-func openStore(cfg config.Config, logger *slog.Logger) (store.PixelStore, []byte) {
-	if cfg.DatabaseURL != "" {
-		pool, err := pgxpool.New(context.Background(), cfg.DatabaseURL)
-		if err != nil {
-			logger.Error("postgres", "err", err)
-			os.Exit(1)
-		}
-		logger.Info("store", "type", "postgres")
-		key, err := resolveEncKey(cfg.PixelEncryptionKey)
-		if err != nil {
-			logger.Warn("encryption", "err", err, "msg", "dev key generated")
-			key, _ = devKey()
-		}
-		return store.NewPostgresStore(pool), key
-	}
-	logger.Info("store", "type", "memory", "hint", "set DATABASE_URL for production")
-	key, _ := devKey()
-	if cfg.PixelEncryptionKey != "" {
-		if k, err := crypto.KeyFromEnv(cfg.PixelEncryptionKey); err == nil {
-			key = k
-		}
-	}
-	return store.NewMemoryStore(), key
-}
-
-func resolveEncKey(b64 string) ([]byte, error) {
-	if b64 != "" {
-		return crypto.KeyFromEnv(b64)
-	}
-	return devKey()
 }
 
 func devKey() ([]byte, error) {

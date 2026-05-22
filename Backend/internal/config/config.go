@@ -6,12 +6,15 @@ import (
 )
 
 type Config struct {
-	Addr               string
-	DatabaseURL        string
-	PixelEncryptionKey string
-	AdminTemplatesDir  string
-	StaticDir          string
+	Addr                string
+	DatabaseURL         string
+	PixelEncryptionKey  string
+	MasterEncryptionKey string
+	AdminTemplatesDir   string
+	AdminPartialsDir    string
+	StaticDir           string
 	DispatchIntervalSec int
+	SuperAdminToken     string
 }
 
 func Load() Config {
@@ -19,9 +22,12 @@ func Load() Config {
 		Addr:                getenv("ADDR", ":8080"),
 		DatabaseURL:         os.Getenv("DATABASE_URL"),
 		PixelEncryptionKey:  os.Getenv("PIXEL_ENCRYPTION_KEY"),
+		MasterEncryptionKey: os.Getenv("MASTER_ENCRYPTION_KEY"),
 		AdminTemplatesDir:   getenv("ADMIN_TEMPLATES_DIR", "../Frontend-admin/templates"),
+		AdminPartialsDir:    getenv("ADMIN_PARTIALS_DIR", "../Frontend-admin/public/admin/_partials"),
 		StaticDir:           getenv("STATIC_DIR", "../Frontend-admin/static"),
 		DispatchIntervalSec: getenvInt("PIXEL_DISPATCH_INTERVAL_SEC", 10),
+		SuperAdminToken:     os.Getenv("SUPER_ADMIN_TOKEN"),
 	}
 }
 

@@ -103,6 +103,16 @@
         "/admin/plugins/pixel/facebook": "overview",
       };
       key = pixelMap[path] || "overview";
+    } else if (path.indexOf("/admin/settings/cloudflare") === 0) {
+      var cfMap = {
+        "/admin/settings/cloudflare/koneksi": "koneksi",
+        "/admin/settings/cloudflare/domain": "domain",
+        "/admin/settings/cloudflare/tunnel": "tunnel",
+        "/admin/settings/cloudflare/pages": "pages",
+        "/admin/settings/cloudflare/dns": "dns",
+        "/admin/settings/cloudflare": "koneksi",
+      };
+      key = cfMap[path] || "koneksi";
     }
 
     if (!key) return;
@@ -132,7 +142,22 @@
   window.closeDrawer = closeDrawer;
   window.setActiveNav = setActiveNav;
 
+  function applyApiBase() {
+    var base = document.body.getAttribute("data-api-base");
+    var token = document.body.getAttribute("data-super-admin-token");
+    if (!base) return;
+    document.querySelectorAll("[data-hx-api]").forEach(function (el) {
+      var path = el.getAttribute("data-hx-api");
+      if (path) el.setAttribute("hx-get", base.replace(/\/$/, "") + path);
+    });
+    if (token && typeof htmx !== "undefined") {
+      htmx.config.headers = htmx.config.headers || {};
+      htmx.config.headers["Authorization"] = "Bearer " + token;
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    applyApiBase();
     if (typeof htmx === "undefined") {
       console.error(
         "[Seosementara Admin] HTMX tidak termuat. Pastikan /static/js/htmx.min.js dapat diakses."
@@ -185,7 +210,8 @@
     if (
       target.id === "main" ||
       target.id === "page-tab-panel" ||
-      target.id === "pixel-tab-panel"
+      target.id === "pixel-tab-panel" ||
+      target.id === "cf-tab-panel"
     ) {
       var root =
         target.id === "main"

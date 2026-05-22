@@ -46,7 +46,7 @@ func DecryptAESGCM(key []byte, ciphertext, nonce []byte) ([]byte, error) {
 
 func KeyFromEnv(b64 string) ([]byte, error) {
 	if b64 == "" {
-		return nil, errors.New("PIXEL_ENCRYPTION_KEY is required for credential storage")
+		return nil, errors.New("encryption key is required (MASTER_ENCRYPTION_KEY or PIXEL_ENCRYPTION_KEY)")
 	}
 	raw, err := base64.StdEncoding.DecodeString(b64)
 	if err != nil {

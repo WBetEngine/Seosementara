@@ -32,22 +32,28 @@
   <div>
     <nav class="page-tabs" role="tablist" aria-label="Tab Cloudflare">
       <button type="button" class="is-active" data-page-tab="koneksi"
+        data-hx-static="/admin/_partials/settings-cf-koneksi.html"
+        data-hx-api="/api/admin/settings/cloudflare/koneksi"
         hx-get="/admin/_partials/settings-cf-koneksi.html"
         hx-target="#cf-tab-panel" hx-swap="innerHTML"
         hx-push-url="/admin/settings/cloudflare/koneksi">Koneksi</button>
       <button type="button" data-page-tab="domain"
+        data-hx-api="/api/admin/settings/cloudflare/domain"
         hx-get="/admin/_partials/settings-cf-domain.html"
         hx-target="#cf-tab-panel" hx-swap="innerHTML"
         hx-push-url="/admin/settings/cloudflare/domain">Domain &amp; env</button>
       <button type="button" data-page-tab="tunnel"
+        data-hx-api="/api/admin/settings/cloudflare/tunnel"
         hx-get="/admin/_partials/settings-cf-tunnel.html"
         hx-target="#cf-tab-panel" hx-swap="innerHTML"
         hx-push-url="/admin/settings/cloudflare/tunnel">Tunnel</button>
       <button type="button" data-page-tab="pages"
+        data-hx-api="/api/admin/settings/cloudflare/pages"
         hx-get="/admin/_partials/settings-cf-pages.html"
         hx-target="#cf-tab-panel" hx-swap="innerHTML"
         hx-push-url="/admin/settings/cloudflare/pages">Pages</button>
       <button type="button" data-page-tab="dns"
+        data-hx-api="/api/admin/settings/cloudflare/dns"
         hx-get="/admin/_partials/settings-cf-dns.html"
         hx-target="#cf-tab-panel" hx-swap="innerHTML"
         hx-push-url="/admin/settings/cloudflare/dns">DNS</button>
