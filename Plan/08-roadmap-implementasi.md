@@ -108,7 +108,8 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Item | Detail |
 |------|--------|
 | Doc | [20](./20-pixel-admin-facebook-tiktok-gads.md) — menggantikan peran Stape/GTM SS/CAPIG secara native |
-| **Facebook Pro (kode)** | [21](./21-pixel-facebook-pro.md) — Backend + admin 7 tab + CAPI + collect |
+| **Facebook Pro (spec)** | [21](./21-pixel-facebook-pro.md) + [22](./22-pixel-protokol-komunikasi-dan-data.md) — fitur, data, protokol |
+| **Facebook Pro (kode)** | Setelah spec disetujui — Backend + admin + CAPI |
 | MVP | `pelacak.*` first-party + `sseo-track.js` + `/collect` + CAPI Facebook + worker `pixel_dispatch` |
 | Fase 2 | Event catalog + fan-out TikTok & GAds |
 | Fase 3 | Mass deploy ribuan domain + privacy hash + consent |

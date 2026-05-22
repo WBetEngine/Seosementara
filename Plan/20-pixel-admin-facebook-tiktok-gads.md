@@ -1,6 +1,7 @@
 # 20 — Pixel Hub: Kolaborasi dengan Facebook, TikTok & Google Ads
 
 > Modul **`/admin/pixel/*`** bukan sekadar form “tempel Pixel ID”. Ini adalah **wadah kolaborasi** antara tim Anda dan platform iklan — setara peran **Stape.io**, **GTM Server-Side**, atau **Meta CAPI Gateway**, tetapi **native** di CMS Seosementara, dioptimalkan untuk **ribuan domain** dari satu panel.  
+> **Spesifikasi Pro (fitur lengkap, data, komunikasi):** [21 Facebook Pro](./21-pixel-facebook-pro.md) · [22 Protokol & data](./22-pixel-protokol-komunikasi-dan-data.md)  
 > Selaras: [13](./13-setup-backend-dan-sistem.md), [11](./11-rbac-dan-permission-share.md), [14](./14-setup-meta-dan-seo.md), [15](./15-setup-cloudflare-integrasi.md), [19](./19-modul-url-shortlink.md).
 
 ---
@@ -428,23 +429,24 @@ Semua bisa di-override di Event Catalog tanpa ubah kode Go.
 
 ---
 
-## 17. Checklist
+## 17. Checklist (implementasi — setelah spec disetujui)
 
+Lihat checklist teknis di [22](./22-pixel-protokol-komunikasi-dan-data.md) §11–12 dan [21](./21-pixel-facebook-pro.md) §2–7.
+
+- [ ] Spec Pro Facebook & protokol data disetujui stakeholder
 - [ ] `pixel_hub_settings` + hostname `pelacak.*` di CF
-- [ ] Endpoint `POST /collect` + `sseo-track.js`
-- [ ] Worker `pixel_dispatch` + retry
-- [ ] UI `/admin/pixel/` overview + `/admin/pixel/hub/settings`
-- [ ] UI kolaborasi `/admin/pixel/facebook/*` (setup, connection, diagnostics)
-- [ ] Event catalog `/admin/pixel/events/`
-- [ ] Mass deploy job
-- [ ] Privacy gateway (hash + consent)
-- [ ] TikTok & GAds fan-out
-- [ ] RBAC permissions
+- [ ] Canonical schema + privacy gateway
+- [ ] Worker `pixel_dispatch` + dead letter + reconciler
+- [ ] UI kolaborasi `/admin/pixel/facebook/*` (7 tab Pro)
+- [ ] Event catalog + TikTok & GAds mapping
+- [ ] Mass deploy + RBAC
 
 ---
 
 ## 18. Dokumen Terkait
 
+- [21-pixel-facebook-pro.md](./21-pixel-facebook-pro.md) — **Fitur Pro Facebook (dokumen utama kanal pertama)**
+- [22-pixel-protokol-komunikasi-dan-data.md](./22-pixel-protokol-komunikasi-dan-data.md) — **Data & protokol komunikasi lengkap**
 - [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)
 - [08-roadmap-implementasi.md](./08-roadmap-implementasi.md)
 - [11-rbac-dan-permission-share.md](./11-rbac-dan-permission-share.md)

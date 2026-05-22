@@ -1,16 +1,11 @@
 # Seosementara
 
-CMS untuk operasi massal domain & iklan. Dokumentasi: `Plan/`. Kode aktif: **Pixel Facebook Pro** (MVP).
+CMS untuk operasi massal domain & iklan.
 
-## Mulai cepat — Pixel Facebook Pro
+**Dokumentasi Pixel (perencanaan):**
 
-```bash
-cd Backend
-openssl rand -base64 32   # simpan sebagai PIXEL_ENCRYPTION_KEY
-export PIXEL_ENCRYPTION_KEY="..."
-export ADMIN_TEMPLATES_DIR="../Frontend-admin/templates"
-export STATIC_DIR="../Frontend-admin/static"
-go run ./cmd/api
-```
+- [Plan/20](Plan/20-pixel-admin-facebook-tiktok-gads.md) — Pixel Hub umum
+- [Plan/21](Plan/21-pixel-facebook-pro.md) — **Facebook Pro: fitur profesional & kolaborasi Meta**
+- [Plan/22](Plan/22-pixel-protokol-komunikasi-dan-data.md) — **Protokol komunikasi & data lengkap**
 
-Admin: http://localhost:8080/admin/pixel/facebook/
+Implementasi kode mengikuti setelah spec disetujui (`Backend/` draft opsional).
