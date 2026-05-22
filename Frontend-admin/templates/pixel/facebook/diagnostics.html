@@ -1,0 +1,14 @@
+{{define "pixel/facebook/diagnostics.html"}}{{template "pixel_head" .}}
+<section hx-get="/api/admin/pixel/facebook/diagnostics" hx-trigger="load, every 30s" hx-swap="none">
+  <h2>Diagnostics</h2>
+  {{if .Diag}}
+  <div class="grid-stats">
+    <div class="stat warn"><span class="label">Pending</span><span class="value">{{.Diag.PendingCount}}</span></div>
+    <div class="stat"><span class="label">Failure rate 24j</span><span class="value">{{printf "%.1f" .Diag.FailureRatePct}}%</span></div>
+    <div class="stat"><span class="label">State</span><span class="value">{{.Diag.ConnectionState}}</span></div>
+  </div>
+  {{if .Diag.LastError}}<pre class="log error">{{.Diag.LastError}}</pre>{{end}}
+  <p class="muted">Recovery rate vs adblock: bandingkan sent vs received setelah first-party aktif.</p>
+  {{end}}
+</section>
+{{template "pixel_foot" .}}{{end}}

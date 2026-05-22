@@ -1,0 +1,44 @@
+{{define "pixel/facebook/setup.html"}}{{template "pixel_head" .}}
+<section>
+  <h2>Setup — Meta Pixel & CAPI</h2>
+  <form id="fb-setup" hx-post="/api/admin/pixel/facebook/setup" hx-swap="none"
+        hx-on::after-request="if(event.detail.successful) alert('Setup disimpan')">
+    <label>Nama konfigurasi<input name="name" value="{{if .Config}}{{.Config.Name}}{{else}}Facebook Global{{end}}"></label>
+    <label>Pixel ID<input name="pixel_id" required value="{{if .Config}}{{.Config.PixelID}}{{end}}" placeholder="1234567890"></label>
+    <label>Business ID (opsional)<input name="business_id" value="{{if .Config}}{{.Config.BusinessID}}{{end}}"></label>
+    <label>CAPI Access Token<input name="capi_access_token" type="password" placeholder="•••••••• (kosongkan jika tidak ubah)"></label>
+    <label>Test Event Code<input name="test_event_code" value="{{if .Config}}{{.Config.TestEventCode}}{{end}}" placeholder="TEST12345"></label>
+    <label><input type="checkbox" name="capi_enabled" checked> Aktifkan CAPI (server-side)</label>
+    <label><input type="checkbox" name="browser_pixel_enabled"> Aktifkan browser pixel (hybrid)</label>
+    <button type="submit">Simpan setup</button>
+  </form>
+  <div class="actions">
+    <button hx-post="/api/admin/pixel/facebook/test-connection" hx-swap="innerHTML" hx-target="#test-result">
+      Uji koneksi CAPI
+    </button>
+    <button hx-post="/api/admin/pixel/facebook/test-event" hx-vals='{"event_name":"PageView"}' hx-swap="innerHTML" hx-target="#test-result">
+      Kirim event uji
+    </button>
+    {{if .EventsManagerURL}}<a class="btn-link" href="{{.EventsManagerURL}}" target="_blank" rel="noopener">Buka Events Manager</a>{{end}}
+  </div>
+  <pre id="test-result" class="log"></pre>
+</section>
+<script>
+document.getElementById('fb-setup').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = {
+    name: fd.get('name'),
+    pixel_id: fd.get('pixel_id'),
+    business_id: fd.get('business_id'),
+    capi_access_token: fd.get('capi_access_token'),
+    test_event_code: fd.get('test_event_code'),
+    capi_enabled: fd.get('capi_enabled') === 'on',
+    browser_pixel_enabled: fd.get('browser_pixel_enabled') === 'on',
+    scope: 'global'
+  };
+  fetch('/api/admin/pixel/facebook/setup', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) })
+    .then(r => r.json()).then(d => alert(d.error || 'Setup disimpan'));
+});
+</script>
+{{template "pixel_foot" .}}{{end}}
