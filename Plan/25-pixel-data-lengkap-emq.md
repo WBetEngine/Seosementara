@@ -152,20 +152,27 @@ Meta: nilai **berubah** — harus **di-refresh** ke CAPI, bukan cache sekali di 
 
 ---
 
-## 5. `custom_data` — Standard Events (Purchase, Lead, dll.)
+## 5. `custom_data` — Standard Events (selaras Help + Reference)
 
-Selain `user_data`, Meta memakai `custom_data` untuk optimasi nilai & katalog.
+Selain `user_data`, Meta memakai `custom_data` / parameter objek pixel ([Business Help](https://www.facebook.com/business/help/402791146561655?id=1205376682832142), [Pixel Reference](https://developers.facebook.com/docs/facebook-pixel/reference)).
 
-| Event | Field `custom_data` penting |
-|-------|----------------------------|
-| `Purchase` | `value`, `currency`, `order_id`, `content_ids`, `num_items` |
-| `Lead` | `content_name`, `content_category` (opsional) |
-| `ViewContent` | `content_ids`, `content_type`, `content_name` |
-| `AddToCart` | `content_ids`, `value`, `currency` |
-| `InitiateCheckout` | `value`, `num_items` |
-| `Search` | `search_string` |
+| Event | Field penting | Wajib Meta? |
+|-------|---------------|-------------|
+| `Purchase` | `value`, `currency`, `content_ids` atau `contents`, `num_items` | **`value` + `currency` wajib** |
+| `Lead` | `value`, `currency` (opsional) | Opsional |
+| `ViewContent` | `content_ids`, `content_type`, `contents`, `value` | Catalog: `contents` atau `content_ids` |
+| `AddToCart` | `content_ids`, `contents`, `value`, `currency` | Catalog: `contents` |
+| `InitiateCheckout` | `value`, `num_items`, `contents` | - |
+| `Search` | `search_string`, `content_ids` | Catalog: `contents` atau `content_ids` |
+| `StartTrial` / `Subscribe` | `value`, `currency`, `predicted_ltv` | - |
+| `CompleteRegistration` | `value`, `currency`, `status` | - |
+| `AddPaymentInfo` | `value`, `currency` | - |
 
-`currency`: ISO 4217 (`IDR`, `USD`). `value`: angka (float).
+**Object properties umum:** `content_name`, `content_category`, `content_type` (`product` / `product_group`).
+
+`currency`: ISO 4217 (`IDR`, `USD`). `value`: integer atau float.
+
+**PageView:** otomatis di base pixel browser; via CAPI kirim `PageView` + `event_source_url` [26](./26-meta-sumber-resmi-pixel-capi.md).
 
 ---
 

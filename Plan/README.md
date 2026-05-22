@@ -83,3 +83,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 2.0 | 2026-05-22 | SOP S0–S3, tabel siapa punya pixel, insiden BM putus (24 §9–16) |
 | 2.1 | 2026-05-22 | Data pixel lengkap vs IP-only, tier EMQ, enricher (25) |
 | 2.2 | 2026-05-22 | Plan/25 v2: verifikasi dokumentasi resmi Meta CAPI 2026 |
+| 2.3 | 2026-05-22 | Plan/26: peta URL Help + Meta Pixel + CAPI business (26) |
