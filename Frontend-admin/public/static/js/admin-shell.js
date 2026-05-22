@@ -114,6 +114,17 @@
   window.setActiveNav = setActiveNav;
 
   document.addEventListener("DOMContentLoaded", function () {
+    if (typeof htmx === "undefined") {
+      console.error(
+        "[Seosementara Admin] HTMX tidak termuat. Pastikan /static/js/htmx.min.js dapat diakses."
+      );
+      return;
+    }
+
+    document.body.addEventListener("htmx:responseError", function (ev) {
+      console.error("[HTMX]", ev.detail.pathInfo.requestPath, ev.detail.xhr.status);
+    });
+
     var menuBtn = qs("[data-toggle-sidebar]");
     var overlay = qs("#sidebar-overlay");
     if (menuBtn) menuBtn.addEventListener("click", openSidebar);

@@ -6,7 +6,7 @@
   <meta name="csrf" content="prototype-static" />
   <title>Admin — Seosementara CMS</title>
   <link rel="stylesheet" href="/static/css/admin.css" />
-  <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfCtof878TmWChes+LW2H7cZM9u1hEEAEPOZVuECMCbWq77qZ8s3d18zmBfw5z3" crossorigin="anonymous"></script>
+  <script src="/static/js/htmx.min.js"></script>
 </head>
 <body class="admin-body" hx-headers='{"X-CSRF-Token": "prototype-static"}'>
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -257,6 +257,6 @@
   <div id="drawer-backdrop" class="drawer-backdrop" aria-hidden="true"></div>
   <aside id="app-drawer" class="app-drawer" aria-hidden="true" aria-label="Panel edit"></aside>
 
-  <script src="/static/js/admin-shell.js"></script>
+  <script src="/static/js/admin-shell.js" defer></script>
 </body>
 </html>
