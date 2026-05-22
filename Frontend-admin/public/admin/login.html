@@ -9,8 +9,13 @@
 <body>
   <div class="login-page">
     <div class="login-card">
-      <h1>Seosementara CMS</h1>
-      <p>Masuk ke panel admin pekerja.</p>
+      <div class="login-card__brand">
+        <div class="login-card__logo" aria-hidden="true">SS</div>
+        <div>
+          <h1>Seosementara CMS</h1>
+          <p class="login-sub">Panel admin portfolio &amp; konten massal</p>
+        </div>
+      </div>
       <form action="/admin/index.html" method="get">
         <div class="form-row" style="margin-bottom:1rem">
           <label for="email">Email</label>
@@ -20,12 +25,12 @@
           <label for="password">Kata sandi</label>
           <input id="password" name="password" type="password" autocomplete="current-password" required />
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%">Masuk (prototype)</button>
+        <button type="submit" class="btn btn-primary" style="width:100%">Masuk</button>
       </form>
-      <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">
+      <p class="hint">
         Setelah masuk, buka
-        <a href="/admin/index.html"><strong>Dashboard admin</strong></a>
-        (gunakan URL ini — jangan <code>/admin/</code>).
+        <a href="/admin/index.html"><strong>/admin/index.html</strong></a>
+        (hindari <code>/admin/</code> — redirect loop).
       </p>
     </div>
   </div>

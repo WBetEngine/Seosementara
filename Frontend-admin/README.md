@@ -33,12 +33,15 @@ public/
 │   └── js/admin-shell.js
 ```
 
-## Fitur prototype
+## Fitur prototype (v2)
 
-- Sidebar gelap + menu berkelompok (Ringkasan, Domain, Konten, SEO, Plugins, Settings)
+- Sidebar profesional + **ikon** per menu (SVG inline)
+- **Domain:** satu menu → `/admin/domain` dengan **tab panel** (saya / dibagikan / tambah / semua SA)
+- **Plugins terpisah:** Shortlink dan Pixel Hub (siap plugin tambahan)
 - Tiga dashboard: Admin, Domain, Global (SA)
 - Drawer universal `#app-drawer` — domain (5 tab), post, user, CF token, shortlink
-- Responsif: sidebar drawer di mobile, panel kanan full width
+- Topbar terang, breadcrumb, stat cards
+- Responsif: sidebar drawer di mobile
 - Settings: subnav + list + drawer edit
 
 ## Pixel Facebook (kode lama)

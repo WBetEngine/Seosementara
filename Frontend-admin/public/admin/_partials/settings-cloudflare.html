@@ -1,4 +1,13 @@
-<div class="page-header">
+<div class="breadcrumb">
+  <span>Admin</span>
+  <span class="breadcrumb__sep">/</span>
+  <span>Settings</span>
+</div>
+
+<div class="page-header page-header--with-icon">
+  <div class="page-header__icon" aria-hidden="true">
+    <svg class="icon icon--lg"><use href="#i-cloud"/></svg>
+  </div>
   <div>
     <h1 class="page-title">Settings — Cloudflare</h1>
     <p class="page-sub">Tunnel, Pages (free), DNS — domain produk</p>
@@ -7,9 +16,13 @@
 
 <div class="settings-layout">
   <nav class="settings-subnav">
-    <a href="#" hx-get="/admin/_partials/settings-rbac.html" hx-target="#main" hx-swap="innerHTML">RBAC</a>
-    <a href="#" class="is-active">Cloudflare</a>
-    <a href="#" class="disabled">Host</a>
+    <button type="button"
+      hx-get="/admin/_partials/settings-rbac.html"
+      hx-target="#main"
+      hx-swap="innerHTML"
+      hx-push-url="/admin/settings/rbac">RBAC &amp; pengguna</button>
+    <button type="button" class="is-active">Cloudflare</button>
+    <button type="button" disabled>Host &amp; subdomain</button>
   </nav>
 
   <div>

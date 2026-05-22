@@ -1,0 +1,61 @@
+<div class="panel">
+  <div class="panel__head">
+    <span>Domain saya (24)</span>
+    <button type="button" class="btn btn-sm btn-primary"
+      hx-get="/admin/_partials/domain-add.html"
+      hx-target="#page-tab-panel"
+      hx-swap="innerHTML"
+      hx-push-url="/admin/domain/add">+ Tambah domain</button>
+  </div>
+  <div class="panel__body table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Hostname</th>
+          <th>Status</th>
+          <th>Post</th>
+          <th>Shortlink</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>rezekibelanja.com</strong></td>
+          <td><span class="badge badge-success">Aktif</span></td>
+          <td>1.240</td>
+          <td>12</td>
+          <td>
+            <button type="button" class="btn btn-sm btn-outline"
+              hx-get="/admin/_partials/domain-drawer.html"
+              hx-target="#app-drawer"
+              hx-swap="innerHTML">Kelola</button>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>tips-kesehatan.net</strong></td>
+          <td><span class="badge badge-success">Aktif</span></td>
+          <td>890</td>
+          <td>8</td>
+          <td>
+            <button type="button" class="btn btn-sm btn-outline"
+              hx-get="/admin/_partials/domain-drawer.html"
+              hx-target="#app-drawer"
+              hx-swap="innerHTML">Kelola</button>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>promo2025.net</strong></td>
+          <td><span class="badge badge-warn">Maintenance</span></td>
+          <td>45</td>
+          <td>2</td>
+          <td>
+            <button type="button" class="btn btn-sm btn-outline"
+              hx-get="/admin/_partials/domain-drawer.html"
+              hx-target="#app-drawer"
+              hx-swap="innerHTML">Kelola</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

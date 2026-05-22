@@ -88,14 +88,14 @@ Worker → **403** atau redirect ke Dashboard Admin.
 
 ---
 
-## 4. Navigasi — Bersih & Berkelompok (revisi v1.1)
+## 4. Navigasi — Bersih & Berkelompok (revisi v1.2)
 
 Sidebar **6 grup** (+ user footer). Tanpa Operasi massal, Jobs, Toko, Tools.
 
 ### 4.1 Struktur grup (final)
 
 ```
-[Logo]  Site switcher (managed_domain)
+[Logo]  Domain aktif (managed_domain) di sidebar
 ─────────────────────────────────────────
 
 ▼ Ringkasan
@@ -104,11 +104,10 @@ Sidebar **6 grup** (+ user footer). Tanpa Operasi massal, Jobs, Toko, Tools.
     Dashboard Global          (SA only)
 
 ▼ Domain
-    Domain saya
-    Dibagikan ke saya
-    Tambah domain
-    Semua domain              (SA only)
-    ── baris → drawer §4.2 (domain)
+    Domain                    → /admin/domain (satu menu)
+    Tab di halaman: Domain saya | Dibagikan | Tambah | Semua (SA)
+    URL contoh: /admin/domain, /admin/domain/shared, /admin/domain/add
+    Baris tabel → drawer §4.2 (domain)
 
 ▼ Konten                      (Domain Panel — domain aktif)
     (list di #main · edit → drawer §4)

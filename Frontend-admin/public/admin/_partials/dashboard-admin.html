@@ -1,8 +1,22 @@
-<div class="page-header">
+<div class="breadcrumb">
+  <span>Admin</span>
+  <span class="breadcrumb__sep">/</span>
+  <span>Dashboard</span>
+</div>
+
+<div class="page-header page-header--with-icon">
+  <div class="page-header__icon" aria-hidden="true">
+    <svg class="icon icon--lg"><use href="#i-layout"/></svg>
+  </div>
   <div>
     <h1 class="page-title">Dashboard Admin</h1>
     <p class="page-sub">Ringkasan akun Anda — domain milik &amp; dibagikan</p>
   </div>
+  <button type="button" class="btn btn-outline"
+    hx-get="/admin/_partials/domain.html"
+    hx-target="#main"
+    hx-swap="innerHTML"
+    hx-push-url="/admin/domain">Kelola domain</button>
 </div>
 
 <div class="stat-grid">

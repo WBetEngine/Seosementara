@@ -1,0 +1,42 @@
+<div class="panel">
+  <div class="panel__head">Dibagikan ke saya (3)</div>
+  <div class="panel__body table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Hostname</th>
+          <th>Owner</th>
+          <th>Hak akses</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>affiliate-pro.id</strong></td>
+          <td>worker1@example.com</td>
+          <td>Edit konten</td>
+          <td><span class="badge badge-success">Aktif</span></td>
+          <td>
+            <button type="button" class="btn btn-sm btn-outline"
+              hx-get="/admin/_partials/domain-drawer.html"
+              hx-target="#app-drawer"
+              hx-swap="innerHTML">Kelola</button>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>blog-partner.net</strong></td>
+          <td>worker2@example.com</td>
+          <td>Read only</td>
+          <td><span class="badge badge-success">Aktif</span></td>
+          <td>
+            <button type="button" class="btn btn-sm btn-outline"
+              hx-get="/admin/_partials/domain-drawer.html"
+              hx-target="#app-drawer"
+              hx-swap="innerHTML">Lihat</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

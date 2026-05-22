@@ -1,16 +1,28 @@
-<div class="page-header">
+<div class="breadcrumb">
+  <span>Admin</span>
+  <span class="breadcrumb__sep">/</span>
+  <span>Settings</span>
+</div>
+
+<div class="page-header page-header--with-icon">
+  <div class="page-header__icon" aria-hidden="true">
+    <svg class="icon icon--lg"><use href="#i-users"/></svg>
+  </div>
   <div>
-    <h1 class="page-title">Settings — RBAC</h1>
-    <p class="page-sub">Read / Edit / Write — pengguna &amp; peran sistem</p>
+    <h1 class="page-title">Settings</h1>
+    <p class="page-sub">RBAC — Read / Edit / Write · pengguna &amp; peran sistem</p>
   </div>
 </div>
 
 <div class="settings-layout">
   <nav class="settings-subnav">
-    <a href="#" class="is-active">RBAC</a>
-    <a href="#" hx-get="/admin/_partials/settings-cloudflare.html" hx-target="#main" hx-swap="innerHTML">Cloudflare</a>
-    <a href="#" class="disabled">Auth</a>
-    <a href="#" class="disabled">Operasional</a>
+    <button type="button" class="is-active">RBAC &amp; pengguna</button>
+    <button type="button"
+      hx-get="/admin/_partials/settings-cloudflare.html"
+      hx-target="#main"
+      hx-swap="innerHTML"
+      hx-push-url="/admin/settings/cloudflare">Cloudflare</button>
+    <button type="button" disabled>Host &amp; subdomain</button>
   </nav>
 
   <div>
