@@ -32,7 +32,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 22 | [22-pixel-protokol-komunikasi-dan-data.md](./22-pixel-protokol-komunikasi-dan-data.md) | **Protokol & data lengkap:** canonical event, pipeline, schema DB |
 | 23 | [23-meta-conversions-api-kedalaman.md](./23-meta-conversions-api-kedalaman.md) | **Meta CAPI:** auth, payload, EMQ, dedup, hybrid, multi-pixel |
 | 24 | [24-meta-akun-bm-pixel-dan-optimasi-iklan.md](./24-meta-akun-bm-pixel-dan-optimasi-iklan.md) | **Realita BM/personal/Fanpage**, SOP BM putus, fitur optimasi biaya |
-| 25 | [25-pixel-data-lengkap-emq.md](./25-pixel-data-lengkap-emq.md) | **Data lengkap EMQ:** bukan hanya IP/device — fbp, em, fbc, enricher |
+| 25 | [25-pixel-data-lengkap-emq.md](./25-pixel-data-lengkap-emq.md) | **Data selaras Meta 2026:** tabel resmi `user_data`, hash, wajib website |
 
 ## Ringkasan Stack
 
@@ -81,3 +81,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 1.9 | 2026-05-22 | Akun BM putus, pixel tidak transferable, optimasi iklan (24) |
 | 2.0 | 2026-05-22 | SOP S0–S3, tabel siapa punya pixel, insiden BM putus (24 §9–16) |
 | 2.1 | 2026-05-22 | Data pixel lengkap vs IP-only, tier EMQ, enricher (25) |
+| 2.2 | 2026-05-22 | Plan/25 v2: verifikasi dokumentasi resmi Meta CAPI 2026 |

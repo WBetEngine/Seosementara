@@ -155,7 +155,7 @@ Setiap elemen di array `data` adalah satu **ServerEvent**.
 
 ### 5.2 `user_data` — inti EMQ
 
-> **Hanya IP + device (UA) = Tier D — tidak layak Pro.** Daftar lengkap sumber & tier: [25](./25-pixel-data-lengkap-emq.md).
+> **Hanya IP + device (UA) tidak sesuai Meta.** Spesifikasi data resmi 2026: [25](./25-pixel-data-lengkap-emq.md) (tabel `user_data`, normalisasi hash, `lead_id`, dedup).
 
 Meta memakai `user_data` untuk mencocokkan event dengan akun Facebook/Instagram.
 

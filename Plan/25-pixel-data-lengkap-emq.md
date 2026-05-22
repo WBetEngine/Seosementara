@@ -1,249 +1,343 @@
-# 25 — Data Pixel Lengkap (Bukan Hanya IP & Device)
+# 25 — Data Pixel Selaras Meta (2026) — Bukan Hanya IP & Device
 
-> Meta / CAPI **tidak optimal** jika Hub hanya mengirim `client_ip_address` + `client_user_agent`.  
-> Dokumen ini mendefinisikan **data minimum berguna**, **data Pro wajib**, dan **dari mana CMS mengumpulkannya**.  
-> CAPI: [23](./23-meta-conversions-api-kedalaman.md) · Facebook Pro: [21](./21-pixel-facebook-pro.md) · BM: [24](./24-meta-akun-bm-pixel-dan-optimasi-iklan.md)
+> **Diverifikasi ulang** terhadap dokumentasi resmi Meta (Conversions API / Parameters), diperbarui **Mei 2026**.  
+> Dokumen ini menggantikan daftar data internal yang kurang lengkap.  
+> CAPI: [23](./23-meta-conversions-api-kedalaman.md) · BM: [24](./24-meta-akun-bm-pixel-dan-optimasi-iklan.md)
 
----
+## Sumber resmi Meta (wajib dibaca operator)
 
-## 1. Masalah: Hanya IP + Device = Hampir Tidak Berguna
+| Topik | URL resmi |
+|-------|-----------|
+| Customer Information Parameters | https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/customer-information-parameters |
+| Server Event Parameters | https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/server-event |
+| Semua Parameters (indeks) | https://developers.facebook.com/docs/marketing-api/conversions-api/parameters |
+| Best Practices (wajib + rekomendasi) | https://developers.facebook.com/docs/marketing-api/conversions-api/best-practices |
+| fbp & fbc | https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/fbp-and-fbc |
+| Dedup Pixel + CAPI | https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events |
+| Parameter Builder (validasi JSON) | https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/parameter-builder |
+| Dataset Quality API | https://developers.facebook.com/docs/marketing-api/conversions-api/dataset-quality-api |
 
-| Yang sering diimplementasi awal | Nilai untuk Meta |
-|--------------------------------|------------------|
-| IP address | Rendah–sedang (banyak orang share IP/NAT) |
-| User-Agent (device/browser) | Rendah–sedang |
-
-| Yang Meta butuhkan untuk EMQ tinggi | Tanpa ini |
-|-------------------------------------|-----------|
-| `fbp` (browser ID Meta) | Matching lemah |
-| `fbc` (click ID iklan) | Attribution iklan buruk |
-| Hash **email** / **telepon** | Tidak bisa cocok ke akun FB |
-| `external_id` (user login) | Retargeting/login chain lemah |
-| `event_source_url` benar | Sinyal halaman salah |
-| `value` + `currency` (purchase) | Tidak bisa optimasi ROAS |
-
-**Kesimpulan:** Pixel Hub harus dirancang sebagai **pengumpul & pelengkap data**, bukan “forwarder IP saja”. Kalau hanya IP+UA, hasilnya mirip traffic analytics biasa — **bukan** pixel Pro untuk iklan murah/tertarget.
+Dokumentasi baru juga tersedia di path `developers.facebook.com/documentation/ads-commerce/conversions-api/...` (struktur 2025+); isi setara dengan path `/docs/marketing-api/...` di atas.
 
 ---
 
-## 2. Tier Kualitas Data (Target Produk)
+## 1. Kesimpulan: IP + Device Saja = Tidak Sesuai Meta
 
-| Tier | Field CAPI `user_data` | EMQ estimasi | Layak untuk scale iklan? |
-|------|------------------------|--------------|---------------------------|
-| **D — Tidak berguna** | Hanya IP + UA | 2–4 / 10 | **Tidak** |
-| **C — Dasar** | + `event_source_url`, `fbp` | 4–5 / 10 | Hanya testing |
-| **B — Pro** | + `fbc`, hash `em` atau `ph`, `external_id` | 6–8 / 10 | **Ya** |
-| **A — Lengkap** | + `fn`/`ln`/`ct`/`country`, `value` purchase, dedup hybrid | 8+ / 10 | Scale budget |
+| Yang sering salah | Kebenaran Meta (2026) |
+|-------------------|------------------------|
+| Cukup `client_ip_address` + `client_user_agent` | **Tidak cukup** untuk EMQ — hanya pelengkap |
+| Semua field di-hash | **Salah** — IP, UA, `fbp`, `fbc` **tidak** di-hash |
+| Email dikirim plain | **Salah** — `em` wajib SHA256 setelah normalisasi |
+| `user_data` boleh kosong | **Salah** — minimal **satu** parameter customer info dengan format benar |
+| Pixel browser tidak perlu | Untuk website, Meta wajibkan juga `event_source_url` + `client_user_agent` di CAPI |
 
-**Target Seosementara:** setiap event konversi (**Lead**, **Purchase**) minimal **Tier B**; **PageView** minimal **Tier C**.
-
----
-
-## 3. Data Lengkap — Tabel Wajib per Jenis Event
-
-### 3.1 Semua event (baseline Tier C)
-
-| Field | Sumber di CMS | Cara kumpul |
-|-------|---------------|-------------|
-| `event_id` | Hub generate UUID | Ingest |
-| `event_time` | Waktu aksi user | Ingest |
-| `event_source_url` | URL halaman / redirect akhir | Browser `location.href` / server redirect |
-| `client_ip_address` | Request | Header CF / `X-Forwarded-For` |
-| `client_user_agent` | Request | Header |
-| `fbp` | Cookie `_fbp` | `sseo-track.js` baca cookie |
-| `action_source` | `website` | Default |
-
-### 3.2 Event dari klik iklan (tambah Tier B)
-
-| Field | Sumber | Cara kumpul |
-|-------|--------|-------------|
-| `fbc` | Cookie `_fbc` atau `fbclid` di URL | JS: parse `?fbclid=` → set cookie format Meta |
-
-**Format `fbc`:** `fb.1.{unix}.{fbclid}`
-
-### 3.3 Lead / form (Tier B wajib)
-
-| Field | Sumber | Cara kumpul |
-|-------|--------|-------------|
-| `em` | Email form | Hash SHA256 di **privacy gateway** |
-| `ph` | Telepon form (opsional) | Normalisasi E.164 → hash |
-| `external_id` | User ID CMS | Hash stabil `user_id` |
-
-**Tanpa email/telepon pada Lead** → Meta sulit mengait ke akun FB → iklan “tidak tertarget”.
-
-### 3.4 Purchase / checkout (Tier A)
-
-| Field | Lokasi | Keterangan |
-|-------|--------|------------|
-| `em`, `ph` | Checkout | Sama Lead |
-| `external_id` | Akun pembeli | |
-| `custom_data.value` | Total order | Float |
-| `custom_data.currency` | `IDR` | |
-| `custom_data.order_id` | Unik | Dedup transaksi |
-| `custom_data.content_ids` | SKU | Dynamic ads |
-
-### 3.5 Login / member (retargeting)
-
-| Field | Sumber |
-|-------|--------|
-| `external_id` | Session user CMS |
-| `em` | Profil (jika consent) |
+**Pixel Hub Seosementara** harus mengumpulkan dan mengirim setara **Advanced Matching + CAPI Best Practices**, bukan forwarder IP.
 
 ---
 
-## 4. Dari Mana Data Masuk — Peta Sumber (Pixel Hub)
+## 2. Parameter Wajib — Event Website (Server / CAPI)
 
-```mermaid
-flowchart TB
-  subgraph browser [Browser - first-party]
-    JS[sseo-track.js]
-    C1[Cookie _fbp _fbc]
-    U1[URL fbclid gclid]
-    JS --> C1
-    JS --> U1
-  end
-  subgraph forms [Interaksi situs]
-    F1[Form lead]
-    F2[Checkout]
-    F3[Login]
-  end
-  subgraph server [Server CMS]
-    R1[Shortlink redirect]
-    R2[Webhook order]
-    R3[Publish URL live]
-  end
-  subgraph hub [Pixel Hub]
-    ING[Ingest]
-    ENR[Enricher]
-    PRV[Hash PII]
-    CAPI[CAPI dispatch]
-  end
-  browser --> ING
-  forms --> ING
-  server --> ING
-  ING --> ENR --> PRV --> CAPI
+Menurut [Parameters](https://developers.facebook.com/docs/marketing-api/conversions-api/parameters) dan [Best Practices](https://developers.facebook.com/docs/marketing-api/conversions-api/best-practices):
+
+### 2.1 Server event (level event, bukan hanya `user_data`)
+
+| Parameter | Wajib website? | Hash? | Keterangan |
+|-----------|----------------|-------|------------|
+| `event_name` | Ya | - | Standard atau custom |
+| `event_time` | Ya | - | Unix detik, waktu aksi user |
+| `action_source` | Ya | - | Website = `website` |
+| `event_source_url` | **Ya (website)** | - | URL halaman, harus selaras domain terverifikasi |
+| `client_user_agent` | **Ya (website)** | **Tidak** | Di dalam objek `user_data` |
+| `event_id` | Sangat disarankan | - | Dedup dengan Meta Pixel |
+| `event_source_url` | Ya | - | |
+
+### 2.2 Customer information (`user_data`)
+
+| Aturan Meta | Detail |
+|-------------|--------|
+| Minimal satu parameter | Harus salah satu dari daftar §3 dengan **format benar** |
+| Graph API v13+ | Ada aturan **kombinasi** parameter yang dianggap valid — ikuti Best Practices |
+| Contact info | `em`, `ph`, `fn`, `ln`, `ct`, `st`, `zp`, `country`, `ge`, `db` → **wajib hash** |
+| Teknis / cookie | `client_ip_address`, `client_user_agent`, `fbp`, `fbc` → **jangan hash** |
+| `external_id` | Hash **disarankan** (bukan wajib hash di semua kasus, tapi praktik Pro: hash) |
+
+Meta juga merekomendasikan **`external_id` + `event_id`** untuk semua event.
+
+---
+
+## 3. Tabel Lengkap `user_data` (Sesuai Meta 2026)
+
+| Key API | Label | Hash? | Normalisasi sebelum hash | Prioritas EMQ |
+|---------|-------|-------|-------------------------|---------------|
+| `em` | Email | **Ya** | Trim, lowercase | **Tertinggi** |
+| `ph` | Telepon | **Ya** | Hanya digit + **kode negara** (contoh US: `1` + nomor) | **Tertinggi** |
+| `fn` | Nama depan | **Ya** | Lowercase, tanpa tanda baca, UTF-8 | Sedang |
+| `ln` | Nama belakang | **Ya** | Sama `fn` | Sedang |
+| `ge` | Gender | **Ya** | `m` / `f` lowercase | Sedang |
+| `db` | Tanggal lahir | **Ya** | Format `YYYYMMDD` | Sedang |
+| `ct` | Kota | **Ya** | Lowercase, tanpa spasi berlebih | Sedang |
+| `st` | Provinsi | **Ya** | Kode 2 huruf (US) | Sedang |
+| `zp` | Kode pos | **Ya** | Min 5 digit (US) | Sedang |
+| `country` | Negara | **Ya** | ISO 3166-1 alpha-2 **lowercase** (`id`, `us`) | Sedang |
+| `external_id` | ID pengguna CMS | Disarankan hash | ID stabil (user_id, member_id) | Tinggi |
+| `client_ip_address` | IP | **Tidak** | IPv6 lebih disarankan jika ada | Sedang |
+| `client_user_agent` | UA | **Tidak** | String lengkap | Sedang |
+| `fbp` | Browser ID Meta | **Tidak** | Cookie `_fbp` — **refresh** berkala | **Tinggi** |
+| `fbc` | Click ID | **Tidak** | Dari `_fbc` atau `fbclid` | **Tinggi** (iklan) |
+| `subscription_id` | ID langganan | **Tidak** | Untuk event subscribe | Khusus |
+| `fb_login_id` | Facebook Login ID | **Tidak** | Jika pakai Login Facebook | Khusus |
+| `lead_id` | Lead ID | **Tidak** | **Lead Ads / CRM CAPI** | Wajib untuk lead optimization |
+| `page_id` | Page ID | **Tidak** | Messaging / page scope | Khusus |
+| `page_scoped_user_id` | PSID | **Tidak** | Messenger / page | Khusus |
+| `ctwa_clid` | Click to WhatsApp | **Tidak** | Iklan WA | Khusus |
+| `ig_account_id` / `ig_sid` | Instagram | **Tidak** | Iklan IG messaging | Khusus |
+
+**Catatan:** `madid`, `anon_id` hanya untuk **app events**, bukan website biasa.
+
+---
+
+## 4. Normalisasi & Hash (Implementasi Hub — Wajib Benar)
+
+Salah normalisasi = hash beda = Meta **tidak match** (EMQ rendah meskipun “sudah kirim email”).
+
+### 4.1 Email (`em`)
+
+```
+Input:  "  User@Example.COM  "
+Step 1: trim
+Step 2: lowercase → "user@example.com"
+Step 3: SHA256 → hex (array di JSON: "em": ["<hex>"])
 ```
 
-| Sumber | Event contoh | Data tambahan |
-|--------|--------------|---------------|
-| `sseo-track.js` | PageView, ViewContent | fbp, fbc, url, session_id |
-| Form HTMX/API | Lead | email, phone → hash |
-| Checkout webhook | Purchase | value, order_id, em, ph |
-| Shortlink [19] | Click → ViewContent | url, fbc dari query, domain_id |
-| Login session | PageView berikutnya | external_id |
+### 4.2 Telepon (`ph`) — Indonesia contoh
 
-**IP + UA hanya** = satu input dari baris “Request” — **bukan** cukup.
-
----
-
-## 5. Enricher — Lapisan Wajib di Hub (Spesifikasi)
-
-Setelah `POST /collect`, sebelum CAPI, worker **enrich** melengkapi canonical event:
-
-| Langkah enrich | Input | Output |
-|----------------|-------|--------|
-| Cookie resolve | `session_id` | `fbp`, `fbc` dari sesi sebelumnya jika cookie kosong di hit ini |
-| Click param | `fbclid` di URL pertama sesi | Bangun `fbc`, simpan di session store |
-| User profile | `user_id` login | `external_id`, `em` hash dari profil |
-| Domain meta | `managed_domain_id` | `event_source_url` default, `site_key` |
-| Geo (opsional) | CF `CF-IPCountry` | `country` hash |
-| Last touch | Shortlink / referrer | `referrer` di custom_data |
-
-**Penyimpanan sesi (usulan DB):**
-
-```sql
-CREATE TABLE pixel_sessions (
-  session_id          TEXT PRIMARY KEY,
-  managed_domain_id   BIGINT,
-  fbp                 TEXT,
-  fbc                 TEXT,
-  anonymous_id        TEXT,
-  first_url           TEXT,
-  last_url            TEXT,
-  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+```
+Input:  "+62 812-3456-7890" / "081234567890"
+Step 1: buang non-digit kecuali leading country
+Step 2: hasil digit saja dengan kode negara: "6281234567890"
+Step 3: SHA256 → "ph": ["<hex>"]
 ```
 
-TTL sesi: 7–90 hari (config) — untuk mengisi `fbp`/`fbc` pada kunjungan berikutnya.
+Meta: **selalu** sertakan kode negara, meskipun semua user dari satu negara.
+
+### 4.3 Nama (`fn` / `ln`)
+
+- Lowercase, hapus punctuation
+- Karakter non-Latin: UTF-8 lalu hash
+
+### 4.4 Yang tidak boleh di-hash
+
+```
+client_ip_address  → string plain
+client_user_agent  → string plain
+fbp                → "fb.1.<creationTime>.<random>"
+fbc                → "fb.1.<creationTime>.<fbclid>"
+lead_id            → plain (dari Lead Ads)
+```
+
+### 4.5 `fbp` / `fbc` (Meta first-party cookie)
+
+| Cookie | Format | Cara dapat |
+|--------|--------|------------|
+| `_fbp` | `fb.1.{unix}.{random}` | Set oleh Meta Pixel / Parameter Builder / first-party |
+| `_fbc` | `fb.1.{unix}.{click_id}` | Dari parameter URL `fbclid` pada landing iklan |
+
+Meta: nilai **berubah** — harus **di-refresh** ke CAPI, bukan cache sekali di server selamanya.
 
 ---
 
-## 6. UI Admin — Indikator “Data Lengkap atau Tidak”
+## 5. `custom_data` — Standard Events (Purchase, Lead, dll.)
 
-Tab **Connection** / **Diagnostics** wajib menampilkan **bukan** hanya jumlah event, tetapi **coverage parameter**:
+Selain `user_data`, Meta memakai `custom_data` untuk optimasi nilai & katalog.
 
-| Parameter | Target Pro | Tampilan |
-|-----------|------------|----------|
-| % event dengan `fbp` | ≥ 70% | Hijau / merah |
-| % event dengan `fbc` (traffic ads) | ≥ 40% dari ads landing | |
-| % Lead dengan `em` | ≥ 80% | |
-| % Purchase dengan `em` + `value` | ≥ 90% | |
-| % hanya IP+UA (tier D) | **< 10%** | Alert critical |
+| Event | Field `custom_data` penting |
+|-------|----------------------------|
+| `Purchase` | `value`, `currency`, `order_id`, `content_ids`, `num_items` |
+| `Lead` | `content_name`, `content_category` (opsional) |
+| `ViewContent` | `content_ids`, `content_type`, `content_name` |
+| `AddToCart` | `content_ids`, `value`, `currency` |
+| `InitiateCheckout` | `value`, `num_items` |
+| `Search` | `search_string` |
 
-**Label di event log:**
-
-| Badge | Arti |
-|-------|------|
-| `tier_a` | Lengkap |
-| `tier_b` | Pro |
-| `tier_c` | Dasar |
-| `tier_d` | **IP+UA saja — perbaiki** |
+`currency`: ISO 4217 (`IDR`, `USD`). `value`: angka (float).
 
 ---
 
-## 7. Integrasi Bisnis — Kapan Data Tersedia
+## 6. Dedup Resmi (Browser Pixel + CAPI)
 
-| Skenario domain portfolio | Data yang realistis | Rekomendasi |
-|---------------------------|---------------------|-------------|
-| Landing + form lead | em, ph, fbp | Tier B — **layak iklan Lead** |
-| Hanya blog tanpa form | fbp, url | Tier C — optimasi traffic/ViewContent saja |
-| Shortlink ke offer | fbc jika dari FB ads, url | Pasang `fbclid` di URL iklan |
-| Checkout e-commerce | Full Tier A | Wajib webhook purchase |
-| Domain tanpa form & tanpa login | Hanya IP+UA | **Jangan** expect CPA murah — jujur di admin |
+[Best Practices](https://developers.facebook.com/docs/marketing-api/conversions-api/best-practices):
 
----
+| Syarat | Detail |
+|--------|--------|
+| `event_name` | **Identik** antara browser dan server |
+| Dedup key | **`event_id`** **atau** kombinasi **`external_id` + `fbp`** |
+| Rekomendasi Meta | Kirim **`event_id` + `external_id` + `fbp`** sekaligus |
 
-## 8. Form & Consent — Mengumpulkan Email Tanpa Melanggar
+Pixel Hub:
 
-| Aturan | Implementasi |
-|--------|--------------|
-| Consent marketing | Checkbox → baru kirim `em` ke CAPI |
-| Bukan semua field ke Meta | Hanya hash em/ph — tidak kirim nama plain |
-| Pre-fill login | `external_id` dari user ID |
-
-**Pesan ke owner domain (S1):** “Tanpa form email/telepon, pixel hanya setengah berguna untuk iklan lead.”
+1. Generate `event_id` di ingest  
+2. Pass ke browser (`eventID`) jika hybrid  
+3. Kirim CAPI dengan `event_id` sama  
+4. Sertakan `external_id` (user login) + `fbp` dari cookie  
 
 ---
 
-## 9. Perbandingan: Forwarder IP vs Pixel Hub Pro
+## 7. Tier Kualitas — Selaras Meta (bukan estimasi sembarangan)
 
-| | Forwarder IP+UA | Pixel Hub Pro (dokumen ini) |
-|--|-----------------|-----------------------------|
-| CAPI | Ya, kosong | Ya, **user_data lengkap** |
-| EMQ | Rendah | Target 6–8+ |
-| Lookalike pembeli | Buruk | Memungkinkan |
-| Attribution klik iklan | Buruk | `fbc` |
-| ROAS bidding | Tidak | `value` + `currency` |
-| Saat BM putus | Sama | Sama — tapi data historis lengkap di Hub |
+| Tier | Isi (minimum) | Layak optimasi iklan? |
+|------|---------------|------------------------|
+| **D — Invalid untuk Meta Pro** | Hanya IP + UA, tanpa minimal 1 customer param valid | **Tidak** |
+| **C — Minimum valid** | + `event_source_url` + `action_source` + (`fbp` **atau** hash `em`) | Testing / traffic |
+| **B — Recommended** | + `fbc` (jika ads) + hash `em`/`ph` + `event_id` + `external_id` | **Lead / retargeting** |
+| **A — Optimal** | + `fn`/`ln`/`ct`/`country` + `value`/`order_id` + `lead_id` (lead ads) | **Purchase / scale** |
 
----
+**Target Seosementara:**
 
-## 10. Checklist Implementasi (Supaya Bukan IP Saja)
-
-- [ ] `sseo-track.js` baca `_fbp`, `_fbc`, `fbclid` dari URL
-- [ ] Simpan/update `pixel_sessions`
-- [ ] Enricher pipeline sebelum `pixel_dispatch`
-- [ ] Form lead → endpoint collect dengan `email` (hash di server)
-- [ ] Purchase webhook → `value`, `order_id`, em
-- [ ] Diagnostics: % tier D < 10%
-- [ ] Admin warning jika domain hanya tier D 7 hari berturut
-- [ ] Dokumentasi owner: wajib form/login untuk iklan konversi
+| Jenis event | Tier minimum |
+|-------------|--------------|
+| `PageView` | C |
+| `Lead` | B (+ `lead_id` jika dari Lead Ads) |
+| `Purchase` | A |
 
 ---
 
-## 11. Dokumen terkait
+## 8. Spesifikasi Pengumpulan — Pixel Hub (Harus Dibangun)
 
-- [23-meta-conversions-api-kedalaman.md](./23-meta-conversions-api-kedalaman.md) §5 `user_data`
+### 8.1 Browser (`sseo-track.js` + first-party)
+
+| Data | Cara |
+|------|------|
+| `fbp`, `fbc` | Baca cookie; update dari `fbclid` di URL |
+| `event_source_url` | `location.href` |
+| URL params | `fbclid`, `gclid` (untuk analytics internal) |
+| `session_id` | Cookie first-party Hub |
+
+### 8.2 Server enrich (sebelum CAPI)
+
+| Data | Sumber |
+|------|--------|
+| `client_ip_address` | `CF-Connecting-IP` / `X-Forwarded-For` |
+| `client_user_agent` | Header (wajib website) |
+| `em`, `ph` | Form lead/checkout, profil user |
+| `fn`, `ln`, `ct`, `zp`, `country` | Form (opsional, naikkan EMQ) |
+| `external_id` | `users.id` / member_id |
+| `lead_id` | Webhook Lead Ads / CRM [Conversion Leads](https://developers.facebook.com/docs/marketing-api/conversions-api/conversion-leads-integration) |
+| `fb_login_id` | Jika integrasi Facebook Login |
+| `custom_data` | Order API, produk, shortlink metadata |
+
+### 8.3 Tabel `pixel_sessions` (refresh fbp/fbc)
+
+Simpan per `session_id`: `fbp`, `fbc`, `last_url`, `first_fbclid` — TTL 7–90 hari.
+
+### 8.4 Privacy gateway (sebelum hash)
+
+| Input mentah | Output ke CAPI |
+|--------------|----------------|
+| email | `em` hashed |
+| phone | `ph` hashed |
+| IP, UA, fbp, fbc | plain |
+| Tanpa consent (GDPR) | Jangan kirim `em`/`ph` — event `skipped` |
+
+---
+
+## 9. Payload Contoh — Selaras Meta (Purchase website)
+
+```json
+{
+  "data": [{
+    "event_name": "Purchase",
+    "event_time": 1762902353,
+    "event_id": "550e8400-e29b-41d4-a716-446655440000",
+    "action_source": "website",
+    "event_source_url": "https://rezekibelanja.com/checkout/success",
+    "user_data": {
+      "em": ["7b17fb0bd173f625b58625ad059fcbc2e2c25691cddad1961d840fcffd356b98"],
+      "ph": ["c051715cc583c6386f63ae2e614361fd9a67efb3a9bafa64e36f97c9b4da82c9"],
+      "fn": ["51b03d7eafc121fea0e80a5ea83beb7c449f4ec"],
+      "client_ip_address": "203.0.113.10",
+      "client_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "fbp": "fb.1.1762902000.1987654321",
+      "fbc": "fb.1.1762901800.IwAR2xxxxxxxx",
+      "external_id": ["a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"],
+      "country": ["0425f1493e1614eb8b8f6b7d8e6e5a2e8c8c8c8c8c8c8c8c8c8c8c8c8c8c8"]
+    },
+    "custom_data": {
+      "currency": "IDR",
+      "value": 150000,
+      "order_id": "ORD-2026-9988",
+      "content_ids": ["SKU-1", "SKU-2"],
+      "num_items": 2
+    }
+  }]
+}
+```
+
+*(Nilai hash di atas ilustrasi — gunakan normalisasi §4 di production.)*
+
+---
+
+## 10. Validasi & Monitoring (Meta Tools)
+
+| Tool | Fungsi di operasi |
+|------|-------------------|
+| **Test Events** (Events Manager) | `test_event_code` di root payload |
+| **Payload Helper / Parameter Builder** | Validasi struktur JSON sebelum production |
+| **Dataset Quality API** | Skor kualitas dataset / diagnostics programmatic |
+| **Events Manager Diagnostics** | EMQ per parameter — bandingkan dengan §7 tier |
+
+Di admin Hub tab **Connection**: tampilkan checklist parameter Meta (✓ `em` ✓ `fbp` ✗ `ph`) — mirror Events Manager.
+
+---
+
+## 11. Gap: Dokumen / Rencana Lama vs Meta 2026
+
+| Topik | Sebelumnya di Plan kita | Perbaikan (dokumen ini) |
+|-------|-------------------------|-------------------------|
+| Field `user_data` | Sebagian (`em`, `ph`, `fbp`) | **Tabel lengkap §3** + messaging/lead |
+| Hash IP | Kadang disalah pahami | Eksplisit **jangan hash** §4.5 |
+| Wajib website | Tidak tegas | `event_source_url` + `client_user_agent` §2 |
+| `lead_id` | Tidak ada | Lead Ads + CRM §3 |
+| `fb_login_id` | Tidak ada | §3 |
+| Dedup | Hanya `event_id` | + `external_id` + `fbp` §6 |
+| Graph API v13 kombinasi | Tidak disebut | §2.2 |
+| Parameter Builder | Tidak ada | §10 |
+| Refresh fbp/fbc | Disebut singkat | §4.5 wajib |
+
+---
+
+## 12. Checklist Implementasi Hub (Wajib untuk “Sesuai Meta”)
+
+### Ingest & browser
+
+- [ ] Kirim `event_source_url`, `client_user_agent` pada **semua** event website
+- [ ] Baca `_fbp`, `_fbc`; bangun `fbc` dari `fbclid`
+- [ ] Refresh cookie ke session store
+- [ ] `event_id` UUID setiap event
+
+### Privacy & hash
+
+- [ ] Normalisasi §4 sebelum SHA256 (`em`, `ph`, `fn`, `ln`, …)
+- [ ] **Jangan** hash IP, UA, fbp, fbc
+- [ ] Kode negara telepon Indonesia `62` konsisten
+
+### Konversi
+
+- [ ] Form lead → `em` (minimal)
+- [ ] Checkout → `em`/`ph` + `custom_data.value/currency/order_id`
+- [ ] Lead Ads → `lead_id` + [Conversion Leads](https://developers.facebook.com/docs/marketing-api/conversions-api/conversion-leads-integration)
+
+### Admin & QA
+
+- [ ] Coverage % per parameter (target §7)
+- [ ] Alert tier D > 10%
+- [ ] Uji di Test Events + Parameter Builder
+
+---
+
+## 13. Dokumen terkait
+
+- [23-meta-conversions-api-kedalaman.md](./23-meta-conversions-api-kedalaman.md)
 - [21-pixel-facebook-pro.md](./21-pixel-facebook-pro.md)
-- [24-meta-akun-bm-pixel-dan-optimasi-iklan.md](./24-meta-akun-bm-pixel-dan-optimasi-iklan.md) §15
+- [24-meta-akun-bm-pixel-dan-optimasi-iklan.md](./24-meta-akun-bm-pixel-dan-optimasi-iklan.md)
+
+**Versi dokumen:** 2.0 (selaras Meta Parameters & Best Practices, verifikasi web Mei 2026)
