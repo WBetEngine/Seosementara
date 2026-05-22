@@ -33,10 +33,19 @@ Nanti jika pakai Tailwind/ bundler, barulah **Build command** diisi (mis. `npm c
 | Field | Isi |
 |-------|-----|
 | **Project name** | `seosementara-admin` (atau `Seosementara` — bebas) |
-| **Path** (Advanced) | **`Frontend-admin`** — wajib, jangan `/` |
-| **Build command** | `npm ci` atau `npm install` |
+| **Path** (Advanced) | **`Frontend-admin`** |
+| **Build command** | `npm ci` |
 | **Deploy command** | `npx wrangler deploy` |
-| *(jika Path tidak bisa diisi)* | Build: kosong · Deploy: `cd Frontend-admin && npm install && npx wrangler deploy` |
+
+**PENTING:** Jika Path = `Frontend-admin`, **jangan** pakai `cd Frontend-admin` di perintah — itu penyebab error:
+
+```text
+/bin/sh: 1: cd: can't cd to Frontend-admin
+```
+
+Cloudflare sudah masuk ke folder itu; `cd` mencari `Frontend-admin/Frontend-admin` yang tidak ada.
+
+| **Path** = `/` (root repo saja) | Build: `cd Frontend-admin && npm ci` · Deploy: `cd Frontend-admin && npx wrangler deploy` |
 | **Builds for non-production branches** | Opsional — centang jika ingin preview tiap branch |
 | **Advanced settings** → Root directory | `Frontend-admin` *(jika ada)* |
 | **Production branch** | `main` |
