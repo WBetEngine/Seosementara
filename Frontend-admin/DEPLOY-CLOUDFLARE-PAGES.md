@@ -33,8 +33,10 @@ Nanti jika pakai Tailwind/ bundler, barulah **Build command** diisi (mis. `npm c
 | Field | Isi |
 |-------|-----|
 | **Project name** | `seosementara-admin` (atau `Seosementara` — bebas) |
-| **Build command** | *(kosongkan)* — prototype tidak perlu npm build |
-| **Deploy command** | `cd Frontend-admin && npx wrangler deploy` |
+| **Path** (Advanced) | **`Frontend-admin`** — wajib, jangan `/` |
+| **Build command** | `npm ci` atau `npm install` |
+| **Deploy command** | `npx wrangler deploy` |
+| *(jika Path tidak bisa diisi)* | Build: kosong · Deploy: `cd Frontend-admin && npm install && npx wrangler deploy` |
 | **Builds for non-production branches** | Opsional — centang jika ingin preview tiap branch |
 | **Advanced settings** → Root directory | `Frontend-admin` *(jika ada)* |
 | **Production branch** | `main` |
@@ -116,14 +118,32 @@ Perlu `wrangler login` + API token. Untuk produksi tetap disarankan **Git integr
 
 ---
 
-## 7. Troubleshooting
+## 7. Troubleshooting — build gagal (~3 detik)
+
+Penyebab umum **“Building application” failed**:
+
+| Penyebab | Solusi |
+|----------|--------|
+| **Path** = `/` | Ganti ke **`Frontend-admin`** di Advanced settings |
+| `wrangler` tidak ada di CI | Repo sudah punya `package.json` + `wrangler` devDependency — jalankan `npm install` di build |
+| Hanya `npx wrangler deploy` tanpa `cd` | Jika Path = `/`, deploy harus: `cd Frontend-admin && npm install && npx wrangler deploy` |
+| Build command kosong tapi CF gagal | Isi build: `npm ci` (atau `npm install` jika belum ada lockfile) |
+
+**Setting yang disarankan (Path = Frontend-admin):**
+
+```
+Build command:   npm ci
+Deploy command:  npx wrangler deploy
+Path:            Frontend-admin
+```
+
+Lalu **Retry build** di dashboard.
 
 | Masalah | Solusi |
 |---------|--------|
-| Push `main` tapi tidak deploy | Belum connect Git di Pages, atau root directory salah |
-| 404 di `/admin` | Pastikan `_redirects` ada; buka `/admin/index.html` |
-| Build gagal “command not found” | Kosongkan build command; preset = None |
-| HTMX 404 ke API | Normal — backend belum; mock masih di `_partials/` |
+| Push `main` tapi tidak deploy | Belum connect Git, atau Path salah |
+| 404 di `/admin` | `_redirects` + `/admin/index.html` |
+| HTMX 404 ke API | Backend belum; mock `_partials/` |
 
 ---
 
