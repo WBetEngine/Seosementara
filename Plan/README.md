@@ -33,6 +33,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 23 | [23-meta-conversions-api-kedalaman.md](./23-meta-conversions-api-kedalaman.md) | **Meta CAPI:** auth, payload, EMQ, dedup, hybrid, multi-pixel |
 | 24 | [24-meta-akun-bm-pixel-dan-optimasi-iklan.md](./24-meta-akun-bm-pixel-dan-optimasi-iklan.md) | **Realita BM/personal/Fanpage**, SOP BM putus, fitur optimasi biaya |
 | 25 | [25-pixel-data-lengkap-emq.md](./25-pixel-data-lengkap-emq.md) | **Data selaras Meta 2026:** tabel resmi `user_data`, hash, wajib website |
+| 26 | [26-meta-sumber-resmi-pixel-capi.md](./26-meta-sumber-resmi-pixel-capi.md) | **Peta 3 URL resmi Meta:** standard events, Pixel dev, CAPI business |
 
 ## Ringkasan Stack
 

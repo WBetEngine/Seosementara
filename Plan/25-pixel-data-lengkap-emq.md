@@ -6,8 +6,14 @@
 
 ## Sumber resmi Meta (wajib dibaca operator)
 
+> **Peta tiga URL yang Anda kirim** (Help standard events + Meta Pixel + CAPI business): [26](./26-meta-sumber-resmi-pixel-capi.md)
+
 | Topik | URL resmi |
 |-------|-----------|
+| **Standard events (Help)** | https://www.facebook.com/business/help/402791146561655?id=1205376682832142 |
+| **Meta Pixel (dev)** | https://developers.facebook.com/docs/meta-pixel |
+| **Pixel event reference** | https://developers.facebook.com/docs/facebook-pixel/reference |
+| **Conversions API (business)** | https://www.facebook.com/business/tools/conversions-api |
 | Customer Information Parameters | https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/customer-information-parameters |
 | Server Event Parameters | https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/server-event |
 | Semua Parameters (indeks) | https://developers.facebook.com/docs/marketing-api/conversions-api/parameters |
