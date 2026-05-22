@@ -87,3 +87,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 2.3 | 2026-05-22 | Plan/26: peta URL Help + Meta Pixel + CAPI business (26) |
 | 2.4 | 2026-05-22 | Plan/27: desain admin — 3 dashboard, nav berkelompok, tanpa Cart/Toko (27) |
 | 2.5 | 2026-05-22 | Plan/27 v1.1: Plugins, Settings, domain drawer, SEO domain-panel, tanpa jobs (27) |
+| 2.6 | 2026-05-22 | Plan/27 v1.2: drawer universal #app-drawer semua modul (referensi UI) (27) |

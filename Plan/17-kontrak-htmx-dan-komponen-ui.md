@@ -41,8 +41,10 @@ File: `Frontend-admin/templates/layouts/admin.html`
 | Region | ID | Isi |
 |--------|-----|-----|
 | Layout penuh | `#layout-admin` | Sidebar + topbar |
-| Konten utama | `#main` | **Default swap target** |
-| Modal | `#modal` | `hx-swap outerHTML` |
+| Konten utama | `#main` | **Default swap target** — list, dashboard, tabel |
+| **Drawer universal** | `#app-drawer` | **Create / Edit / Read** semua modul — [27](./27-admin-panel-desain-ui-navigasi.md) §4 |
+| Backdrop | `#drawer-backdrop` | Klik tutup drawer |
+| Modal kecil | `#modal` | Konfirmasi hapus, alert singkat saja |
 | Toast | `#toast` | Notifikasi singkat |
 | Notifikasi badge | `#notif-badge` | Poll ringan |
 
@@ -51,6 +53,8 @@ File: `Frontend-admin/templates/layouts/admin.html`
   <meta name="csrf" content="{{.CSRFToken}}">
   <div id="toast"></div>
   <div id="modal"></div>
+  <div id="drawer-backdrop" class="drawer-backdrop" hidden></div>
+  <aside id="app-drawer" class="app-drawer" aria-hidden="true"></aside>
   <aside><!-- sidebar --></aside>
   <main id="main"
         hx-get="/api/admin/dashboard"
@@ -59,6 +63,8 @@ File: `Frontend-admin/templates/layouts/admin.html`
   </main>
 </body>
 ```
+
+**Prinsip:** Tabel di `#main` tetap; aksi **Edit / Tambah / Lihat** membuka **`#app-drawer`** (panel kanan seperti referensi operator), bukan navigasi halaman penuh kecuali editor konten panjang (§ drawer lebar di [27](./27-admin-panel-desain-ui-navigasi.md)).
 
 ### 2.2 Konfigurasi global HTMX (admin)
 
@@ -198,6 +204,10 @@ Komponen = partial Go template + CSS class — **bukan** framework JS.
 | **Permission checklist** | `partials/permission-grid.html` | preset + checkboxes [11](./11-rbac-dan-permission-share.md) |
 | **Job progress** | `partials/job-progress.html` | % + log ringkas |
 | **Modal frame** | `partials/modal.html` | title + body slot |
+| **App drawer shell** | `partials/app-drawer-shell.html` | Header, body slot, footer Save/Cancel — [27](./27-admin-panel-desain-ui-navigasi.md) §4 |
+| **Drawer form row** | `partials/drawer-form-row.html` | Label + input/select + hint (i) |
+| **Drawer read strip** | `partials/drawer-read-strip.html` | Status, tanggal, ID read-only |
+| **Drawer icon actions** | `partials/drawer-icon-actions.html` | Tombol ikon kiri footer |
 | **Empty state** | `partials/empty.html` | CTA tambah domain |
 | **Badge** | `partials/badge.html` | status domain/job |
 

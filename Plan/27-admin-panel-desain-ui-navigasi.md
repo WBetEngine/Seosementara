@@ -108,10 +108,10 @@ Sidebar **6 grup** (+ user footer). Tanpa Operasi massal, Jobs, Toko, Tools.
     Dibagikan ke saya
     Tambah domain
     Semua domain              (SA only)
-    ── dari list / baris domain:
-       [Drawer] Kelola domain  → §4.2
+    ── baris → drawer §4.2 (domain)
 
 ▼ Konten                      (Domain Panel — domain aktif)
+    (list di #main · edit → drawer §4)
     Post
     Halaman
     Kategori & tag
@@ -123,46 +123,130 @@ Sidebar **6 grup** (+ user footer). Tanpa Operasi massal, Jobs, Toko, Tools.
     Redirect manager
     (konten per-post → di editor Konten)
 
-▼ Plugins
+▼ Plugins                     (list #main · edit → drawer §4)
     Shortlink                 → [19]
     Pixel Hub                 → [20]
 
 ▼ Laporan                     (opsional fase berikutnya)
-    Statistik domain
-    Aktivitas
 
-▼ Settings                    (sistem — Read / Edit / Write)
-    → submenu §5
+▼ Settings                    (list #main · edit → drawer §4)
+    → submenu §5 (nav kiri Settings + drawer untuk tiap record/form)
 
 ─────────────────────────────────────────
 Notifikasi · User · Keluar
 ```
 
-### 4.2 Domain drawer — Edit & kelola satu domain
+### 4.2 Pola drawer universal (referensi UI yang disetujui)
 
-Dari **daftar Domain** (saya / dibagikan / semua), setiap baris punya aksi **Kelola** → membuka **drawer kanan** (mobile: full sheet), bukan halaman terpisah untuk metadata ringan.
+Satu komponen **`#app-drawer`** di layout admin ([17](./17-kontrak-htmx-dan-komponen-ui.md) §2.1) dipakai di **semua modul** — Domain, Konten, SEO, Plugins, Settings, RBAC, Host, dll. Pola mengikuti panel kanan pada referensi: **tabel/list di `#main`**, **form edit di drawer**, backdrop gelap, footer **Simpan / Batal**.
 
-**Container:** `#domain-drawer` · `hx-get="/api/admin/domains/{id}/drawer"`
+```mermaid
+flowchart LR
+  subgraph layout [Layout admin]
+    SB[Sidebar gelap]
+    MAIN["#main — tabel / tab"]
+    DR["#app-drawer — form"]
+  end
+  SB --> MAIN
+  MAIN -->|Edit / Tambah / Lihat| DR
+```
 
-| Tab / section drawer | Fungsi | Permission |
-|----------------------|--------|------------|
-| **Edit domain** | Nama tampilan, hostname, status aktif, catatan operasi | Owner / co-admin sesuai share |
-| **Edit tema domain** | Template/tema situs portfolio, preset layout, warna/logo domain | `domain.settings` atau owner |
-| **Edit kepemilikan** | Owner saat ini; **transfer** (aksi SA) | Owner lihat; transfer **SA** [09](./09-model-domain-host-dan-subdomain.md) |
-| **Pembagian** | Share, preset read/edit/co-admin, checklist [11](./11-rbac-dan-permission-share.md) | Owner / co-admin |
-| **Edit SEO per domain** | Default title/description, robots default, schema situs | `seo.edit` pada domain |
+#### 4.2.1 Anatomi drawer (wajib sama di semua modul)
 
-Drawer **bukan** tempat CRUD post — post tetap di grup **Konten**.
+```
+┌──────────────────────────────────────────────┐
+│ [×]  Judul record          Mode: Edit        │  ← header
+├──────────────────────────────────────────────┤
+│ Status: Active · ID: 123 · Diperbarui: …     │  ← read strip (opsional)
+├──────────────────────────────────────────────┤
+│  Label (i)          [ dropdown / input    ]  │
+│  Label              [ input               ]  │  ← body: grid 2 kolom
+│  Label              [ textarea            ]  │     (1 kolom di mobile)
+│  … tab dalam drawer jika banyak section …    │
+├──────────────────────────────────────────────┤
+│ [🗑][📄][🔑][⚙] …          [Batal] [Simpan] │  ← footer
+└──────────────────────────────────────────────┘
+```
+
+| Bagian | Perilaku |
+|--------|----------|
+| **Header** | Judul entitas + tombol tutup; badge mode Read / Edit / Create |
+| **Read strip** | Field hanya baca: status, tanggal dibuat/ubah, hostname, pemilik |
+| **Body** | Form 2 kolom desktop; label + `(i)` hint tooltip; `<select>` untuk enum |
+| **Tab dalam drawer** | Domain: Domain · Tema · Kepemilikan · Pembagian · SEO — jangan pindah halaman |
+| **Footer kiri** | **Icon actions** kontekstual (hapus, salin, docs, kunci API, dll.) — permission-gated |
+| **Footer kanan** | **Batal** (tutup tanpa simpan) · **Simpan** (primary, `hx-post` / `hx-put`) |
+| **Backdrop** | `#drawer-backdrop` semi-transparan; klik = tutup |
+| **Mobile** | Drawer **100% lebar**; footer sticky bawah |
+
+#### 4.2.2 Kontrak HTMX (satu untuk semua)
+
+| Aksi | Request | Target |
+|------|---------|--------|
+| Buka Edit | `GET /api/admin/{modul}/{id}/drawer?mode=edit` | `#app-drawer` |
+| Buka Create | `GET /api/admin/{modul}/drawer/new` | `#app-drawer` |
+| Buka Read | `GET /api/admin/{modul}/{id}/drawer?mode=read` | `#app-drawer` |
+| Simpan | `POST/PUT` form `hx-target="#app-drawer"` atau `#main` + `HX-Trigger: closeDrawer` | |
+| Tutup | `hx-get` kosong atau JS `closeDrawer()` + hapus backdrop | |
 
 ```html
-<!-- contoh trigger dari tabel domain -->
-<button hx-get="/api/admin/domains/{{.ID}}/drawer"
-        hx-target="#domain-drawer"
-        hx-swap="innerHTML">
-  Kelola
+<!-- trigger standar di setiap baris tabel -->
+<button class="btn-icon"
+        hx-get="/api/admin/domains/{{.ID}}/drawer?mode=edit"
+        hx-target="#app-drawer"
+        hx-swap="innerHTML"
+        hx-on::after-request="openDrawer()">
+  Edit
 </button>
-<aside id="domain-drawer" class="drawer" aria-label="Panel domain"></aside>
 ```
+
+Response drawer = **HTML lengkap** `partials/app-drawer-shell.html` + isi modul.
+
+#### 4.2.3 Pemetaan modul → drawer
+
+| Modul | List di `#main` | Isi drawer (contoh) |
+|-------|-----------------|---------------------|
+| **Domain** | Tabel domain | Tab: Edit domain, Tema, Kepemilikan, Pembagian, SEO per domain |
+| **Konten — Post** | Tabel post | Metadata + SEO singkat; **body artikel panjang** → drawer **lebar** (`drawer--wide`) atau tab “Editor” full-height |
+| **Konten — Halaman / Taxonomy** | Tabel | Drawer form standar |
+| **SEO** | Tabel redirect / rules | Edit rule di drawer |
+| **Plugins — Shortlink** | Tabel link | Create/Edit shortlink |
+| **Plugins — Pixel** | Tab overview | Edit assignment domain, test event (bukan ganti 7-tab Pro — tab tetap di `#main`, detail row di drawer) |
+| **Settings — RBAC** | Tabel user/role | Edit user, edit permission role |
+| **Settings — Cloudflare** | Ringkasan + tabel | Edit token, edit route tunnel, edit env var |
+| **Settings — Host** | Tabel host produk | Edit host, template subdomain |
+| **Settings — Auth / Rate limit** | Form section list | Edit blok setting (drawer per section atau inline — prefer drawer jika >6 field) |
+
+**Bukan drawer:** Dashboard kartu; konfirmasi hapus kecil → `#modal`; login page.
+
+#### 4.2.4 Domain — contoh pertama (sama shell universal)
+
+`GET /api/admin/domains/{id}/drawer` — body pakai **tab horizontal** di dalam drawer:
+
+| Tab | Isi |
+|-----|-----|
+| Domain | Hostname, status, catatan |
+| Tema | Template, logo, preset |
+| Kepemilikan | Owner; transfer (SA) |
+| Pembagian | Share + checklist [11](./11-rbac-dan-permission-share.md) |
+| SEO | Default meta domain portfolio |
+
+Permission per tab sama seperti §4.2.3 Domain di v1.0.
+
+#### 4.2.5 Visual & tema (selaras referensi, identitas Seosementara)
+
+| Elemen | Gaya |
+|--------|------|
+| Sidebar + topbar | Gelap (bisa maroon/brand `--color-sidebar`) |
+| Area `#main` | Terang, tabel zebra ringan |
+| `#app-drawer` | Putih, shadow kiri, lebar **min(480px, 100vw)** |
+| `drawer--wide` | **min(720px, 100vw)** — editor post |
+| Tombol Simpan | Primary solid (biru/brand) |
+| Tombol Batal | Outline / ghost |
+| Icon footer | Kotak 40×40; destructive merah terpisah |
+| Badge menu sidebar | Merah untuk hitung pending (notif, withdraw, dll. — jika modul ada) |
+
+Warna exact = token di `admin.css`, tidak hardcode per halaman.
 
 ### 4.3 SEO & pertumbuhan — scope ketat
 
@@ -198,10 +282,11 @@ Plugin lain nanti (komentar, review, …) masuk grup **Plugins** setelah ada Pla
 
 | Aturan | Implementasi |
 |--------|----------------|
-| Maks. 2 level sidebar | Grup → item; drawer = panel ketiga untuk domain |
+| Maks. 2 level sidebar | Grup → item |
+| **Drawer universal** | Semua Edit/Create/Read record → `#app-drawer` |
 | Domain Panel | Konten + SEO butuh `managed_domain_id` aktif |
 | SA only | Semua domain, Dashboard Global, transfer kepemilikan |
-| Mobile | Sidebar drawer + domain drawer full width |
+| Mobile | Sidebar drawer + `#app-drawer` full width |
 | Active state | Path + grup terbuka |
 
 ### 4.7 Topbar
@@ -239,18 +324,24 @@ Plugin lain nanti (komentar, review, …) masuk grup **Plugins** setelah ada Pla
 
 **Redirect migrasi:** `/admin/setup/*` → `/admin/settings/*` (301 atau HTMX alias).
 
-### 5.2 Layout Settings
+### 5.2 Layout Settings (list + drawer)
 
 ```
 ┌─────────────────────────────────────────┐
-│ Settings > Cloudflare > Tunnel          │
+│ Settings > Cloudflare                   │
 ├──────────────┬──────────────────────────┤
-│ Subnav       │ #main (form HTMX)        │
-│ Settings     │ Read / Edit / Write      │
-└──────────────┴──────────────────────────┘
+│ Subnav       │ #main — tabel / ringkasan │
+│ Settings     │          ┌──────────────┐ │
+│              │          │ #app-drawer  │ │
+│              │          │ edit record  │ │
+└──────────────┴──────────┴──────────────┘
 ```
 
-Partial: `nav-settings-sub.html` (vertikal, sticky di desktop).
+- **Subnav kiri:** kategori Settings (Backend, Cloudflare, Host, …).
+- **`#main`:** daftar record (tunnel routes, users, env vars) atau ringkasan read-only.
+- **Edit / Tambah:** buka **`#app-drawer`** — bukan halaman form terpisah.
+
+Partial: `nav-settings-sub.html` + `app-drawer-shell.html`.
 
 ---
 
@@ -269,11 +360,11 @@ Partial: `nav-settings-sub.html` (vertikal, sticky di desktop).
 
 | Breakpoint | Perilaku |
 |------------|----------|
-| &lt; 640px | Sidebar drawer; **domain drawer** full screen; tabel → kartu |
-| 640–1024px | Sidebar collapse opsional |
-| ≥ 1024px | Sidebar 240px; domain drawer ~400px kanan |
+| &lt; 640px | Sidebar drawer; **`#app-drawer`** full screen; tabel → kartu |
+| 640–1024px | Sidebar collapse opsional; drawer ~90% lebar |
+| ≥ 1024px | Sidebar 240px; **`#app-drawer`** ~480px kanan (wide 720px untuk editor) |
 
-Touch target min. **44px**. Form 1 kolom di mobile.
+Touch target min. **44px**. Form drawer 1 kolom di mobile; footer Simpan/Batal sticky.
 
 ---
 
@@ -281,10 +372,11 @@ Touch target min. **44px**. Form 1 kolom di mobile.
 
 | Partial | Fungsi |
 |---------|--------|
-| `domain-drawer.html` | Tab: domain, tema, kepemilikan, pembagian, SEO |
+| `app-drawer-shell.html` | Header + footer Simpan/Batal + slot body |
+| `drawer-domain.html` | Tab domain/tema/share/SEO |
+| `drawer-{modul}.html` | Satu per entitas (shortlink, user, host, …) |
 | `nav-sidebar.html` | 6 grup §4.1 |
 | `nav-settings-sub.html` | Subnav Settings |
-| `nav-plugins.html` | Entri shortlink + pixel (jika subnav perlu) |
 | `dashboard-*.html` | Tiga dashboard |
 
 ---
@@ -296,8 +388,9 @@ Touch target min. **44px**. Form 1 kolom di mobile.
 | `GET /api/admin/dashboard` | `dashboard-admin.html` |
 | `GET /api/admin/dashboard/domain` | `dashboard-domain.html` |
 | `GET /api/admin/dashboard/global` | `dashboard-global.html` |
-| `GET /api/admin/domains/{id}/drawer` | `domain-drawer.html` |
-| `GET/POST /api/admin/settings/...` | Form Settings (R/W) |
+| `GET /api/admin/{modul}/{id}/drawer` | `app-drawer-shell` + body modul |
+| `GET /api/admin/{modul}/drawer/new` | Mode create |
+| `POST/PUT` via drawer form | Simpan + trigger refresh `#main` |
 
 ---
 
@@ -308,7 +401,7 @@ Touch target min. **44px**. Form 1 kolom di mobile.
 | Tools + operasi massal + jobs | **Plugins** — shortlink + Pixel saja |
 | Setup / Platform | **Settings** — `/admin/settings/` |
 | SEO ambigu | **Hanya Domain Panel** (`managed_domain`) |
-| Domain hanya list | List + **drawer** kelola domain/tema/share/SEO |
+| Drawer hanya domain | **`#app-drawer` universal** semua modul §4.2 |
 | Operasi massal di menu | **Dihapus** sampai ada Plan |
 
 ---
@@ -316,7 +409,9 @@ Touch target min. **44px**. Form 1 kolom di mobile.
 ## 11. Checklist implementasi
 
 - [ ] Nav 6 grup §4.1 — tanpa jobs/operasi massal
-- [ ] `#domain-drawer` + 5 section §4.2
+- [ ] `#app-drawer` + `app-drawer-shell` + `openDrawer()` §4.2
+- [ ] Domain drawer 5 tab (contoh pertama)
+- [ ] Settings / Plugins / Konten pakai shell yang sama
 - [ ] SEO grup gate `managed_domain_id`
 - [ ] Path `/admin/settings/*` + redirect dari `/admin/setup/*`
 - [ ] Plugins: `/admin/plugins/shortlink`, `/admin/plugins/pixel`
@@ -337,4 +432,4 @@ Touch target min. **44px**. Form 1 kolom di mobile.
 | [14](./14-setup-meta-dan-seo.md) | Meta: domain vs host vs halaman |
 | [15](./15-setup-cloudflare-integrasi.md) | CF di Settings |
 
-**Versi:** 1.1 — Plugins, Settings, domain drawer, SEO domain-panel only, tanpa jobs (Mei 2026)
+**Versi:** 1.2 — Drawer universal (referensi UI) untuk semua modul; Settings list+drawer (Mei 2026)
