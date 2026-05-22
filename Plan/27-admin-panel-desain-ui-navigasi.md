@@ -21,7 +21,7 @@
 
 | Dunia | Contoh | Dikelola di admin |
 |-------|--------|-------------------|
-| **Domain portfolio** (`managed_domain`) | `toko-abc.com`, ribuan domain pekerja | **Domain Panel** — drawer domain, Konten, **SEO grup §4** |
+| **Domain portfolio** (`managed_domain`) | `toko-abc.com`, ribuan domain pekerja | **Domain Panel** — `#app-drawer`, Konten, **SEO grup §4** |
 | **Domain produk / host** | `seosementara.org`, `bola.`, `url.` | **Settings** — Host, Cloudflare, meta apex ([09](./09-model-domain-host-dan-subdomain.md)) |
 
 **SEO & pertumbuhan** di sidebar (§4) = **hanya** untuk **Domain Panel** (satu `managed_domain` aktif).  
