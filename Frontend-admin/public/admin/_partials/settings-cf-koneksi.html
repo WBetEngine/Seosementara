@@ -1,0 +1,65 @@
+<div class="alert alert-info" style="margin-bottom:1rem">
+  <strong>Super Admin only.</strong> Token disimpan terenkripsi di mini PC (bukan di GitHub). API: <code>PUT /api/admin/setup/cloudflare/credentials</code>
+</div>
+
+<div class="panel">
+  <div class="panel__head">Kredensial Cloudflare</div>
+  <div class="panel__body">
+    <form class="form-grid" onsubmit="return false">
+      <div class="form-row">
+        <label for="cf-auth-type">Tipe autentikasi</label>
+        <select id="cf-auth-type" name="auth_type">
+          <option value="api_token" selected>API Token (scoped) — disarankan</option>
+          <option value="global_api_key">Global API Key + Email (legacy)</option>
+        </select>
+      </div>
+      <div class="form-row" id="cf-token-row">
+        <label for="cf-token">API Token</label>
+        <input id="cf-token" name="token" type="password" placeholder="cfpat_…" autocomplete="off" />
+        <p style="margin:0.35rem 0 0;font-size:0.75rem;color:var(--text-muted)">
+          Permission: Account Pages Edit, Tunnel Edit, DNS Edit · Zone DNS Edit
+        </p>
+      </div>
+      <div class="form-row" id="cf-global-row" hidden>
+        <label for="cf-global-key">Global API Key</label>
+        <input id="cf-global-key" name="global_api_key" type="password" autocomplete="off" />
+      </div>
+      <div class="form-row" id="cf-email-row" hidden>
+        <label for="cf-email">Email akun Cloudflare</label>
+        <input id="cf-email" name="account_email" type="email" placeholder="admin@example.com" />
+      </div>
+      <div class="form-row">
+        <label for="cf-account-id">Account ID</label>
+        <input id="cf-account-id" name="account_id" placeholder="Diisi otomatis setelah Test OK" value="a1b2c3d4e5f6…" />
+      </div>
+    </form>
+
+    <div style="margin-top:1.25rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
+      <button type="button" class="btn btn-primary">Test &amp; Simpan</button>
+      <button type="button" class="btn btn-outline">Test saja</button>
+      <span class="badge badge-success">Terakhir valid: 2026-05-22 08:00</span>
+    </div>
+
+    <div class="panel" style="margin-top:1.25rem;background:#f9fafb">
+      <div class="panel__body" style="font-size:0.85rem">
+        <strong>Token tersimpan (masked):</strong> <code>cfpat_••••••••••••abcd</code><br />
+        <span style="color:var(--text-muted)">GET API tidak mengembalikan secret lengkap · rotasi via form di atas</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var sel = document.getElementById("cf-auth-type");
+  if (!sel) return;
+  function toggle() {
+    var legacy = sel.value === "global_api_key";
+    document.getElementById("cf-token-row").hidden = legacy;
+    document.getElementById("cf-global-row").hidden = !legacy;
+    document.getElementById("cf-email-row").hidden = !legacy;
+  }
+  sel.addEventListener("change", toggle);
+  toggle();
+})();
+</script>

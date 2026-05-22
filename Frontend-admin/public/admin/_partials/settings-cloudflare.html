@@ -2,6 +2,8 @@
   <span>Admin</span>
   <span class="breadcrumb__sep">/</span>
   <span>Settings</span>
+  <span class="breadcrumb__sep">/</span>
+  <span>Cloudflare</span>
 </div>
 
 <div class="page-header page-header--with-icon">
@@ -10,7 +12,7 @@
   </div>
   <div>
     <h1 class="page-title">Settings — Cloudflare</h1>
-    <p class="page-sub">Tunnel, Pages (free), DNS — domain produk</p>
+    <p class="page-sub">Kelola kredensial, Tunnel, Pages, DNS dari admin — tanpa dashboard Cloudflare (Plan/15)</p>
   </div>
 </div>
 
@@ -18,30 +20,44 @@
   <nav class="settings-subnav">
     <button type="button"
       hx-get="/admin/_partials/settings-rbac.html"
-      hx-target="#main"
-      hx-swap="innerHTML"
+      hx-target="#main" hx-swap="innerHTML"
       hx-push-url="/admin/settings/rbac">RBAC &amp; pengguna</button>
     <button type="button" class="is-active">Cloudflare</button>
-    <button type="button" disabled>Host &amp; subdomain</button>
+    <button type="button"
+      hx-get="/admin/_partials/settings-host.html"
+      hx-target="#main" hx-swap="innerHTML"
+      hx-push-url="/admin/settings/host">Host &amp; subdomain</button>
   </nav>
 
   <div>
-    <div class="tabs">
-      <button type="button" class="is-active">Koneksi</button>
-      <button type="button">Tunnel</button>
-      <button type="button">Pages</button>
-      <button type="button">DNS</button>
-    </div>
-    <div class="panel">
-      <div class="panel__head">API Token (masked)</div>
-      <div class="panel__body">
-        <p style="margin:0 0 1rem"><code>cfpat_••••••••xxxx</code> — valid</p>
-        <button type="button" class="btn btn-outline"
-          hx-get="/admin/_partials/drawer-cf-token.html"
-          hx-target="#app-drawer"
-          hx-swap="innerHTML">Edit token</button>
-        <button type="button" class="btn btn-primary" style="margin-left:0.5rem">Test koneksi</button>
-      </div>
+    <nav class="page-tabs" role="tablist" aria-label="Tab Cloudflare">
+      <button type="button" class="is-active" data-page-tab="koneksi"
+        hx-get="/admin/_partials/settings-cf-koneksi.html"
+        hx-target="#cf-tab-panel" hx-swap="innerHTML"
+        hx-push-url="/admin/settings/cloudflare/koneksi">Koneksi</button>
+      <button type="button" data-page-tab="domain"
+        hx-get="/admin/_partials/settings-cf-domain.html"
+        hx-target="#cf-tab-panel" hx-swap="innerHTML"
+        hx-push-url="/admin/settings/cloudflare/domain">Domain &amp; env</button>
+      <button type="button" data-page-tab="tunnel"
+        hx-get="/admin/_partials/settings-cf-tunnel.html"
+        hx-target="#cf-tab-panel" hx-swap="innerHTML"
+        hx-push-url="/admin/settings/cloudflare/tunnel">Tunnel</button>
+      <button type="button" data-page-tab="pages"
+        hx-get="/admin/_partials/settings-cf-pages.html"
+        hx-target="#cf-tab-panel" hx-swap="innerHTML"
+        hx-push-url="/admin/settings/cloudflare/pages">Pages</button>
+      <button type="button" data-page-tab="dns"
+        hx-get="/admin/_partials/settings-cf-dns.html"
+        hx-target="#cf-tab-panel" hx-swap="innerHTML"
+        hx-push-url="/admin/settings/cloudflare/dns">DNS</button>
+    </nav>
+
+    <div id="cf-tab-panel"
+      hx-get="/admin/_partials/settings-cf-koneksi.html"
+      hx-trigger="load"
+      hx-swap="innerHTML">
+      <p class="empty-state">Memuat…</p>
     </div>
   </div>
 </div>
