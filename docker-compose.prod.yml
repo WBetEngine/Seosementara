@@ -1,3 +1,8 @@
+# Mini PC production: pull image dari GHCR (tanpa source code / build lokal).
+# Salin ke C:\Seosementara bersama .env lalu:
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+
 services:
   db:
     image: postgres:16-alpine
@@ -15,11 +20,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   api:
-    build:
-      context: .
-      dockerfile: Backend/Dockerfile
+    image: ghcr.io/wbetengine/seosementara-api:latest
+    pull_policy: always
     ports:
       - "8080:8080"
     environment:
@@ -32,13 +37,10 @@ services:
       ADMIN_PARTIALS_DIR: /app/partials
       STATIC_DIR: /app/static
       ADMIN_TEMPLATES_DIR: /app/templates
-    volumes:
-      - ./Frontend-admin/public/admin/_partials:/app/partials:ro
-      - ./Frontend-admin/static:/app/static:ro
-      - ./Frontend-admin/templates:/app/templates:ro
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   pgdata:

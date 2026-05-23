@@ -111,4 +111,4 @@ Backend Go memanggil Cloudflare API; UI prototype di Workers memanggil backend v
 | GitHub menjalankan server? | Tidak — GitHub **membangun & mengirim**; yang jalan tetap **mini PC** |
 | Admin UI di workers.dev? | Terpisah — statis di Cloudflare; API di mini PC lewat Tunnel |
 
-Fase berikutnya di repo: tambah `.github/workflows/deploy-backend.yml` + `Backend/Dockerfile` + `docker-compose.yml` jika Anda setuju.
+**Opsi A sudah di repo:** lihat `Frontend-admin/DEPLOY-OPSI-A.md`, workflow `.github/workflows/deploy-backend.yml`, dan `docker-compose.prod.yml`.
