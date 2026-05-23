@@ -1,13 +1,17 @@
-# Bootstrap Cloudflare via API — baca dari environment (GitHub Secrets), bukan file .env.
+# Bootstrap Cloudflare via API — baca dari file .env di C:\Seosementara.
 param(
   [string]$ApiBase = "https://api.apidevel.org"
 )
 
 $ErrorActionPreference = "Stop"
+$Root = if ($PSScriptRoot) { Split-Path $PSScriptRoot -Parent } else { "C:\Seosementara" }
+
+. "$PSScriptRoot\load-dotenv.ps1"
+Import-DotEnv -Path (Join-Path $Root ".env")
 
 function Require-Env([string]$Name) {
   $v = [Environment]::GetEnvironmentVariable($Name)
-  if (-not $v) { throw "Missing environment variable: $Name" }
+  if (-not $v) { throw "Missing di .env: $Name" }
   return $v
 }
 

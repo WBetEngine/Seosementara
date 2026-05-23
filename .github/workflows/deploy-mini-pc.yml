@@ -1,6 +1,5 @@
-# Deploy ke mini PC — self-hosted runner (tanpa file .env di disk).
-# Secret → environment variable → docker compose.
-# Setup sekali: scripts/install-github-runner.ps1
+# Deploy ke mini PC — self-hosted runner + file .env di C:\Seosementara.
+# Setup sekali: buat .env + pasang runner (lihat mini-pc/DEPLOY.md).
 
 name: Deploy Mini PC
 
@@ -29,19 +28,15 @@ jobs:
           New-Item -ItemType Directory -Path "$root\Backend\migrations" -Force | Out-Null
           New-Item -ItemType Directory -Path "$root\scripts" -Force | Out-Null
           Copy-Item docker-compose.prod.yml $root -Force
+          Copy-Item mini-pc/env.example "$root\env.example" -Force
           Copy-Item Backend/migrations/*.up.sql "$root\Backend\migrations\" -Force
-          Copy-Item scripts/mini-pc-remote-deploy.ps1,scripts/bootstrap-cloudflare.ps1 "$root\scripts\" -Force
+          Copy-Item scripts/load-dotenv.ps1,scripts/mini-pc-remote-deploy.ps1,scripts/bootstrap-cloudflare.ps1 "$root\scripts\" -Force
 
       - name: Deploy Docker stack
         shell: powershell
-        env:
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          MASTER_ENCRYPTION_KEY: ${{ secrets.MASTER_ENCRYPTION_KEY }}
-          SUPER_ADMIN_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_ACCOUNT_EMAIL: ${{ secrets.CLOUDFLARE_ACCOUNT_EMAIL }}
-          CLOUDFLARE_TUNNEL_ID: ${{ secrets.CLOUDFLARE_TUNNEL_ID }}
         run: |
           Set-Location C:\Seosementara
+          if (-not (Test-Path .env)) {
+            throw ".env belum ada di C:\Seosementara. Salin env.example ke .env dan isi secret (lihat mini-pc/DEPLOY.md)."
+          }
           & .\scripts\mini-pc-remote-deploy.ps1

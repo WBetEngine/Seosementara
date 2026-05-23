@@ -1,17 +1,19 @@
-# Jalankan di mini PC (sekali) — PowerShell Administrator.
-# Setelah ini: push ke GitHub main = deploy otomatis, tanpa SSH dari internet.
+# Pasang GitHub self-hosted runner (Windows) — alternatif otomatis.
+# Panduan lengkap manual: mini-pc/DEPLOY.md
 $ErrorActionPreference = "Stop"
 
 $runnerDir = "C:\actions-runner"
 $repoUrl = "https://github.com/WBetEngine/Seosementara"
-$token = Read-Host "GitHub PAT (scope: repo + admin:org read for private, atau repo saja)"
+$runnerVersion = "2.334.0"
+$runnerZip = "actions-runner-win-x64-$runnerVersion.zip"
+$runnerUrl = "https://github.com/actions/runner/releases/download/v$runnerVersion/$runnerZip"
 
 Write-Host @"
 
-=== GitHub Self-Hosted Runner (sekali saja) ===
+=== GitHub Self-Hosted Runner ===
 1. Buka: $repoUrl/settings/actions/runners/new
 2. Pilih Windows x64
-3. Salin token registration (bukan PAT) — atau pakai PAT di bawah
+3. Salin registration token (kadaluarsa ~1 jam)
 
 "@ -ForegroundColor Yellow
 
@@ -21,13 +23,13 @@ if (-not (Test-Path $runnerDir)) {
 Set-Location $runnerDir
 
 if (-not (Test-Path ".\config.cmd")) {
-  Write-Host "Download runner..." -ForegroundColor Cyan
-  Invoke-WebRequest -Uri "https://github.com/actions/runner/releases/download/v2.321.0/actions-runner-win-x64-2.321.0.zip" -OutFile runner.zip
-  Expand-Archive runner.zip -DestinationPath . -Force
-  Remove-Item runner.zip
+  Write-Host "Download runner v$runnerVersion..." -ForegroundColor Cyan
+  Invoke-WebRequest -Uri $runnerUrl -OutFile $runnerZip
+  Expand-Archive $runnerZip -DestinationPath . -Force
+  Remove-Item $runnerZip
 }
 
-$regToken = Read-Host "Registration token dari GitHub (Settings → Actions → Runners → New)"
+$regToken = Read-Host "Registration token dari GitHub"
 
 .\config.cmd --url $repoUrl --token $regToken --name "mini-pc-seosementara" --work _work --unattended --replace
 
@@ -35,6 +37,6 @@ Write-Host "Install as Windows service..." -ForegroundColor Cyan
 .\install.cmd
 
 Write-Host @"
-Selesai. Runner muncul di GitHub → Settings → Actions → Runners (online).
-Workflow 'Deploy Mini PC (local)' akan jalan di PC ini otomatis.
+Selesai. Runner online di GitHub → Settings → Actions → Runners.
+Pastikan C:\Seosementara\.env sudah dibuat sebelum Deploy Mini PC.
 "@ -ForegroundColor Green

@@ -1,14 +1,16 @@
-# Deploy ke mini PC — dipanggil GitHub Actions self-hosted runner.
-# Tidak membutuhkan file .env: secret sudah di environment process.
+# Deploy ke mini PC — baca secret dari file .env di folder root.
 $ErrorActionPreference = "Stop"
 $Root = if ($PSScriptRoot) { Split-Path $PSScriptRoot -Parent } else { "C:\Seosementara" }
 Set-Location $Root
+
+. "$PSScriptRoot\load-dotenv.ps1"
+Import-DotEnv -Path (Join-Path $Root ".env")
 
 Write-Host "=== Seosementara deploy ===" -ForegroundColor Cyan
 
 foreach ($var in @("DB_PASSWORD", "MASTER_ENCRYPTION_KEY", "SUPER_ADMIN_TOKEN")) {
   if (-not [Environment]::GetEnvironmentVariable($var)) {
-    throw "Environment variable $var belum diset (GitHub Secrets → Actions)"
+    throw "Variabel $var kosong di .env"
   }
 }
 
