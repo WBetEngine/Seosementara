@@ -4,5 +4,4 @@ node_modules/
 .env
 .env.*
 Backend/.env
-Frontend-admin/public/static/js/admin-config.js
 mini-pc/env.production
