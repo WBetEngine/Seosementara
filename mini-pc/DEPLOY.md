@@ -24,23 +24,35 @@ Semua kode & admin UI ada di **GitHub** + **Cloudflare Workers**.
 
 ---
 
-## Setup operator (100% lewat admin Workers)
+## Bootstrap (admin panel)
 
 Buka: **https://seosementara.seosementara3.workers.dev/admin/settings/backend/infra**
 
-### 1. Bootstrap Platform
+Bootstrap admin akan **membuat** Environment `production` otomatis via API (tidak perlu buka URL environment manual).
 
-GitHub PAT + Global API Key + email + Account ID → GitHub Environment `production` + Workers Secrets.
+### Deploy Workers pertama kali (jika admin belum update)
 
-### 2. Infra mini PC
+Isi **Repository Secrets** (bukan Environment — link ini selalu ada):
 
-DB_PASSWORD + MASTER_ENCRYPTION_KEY → GitHub Environment → runner inject Docker.
+**https://github.com/WBetEngine/Seosementara/settings/secrets/actions**
 
-### 3. Cloudflare (opsional)
+| Secret | Wajib untuk deploy Workers |
+|--------|----------------------------|
+| `CLOUDFLARE_API_KEY` | Ya |
+| `CLOUDFLARE_ACCOUNT_EMAIL` | Ya |
+| `CLOUDFLARE_ACCOUNT_ID` | Ya |
+| `SUPER_ADMIN_TOKEN` | Opsional |
 
-Settings → Cloudflare → Koneksi.
+Lalu: **Actions → Deploy Admin UI → Run workflow**
 
-**Tidak perlu** buka GitHub Settings manual.
+### Environment `production` (setelah Bootstrap)
+
+URL hanya ada **setelah** environment dibuat:
+
+1. List: https://github.com/WBetEngine/Seosementara/settings/environments  
+2. Atau otomatis saat **Bootstrap Platform** di admin sukses  
+
+Jika `/settings/environments/production` → **404**, environment belum dibuat — normal.
 
 ---
 

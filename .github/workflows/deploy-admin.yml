@@ -1,5 +1,5 @@
 # Deploy admin UI — Workers + platform API.
-# Secret Environment production diisi dari admin Bootstrap (bukan manual GitHub UI).
+# Secret: Repository Secrets (bootstrap) atau Environment production (setelah bootstrap admin).
 
 name: Deploy Admin UI
 
@@ -14,7 +14,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    # Tanpa `environment:` — pakai Repository Secrets (Settings → Secrets and variables → Actions)
+    # Setelah Bootstrap admin, secret juga disalin ke Environment `production`.
     steps:
       - uses: actions/checkout@v4
 
