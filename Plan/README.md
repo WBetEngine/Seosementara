@@ -22,7 +22,8 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 12 | [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md) | Login aman, session, rate limit, CSRF |
 | 13 | [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) | **Pusat Setup Backend:** RBAC, auth, rate limit, operasional |
 | 14 | [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md) | Meta: global, subdomain, domain, halaman |
-| 15 | [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md) | **Cloudflare:** API token, Tunnel, Pages UI, DNS, .env domain |
+| 15 | [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md) | **Cloudflare:** Tunnel, DNS, Workers Secrets, domain di DB |
+| 28 | [28-platform-github-workers.md](./28-platform-github-workers.md) | **Platform:** GitHub Secrets, Workers setup API, Docker inject (tanpa `.env`) |
 | 16 | [16-deploy-dan-lingkungan.md](./16-deploy-dan-lingkungan.md) | **Deploy:** local / staging / prod, CI/CD, rollback |
 | 17 | [17-kontrak-htmx-dan-komponen-ui.md](./17-kontrak-htmx-dan-komponen-ui.md) | **HTMX:** header, error, swap, komponen admin & publik |
 | 18 | [18-bisnis-subdomain-dan-modul.md](./18-bisnis-subdomain-dan-modul.md) | **Subdomain:** bola, cdn, url, ads, comments, review |

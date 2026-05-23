@@ -22,7 +22,7 @@ go run ./cmd/api
 Docker (dari root repo):
 
 ```bash
-cp mini-pc/env.example .env
+cp mini-pc/DEPLOY.md  # production: tanpa .env — lihat Plan/28
 # isi MASTER_ENCRYPTION_KEY dan SUPER_ADMIN_TOKEN
 docker compose up -d --build
 ```

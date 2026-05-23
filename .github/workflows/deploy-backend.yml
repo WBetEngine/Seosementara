@@ -1,4 +1,4 @@
-# Build image → GHCR. Deploy mini PC manual: docker compose pull && up (lihat mini-pc/DEPLOY.md).
+# Build image → GHCR. Deploy mini PC: runner + GitHub Secrets inject (mini-pc/DEPLOY.md).
 
 name: Deploy Backend API
 

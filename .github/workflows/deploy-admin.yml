@@ -1,5 +1,5 @@
-# Deploy admin UI ke Cloudflare Workers.
-# Token admin di-generate dari GitHub Secret (tidak di repo).
+# Deploy admin UI ke Cloudflare Workers (Assets + platform API).
+# GITHUB_SETUP_TOKEN: wrangler secret (bootstrap — PAT repo secrets + actions write).
 
 name: Deploy Admin UI
 
@@ -8,13 +8,13 @@ on:
   push:
     branches: [main]
     paths:
-      - "Frontend-admin/public/**"
-      - "Frontend-admin/wrangler.toml"
+      - "Frontend-admin/**"
       - ".github/workflows/deploy-admin.yml"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
@@ -40,12 +40,16 @@ jobs:
             "
           fi
 
-      - name: Deploy Workers
+      - name: Install & deploy Workers
         working-directory: Frontend-admin
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_ACCOUNT_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_SETUP_TOKEN: ${{ secrets.GITHUB_SETUP_TOKEN }}
         run: |
           npm ci
+          if [ -n "$GITHUB_SETUP_TOKEN" ]; then
+            echo "$GITHUB_SETUP_TOKEN" | npx wrangler secret put GITHUB_SETUP_TOKEN
+          fi
           npx wrangler deploy

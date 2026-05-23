@@ -205,6 +205,15 @@
             </button>
           </li>
           <li>
+            <button type="button" class="nav-link" data-nav="/admin/settings/backend/infra"
+              hx-get="/admin/_partials/settings-backend-infra.html"
+              hx-target="#main" hx-swap="innerHTML"
+              hx-push-url="/admin/settings/backend/infra">
+              <svg class="icon" aria-hidden="true"><use href="#i-server"/></svg>
+              Infra &amp; GitHub
+            </button>
+          </li>
+          <li>
             <button type="button" class="nav-link" data-nav="/admin/settings/cloudflare"
               hx-get="/admin/_partials/settings-cloudflare.html"
               hx-target="#main" hx-swap="innerHTML"

@@ -1,4 +1,4 @@
-# Production mini PC — pull image GHCR. Secret: C:\Seosementara\.env (salin dari mini-pc/env.example).
+# Production mini PC — GHCR image. Env dari GitHub Secrets via runner (tanpa .env).
 
 services:
   db:

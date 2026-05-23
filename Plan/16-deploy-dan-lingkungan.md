@@ -1,8 +1,22 @@
 # 16 — Deploy & Lingkungan (Dev / Staging / Production)
 
-> Menyatukan alur rilis **Backend (Go)**, **Frontend Admin**, **Frontend Publik**, **Tunnel**, dan **PostgreSQL** — selaras [02](./02-arsitektur-dan-infrastruktur.md), [15](./15-setup-cloudflare-integrasi.md), [13](./13-setup-backend-dan-sistem.md).
+> Menyatukan alur rilis Backend, Admin Workers, Tunnel, PostgreSQL.  
+> **Production mini PC:** tanpa file `.env` — lihat [28-platform-github-workers](./28-platform-github-workers.md).
 
-## 1. Tujuan
+## Implementasi v2 (production mini PC)
+
+| Langkah | Tool |
+|---------|------|
+| Build API image | `deploy-backend.yml` → GHCR |
+| Deploy Docker | `deploy-mini-pc.yml` → self-hosted runner, secrets inject |
+| Deploy admin UI | `deploy-admin.yml` → Workers + `GITHUB_SETUP_TOKEN` |
+| Setup operator | Admin Workers → Infra & Cloudflare |
+
+Secrets infra (`DB_PASSWORD`, `MASTER_ENCRYPTION_KEY`) diisi dari admin, bukan commit ke repo.
+
+---
+
+## 1. Tujuan (asli)
 
 | Tujuan | Keterangan |
 |--------|------------|
@@ -70,7 +84,18 @@ flowchart TB
 
 ## 4. Variabel Lingkungan
 
-### 4.1 Server mini CPU (file `/etc/seosementara/env` — tidak di Git)
+### 4.1 Server mini PC — **bukan** file `.env` di Git (production)
+
+| Variable | Sumber |
+|----------|--------|
+| `DB_PASSWORD` | GitHub Secret ← admin **Infra & GitHub** |
+| `MASTER_ENCRYPTION_KEY` | GitHub Secret ← admin |
+| `SUPER_ADMIN_TOKEN` | GitHub Secret ← admin (opsional) |
+| Inject ke container | Self-hosted runner → `docker compose` env |
+
+Dev lokal boleh pakai env process atau file lokal — tidak di-commit.
+
+### 4.1b Legacy (deprecated): file `/etc/seosementara/env`
 
 | Variable | Local | Staging | Production |
 |----------|-------|---------|------------|

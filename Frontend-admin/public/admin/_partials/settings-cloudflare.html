@@ -19,6 +19,10 @@
 <div class="settings-layout">
   <nav class="settings-subnav">
     <button type="button"
+      hx-get="/admin/_partials/settings-backend-infra.html"
+      hx-target="#main" hx-swap="innerHTML"
+      hx-push-url="/admin/settings/backend/infra">Infra &amp; GitHub</button>
+    <button type="button"
       hx-get="/admin/_partials/settings-rbac.html"
       hx-target="#main" hx-swap="innerHTML"
       hx-push-url="/admin/settings/rbac">RBAC &amp; pengguna</button>
@@ -32,8 +36,6 @@
   <div>
     <nav class="page-tabs" role="tablist" aria-label="Tab Cloudflare">
       <button type="button" class="is-active" data-page-tab="koneksi"
-        data-hx-static="/admin/_partials/settings-cf-koneksi.html"
-        data-hx-api="/api/admin/settings/cloudflare/koneksi"
         hx-get="/admin/_partials/settings-cf-koneksi.html"
         hx-target="#cf-tab-panel" hx-swap="innerHTML"
         hx-push-url="/admin/settings/cloudflare/koneksi">Koneksi</button>

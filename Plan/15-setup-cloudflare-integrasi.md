@@ -1,10 +1,22 @@
 # 15 — Setup Cloudflare (Integrasi dari Admin Panel)
 
-> **Super Admin** mengelola koneksi Cloudflare sepenuhnya dari `/admin/setup/cloudflare/*`  
-> Tanpa harus login dashboard Cloudflare untuk tugas rutin.  
-> Prasyarat: [02-arsitektur](./02-arsitektur-dan-infrastruktur.md), [13-setup-backend](./13-setup-backend-dan-sistem.md)
+> **Super Admin** mengelola koneksi Cloudflare dari `/admin/settings/cloudflare/*`  
+> **Global API Key** disimpan di **Workers Secrets** (bukan `.env` mini PC) — lihat [28-platform-github-workers](./28-platform-github-workers.md).
 
-## 1. Tujuan
+## Implementasi v2 (Workers + GitHub)
+
+| Data | Penyimpanan |
+|------|-------------|
+| Global API Key / API Token (edge) | Cloudflare **Workers Secrets** |
+| Domain, tunnel, DNS, zone | **PostgreSQL** via Go API |
+| DB password, encryption key | **GitHub Secrets** → Docker (admin Infra) |
+
+UI koneksi: `POST /admin/api/platform/cloudflare/credentials` (Worker).  
+UI domain/tunnel: Go API ` /api/admin/setup/cloudflare/*` setelah `api.apidevel.org` hidup.
+
+---
+
+## 1. Tujuan (asli)
 
 | Tujuan | Keterangan |
 |--------|------------|

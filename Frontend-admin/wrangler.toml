@@ -1,9 +1,20 @@
-# Deploy UI admin statis via Workers (Git → npx wrangler deploy)
-# Panduan: DEPLOY-CLOUDFLARE-PAGES.md
+# Admin UI: Workers Assets + platform API (GitHub Secrets, CF Workers Secrets)
+# Panduan: mini-pc/DEPLOY.md
 
 name = "seosementara"
+main = "src/index.js"
 compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 
-# File statis dari folder public/ (HTML, CSS, JS admin)
+[vars]
+GITHUB_REPO = "WBetEngine/Seosementara"
+WORKER_SCRIPT_NAME = "seosementara"
+
+# Secrets (wrangler secret put / GitHub Actions deploy-admin):
+# GITHUB_SETUP_TOKEN — PAT fine-grained: repo secrets write + actions write
+# CF_ACCOUNT_ID — opsional jika account_id selalu dari form
+# CF_BOOTSTRAP_GLOBAL_KEY + CF_BOOTSTRAP_EMAIL — opsional, untuk simpan API Token via CF API
+
 [assets]
 directory = "./public"
+binding = "ASSETS"

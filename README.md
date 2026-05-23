@@ -2,18 +2,20 @@
 
 CMS untuk operasi massal domain & iklan.
 
-## Deploy
+## Deploy (GitHub pusat — tanpa `.env` di mini PC)
 
 | Target | Panduan |
 |--------|---------|
-| Mini PC (API + DB) | [mini-pc/DEPLOY.md](mini-pc/DEPLOY.md) |
-| Env / credential | [mini-pc/env.example](mini-pc/env.example) |
-| Cloudflare tunnel | [Frontend-admin/SETUP-TUNNEL-APIDEVEL.md](Frontend-admin/SETUP-TUNNEL-APIDEVEL.md) |
-| Admin UI (Workers) | [Frontend-admin/DEPLOY-CLOUDFLARE-PAGES.md](Frontend-admin/DEPLOY-CLOUDFLARE-PAGES.md) |
+| Arsitektur platform | [Plan/28-platform-github-workers.md](Plan/28-platform-github-workers.md) |
+| Mini PC (Docker) | [mini-pc/DEPLOY.md](mini-pc/DEPLOY.md) |
+| Admin Workers + setup UI | `https://seosementara.seosementara3.workers.dev/admin/` |
+| Tunnel API | [Frontend-admin/SETUP-TUNNEL-APIDEVEL.md](Frontend-admin/SETUP-TUNNEL-APIDEVEL.md) |
 
-## Dokumentasi Pixel (perencanaan)
+**Setup operator:** Settings → **Infra & GitHub** (DB, encryption) dan **Cloudflare → Koneksi** (Global API Key) — semua lewat admin Workers.
 
-- [Plan/20](Plan/20-pixel-admin-facebook-tiktok-gads.md) — Pixel Hub umum
+## Dokumentasi Pixel
+
+- [Plan/20](Plan/20-pixel-admin-facebook-tiktok-gads.md) — Pixel Hub
 - [Plan/21](Plan/21-pixel-facebook-pro.md) — Facebook Pro
-- [Plan/22](Plan/22-pixel-protokol-komunikasi-dan-data.md) — Protokol komunikasi & data
+- [Plan/22](Plan/22-pixel-protokol-komunikasi-dan-data.md) — Protokol data
 - [Plan/23](Plan/23-meta-conversions-api-kedalaman.md) — Meta CAPI

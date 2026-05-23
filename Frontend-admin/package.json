@@ -7,6 +7,9 @@
     "dev": "npx --yes serve public -l 8788",
     "pages:dev": "wrangler pages dev public --port 8788"
   },
+  "dependencies": {
+    "tweetsodium": "^0.0.4"
+  },
   "devDependencies": {
     "wrangler": "^4.93.1"
   }
