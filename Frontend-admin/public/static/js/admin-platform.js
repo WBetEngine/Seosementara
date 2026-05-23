@@ -1,5 +1,5 @@
 /**
- * Platform setup: GitHub Secrets → Docker + Cloudflare Workers Secrets.
+ * Platform setup: GitHub Environment production + Workers Secrets.
  */
 (function () {
   "use strict";
@@ -24,6 +24,28 @@
   }
 
   window.SeosementaraPlatform = {
+    saveBootstrap: function (form, msgEl) {
+      var fd = new FormData(form);
+      return api("/admin/api/platform/bootstrap", {
+        method: "POST",
+        body: JSON.stringify({
+          github_pat: fd.get("github_pat"),
+          global_api_key: fd.get("global_api_key"),
+          account_email: fd.get("account_email"),
+          account_id: fd.get("account_id"),
+          super_admin_token: fd.get("super_admin_token") || undefined,
+        }),
+      }).then(function (r) {
+        showMsg(
+          msgEl,
+          (r.message || "Bootstrap OK") +
+            " — Environment: " +
+            (r.secrets_updated || []).join(", "),
+          true
+        );
+        return r;
+      });
+    },
     saveInfra: function (form, msgEl) {
       var fd = new FormData(form);
       return api("/admin/api/platform/infra", {
@@ -36,13 +58,13 @@
       }).then(function (r) {
         showMsg(
           msgEl,
-          "GitHub Secrets diperbarui. Deploy Mini PC dipicu: " + r.secrets_updated.join(", "),
+          "Environment production: " + r.secrets_updated.join(", ") + " — deploy dipicu",
           true
         );
         return r;
       });
     },
-    saveCloudflare: function (form, msgEl, testOnly) {
+    saveCloudflare: function (form, msgEl) {
       var fd = new FormData(form);
       var authType = fd.get("auth_type") || "global_api_key";
       var body = { auth_type: authType, account_id: fd.get("account_id") || undefined };
@@ -57,7 +79,10 @@
         method: "POST",
         body: JSON.stringify(body),
       }).then(function (r) {
-        showMsg(msgEl, testOnly ? "Koneksi OK" : r.message || "Tersimpan di Workers Secrets", true);
+        var extra = r.github_environment_synced && r.github_environment_synced.length
+          ? " + GitHub: " + r.github_environment_synced.join(", ")
+          : "";
+        showMsg(msgEl, (r.message || "OK") + extra, true);
         return r;
       });
     },
@@ -65,11 +90,13 @@
       return api("/admin/api/platform/setup/status").then(function (s) {
         if (!el) return s;
         el.innerHTML =
-          "<strong>Status platform</strong><br/>" +
-          "GitHub bootstrap: " +
-          (s.github_bootstrap ? "OK" : "GITHUB_SETUP_TOKEN belum di Worker") +
-          "<br/>Cloudflare: " +
-          (s.cloudflare_configured ? "terkonfigurasi" : "belum");
+          "<strong>Status</strong><br/>" +
+          "GitHub PAT di Worker: " +
+          (s.github_token_stored ? "tersimpan" : "belum — isi Bootstrap") +
+          "<br/>Environment: <code>" +
+          (s.github_environment || "production") +
+          "</code><br/>Cloudflare Worker: " +
+          (s.cloudflare_configured ? "OK" : "belum");
         return s;
       });
     },

@@ -71,20 +71,30 @@ export async function putWorkerSecret(accountId, email, apiKey, scriptName, secr
   return body.result;
 }
 
-export async function saveCloudflareCredentials(env, payload) {
+export async function saveCloudflareCredentials(env, payload, syncGitHubFn) {
   const authType = payload.auth_type || "global_api_key";
   await testCloudflareCredentials(authType, payload);
 
   const accountId = payload.account_id || env.CF_ACCOUNT_ID;
   const scriptName = env.WORKER_SCRIPT_NAME || "seosementara";
   if (!accountId) {
-    throw new Error("account_id wajib (form atau CF_ACCOUNT_ID di Worker vars)");
+    throw new Error("account_id wajib");
   }
+
+  let githubSynced = [];
 
   if (authType === "global_api_key") {
     const { global_api_key, account_email } = payload;
     await putWorkerSecret(accountId, account_email, global_api_key, scriptName, "CF_GLOBAL_API_KEY", global_api_key);
     await putWorkerSecret(accountId, account_email, global_api_key, scriptName, "CF_ACCOUNT_EMAIL", account_email);
+    await putWorkerSecret(accountId, account_email, global_api_key, scriptName, "CF_ACCOUNT_ID", accountId);
+    if (syncGitHubFn) {
+      githubSynced = await syncGitHubFn(env, {
+        global_api_key,
+        account_email,
+        account_id: accountId,
+      });
+    }
   } else {
     const { api_token } = payload;
     const email = payload.account_email || env.CF_BOOTSTRAP_EMAIL || "";
@@ -95,20 +105,13 @@ export async function saveCloudflareCredentials(env, payload) {
     await putWorkerSecret(accountId, email, bootstrapKey, scriptName, "CF_API_TOKEN", api_token);
   }
 
-  if (payload.account_id) {
-    const email = payload.account_email || env.CF_ACCOUNT_EMAIL || "";
-    const key = payload.global_api_key || env.CF_BOOTSTRAP_GLOBAL_KEY || "";
-    if (email && key) {
-      await putWorkerSecret(accountId, email, key, scriptName, "CF_ACCOUNT_ID", payload.account_id);
-    }
-  }
-
   return {
     ok: true,
     configured: true,
     auth_type: authType,
     account_id: accountId,
-    message: "Kredensial disimpan ke Workers Secrets",
+    github_environment_synced: githubSynced,
+    message: "Workers Secrets" + (githubSynced.length ? " + GitHub Environment production" : ""),
   };
 }
 

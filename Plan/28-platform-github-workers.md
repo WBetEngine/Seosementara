@@ -35,19 +35,26 @@ flowchart LR
 
 | Method | Path | Fungsi |
 |--------|------|--------|
-| GET | `/admin/api/platform/setup/status` | Status bootstrap |
-| POST | `/admin/api/platform/infra` | Tulis GitHub Secrets + trigger Deploy Mini PC |
-| POST | `/admin/api/platform/cloudflare/credentials` | Simpan ke Workers Secrets via CF API |
+| GET | `/admin/api/platform/setup/status` | Status PAT + CF |
+| POST | `/admin/api/platform/bootstrap` | PAT + CF → Environment `production` + Workers Secrets |
+| POST | `/admin/api/platform/infra` | DB + encryption → Environment `production` |
+| POST | `/admin/api/platform/cloudflare/credentials` | CF → Workers (+ GitHub Environment jika PAT ada) |
 
-## 4. Bootstrap sekali
+## 4. GitHub PAT di admin
+
+Form **Bootstrap Platform** menyimpan:
+
+- `GITHUB_SETUP_TOKEN` → GitHub Environment `production` **dan** Workers Secret (untuk panggilan API berikutnya)
+- Tidak perlu isi manual di GitHub Settings → Environments
+
+## 5. Bootstrap sekali (mini PC + admin)
 
 1. Pasang self-hosted runner di mini PC  
-2. GitHub Environment `production`: `GITHUB_SETUP_TOKEN`, cred Wrangler deploy  
-3. Deploy Workers (`deploy-admin.yml`)  
-4. Admin → Infra & GitHub → isi DB + encryption key  
-5. Admin → Cloudflare Koneksi → Global API Key  
+2. Admin → **Infra & GitHub → Bootstrap** (GitHub PAT + Cloudflare)  
+3. Admin → Infra (DB + encryption key)  
+4. Admin → Cloudflare Koneksi (jika perlu update)  
 
-## 5. Yang tetap di PostgreSQL (bukan `.env`)
+## 6. Yang tetap di PostgreSQL (bukan `.env`)
 
 Domain env, tunnel routes, Pages metadata — lewat Go API setelah API hidup ([15](./15-setup-cloudflare-integrasi.md)).
 

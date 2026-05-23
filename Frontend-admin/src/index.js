@@ -1,5 +1,14 @@
-import { saveInfraSecrets, githubConfigured } from "./github.js";
-import { saveCloudflareCredentials, cloudflareConfigured } from "./cloudflare.js";
+import {
+  saveInfraSecrets,
+  saveBootstrap,
+  githubConfigured,
+  syncCloudflareToGitHub,
+} from "./github.js";
+import {
+  saveCloudflareCredentials,
+  cloudflareConfigured,
+  putWorkerSecret,
+} from "./cloudflare.js";
 
 const JSON_HEADERS = { "Content-Type": "application/json; charset=utf-8" };
 
@@ -21,11 +30,23 @@ async function handleAdminAPI(request, env) {
 
   if (request.method === "GET" && path === "/admin/api/platform/setup/status") {
     return json({
-      github_bootstrap: await githubConfigured(env),
+      github_token_stored: await githubConfigured(env),
       cloudflare_configured: await cloudflareConfigured(env),
       github_repo: env.GITHUB_REPO || "WBetEngine/Seosementara",
+      github_environment: env.GITHUB_ENVIRONMENT || "production",
       worker_script: env.WORKER_SCRIPT_NAME || "seosementara",
     });
+  }
+
+  if (request.method === "POST" && path === "/admin/api/platform/bootstrap") {
+    const body = await readJson(request);
+    if (!body) return json({ error: "JSON invalid" }, 400);
+    try {
+      const result = await saveBootstrap(env, body, putWorkerSecret);
+      return json(result);
+    } catch (e) {
+      return json({ error: e.message }, 400);
+    }
   }
 
   if (request.method === "POST" && path === "/admin/api/platform/infra") {
@@ -43,7 +64,8 @@ async function handleAdminAPI(request, env) {
     const body = await readJson(request);
     if (!body) return json({ error: "JSON invalid" }, 400);
     try {
-      const result = await saveCloudflareCredentials(env, body);
+      const syncFn = (await githubConfigured(env)) ? syncCloudflareToGitHub : null;
+      const result = await saveCloudflareCredentials(env, body, syncFn);
       return json(result);
     } catch (e) {
       return json({ error: e.message }, 400);

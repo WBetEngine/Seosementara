@@ -3,82 +3,68 @@
 ## Arsitektur
 
 ```text
-GitHub (kode + GHCR + Secrets)
-        │
-        ├─► Workers admin (setup UI)
-        │     ├─ Infra → GitHub Secrets → workflow Deploy Mini PC
-        │     └─ Cloudflare → Workers Secrets
-        │
-        └─► Self-hosted runner (mini PC)
-              └─ docker compose (env inject dari GitHub Secrets)
+Admin Workers → GitHub Environment production → runner → Docker inject
+Admin Workers → Workers Secrets (CF + GitHub PAT)
 ```
 
-| Setup | Di mana | Penyimpanan |
-|-------|---------|-------------|
-| DB password, encryption key | Admin → **Settings → Infra & GitHub** | GitHub Secrets → Docker inject |
-| Global API Key Cloudflare | Admin → **Settings → Cloudflare → Koneksi** | Workers Secrets |
-| Domain, tunnel, DNS | Admin → tab Cloudflare (Go API) | PostgreSQL |
-| Kode & image | GitHub `main` | GHCR |
-
-**Tidak ada file `.env` di mini PC.**
+**Tidak perlu** buka GitHub Settings → Environments manual.
 
 ---
 
-## Bootstrap sekali (mini PC)
+## Bootstrap (admin panel)
 
-### 1. Runner + Docker + cloudflared
+Buka: **Settings → Infra & GitHub**
+
+### Langkah 1 — Bootstrap Platform (sekali)
+
+| Field | Disimpan ke |
+|-------|-------------|
+| **GitHub PAT** | Environment `production` + Workers `GITHUB_SETUP_TOKEN` |
+| **Global API Key** | Environment + Workers `CF_GLOBAL_API_KEY` |
+| **Email + Account ID** | Environment + Workers |
+| **SUPER_ADMIN_TOKEN** (opsional) | Environment `production` |
+
+Klik **Simpan bootstrap** → otomatis trigger **Deploy Admin UI**.
+
+### Langkah 2 — Infra mini PC
+
+Isi `DB_PASSWORD`, `MASTER_ENCRYPTION_KEY` → **Simpan & deploy mini PC**  
+→ Environment `production` + workflow Deploy Mini PC.
+
+### Langkah 3 — Cloudflare (opsional update)
+
+**Settings → Cloudflare → Koneksi** — update CF key (sync Workers + GitHub Environment jika PAT sudah ada).
+
+---
+
+## Mini PC sekali
 
 ```powershell
-# Administrator — lihat scripts/install-github-runner.ps1
 cd C:\Seosementara
-git clone https://github.com/WBetEngine/Seosementara.git .
-.\scripts\install-github-runner.ps1
+git pull
+.\scripts\install-github-runner.ps1   # Administrator
 ```
 
-### 2. GitHub Environment `production`
+Docker + cloudflared harus sudah jalan.
 
-Repo → **Settings → Environments → production** — tambah secrets bootstrap:
+---
 
-| Secret | Fungsi |
-|--------|--------|
-| `GITHUB_SETUP_TOKEN` | PAT: repo secrets write + actions write (→ Worker via deploy-admin) |
-| `CLOUDFLARE_API_KEY` | Deploy Wrangler (Global API Key) |
-| `CLOUDFLARE_ACCOUNT_EMAIL` | Deploy Wrangler |
-| `CLOUDFLARE_ACCOUNT_ID` | Deploy Wrangler |
+## Deploy Workers pertama kali (tanpa PAT di GitHub)
 
-Secrets **DB / encryption** diisi lewat admin (langkah 3), bukan manual di GitHub.
+Jika Environment `production` masih kosong, deploy Worker pertama:
 
-### 3. Setup lewat admin Workers
+```powershell
+cd Frontend-admin
+# Set CLOUDFLARE_* di shell, lalu:
+npx wrangler deploy
+```
 
-1. Buka `https://seosementara.seosementara3.workers.dev/admin/settings/backend/infra`  
-   → isi `DB_PASSWORD`, `MASTER_ENCRYPTION_KEY` → **Simpan & deploy mini PC**
-
-2. Buka **Settings → Cloudflare → Koneksi**  
-   → Global API Key + email + Account ID → **Simpan ke Workers**
-
-3. Tab Tunnel / Domain / DNS → konfigurasi via Go API (`api.apidevel.org`)
+Lalu lanjut **Bootstrap** di admin (langkah 1).
 
 ---
 
 ## Update rutin
 
-Push `main` → build GHCR → runner deploy otomatis.
+Push `main` → GHCR build → Deploy Mini PC otomatis (runner).
 
-Manual: **Actions → Deploy Mini PC → Run workflow**
-
----
-
-## File di mini PC
-
-```
-C:\Seosementara\
-  docker-compose.prod.yml
-  Backend\migrations\
-  scripts\mini-pc-deploy.ps1
-```
-
----
-
-## Dev lokal (opsional)
-
-Developers boleh pakai `docker compose up` dengan env lokal — bukan alur production.
+Panduan arsitektur: [Plan/28-platform-github-workers.md](../Plan/28-platform-github-workers.md)

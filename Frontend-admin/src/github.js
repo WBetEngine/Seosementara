@@ -1,20 +1,31 @@
 /**
- * GitHub Actions secrets + workflow dispatch (admin → GitHub → Docker inject).
+ * GitHub Environment secrets + workflow dispatch.
+ * Token: Workers Secret GITHUB_SETUP_TOKEN, atau PAT sekali dari form bootstrap.
  */
 
 import sodium from "tweetsodium";
 
 const DEFAULT_REPO = "WBetEngine/Seosementara";
+const DEFAULT_ENV = "production";
 const DEPLOY_WORKFLOW = "deploy-mini-pc.yml";
+const DEPLOY_ADMIN_WORKFLOW = "deploy-admin.yml";
 
 function repoPath(env) {
   return env.GITHUB_REPO || DEFAULT_REPO;
 }
 
-async function ghFetch(env, path, init = {}) {
-  const token = env.GITHUB_SETUP_TOKEN;
+function ghEnvName(env) {
+  return env.GITHUB_ENVIRONMENT || DEFAULT_ENV;
+}
+
+function splitRepo(path) {
+  const [owner, repo] = path.split("/");
+  return { owner, repo };
+}
+
+async function ghFetch(token, path, init = {}) {
   if (!token) {
-    throw new Error("GITHUB_SETUP_TOKEN belum dikonfigurasi di Workers Secrets (bootstrap CI)");
+    throw new Error("GitHub token belum ada — isi di Bootstrap Platform (PAT)");
   }
   const res = await fetch(`https://api.github.com${path}`, {
     ...init,
@@ -52,11 +63,30 @@ function encryptSecret(publicKeyB64, secretValue) {
   return btoa(binary);
 }
 
-export async function putRepoSecret(env, name, value) {
-  const [owner, repo] = repoPath(env).split("/");
-  const pub = await ghFetch(env, `/repos/${owner}/${repo}/actions/secrets/public-key`);
+function resolveToken(env, override) {
+  return override || env.GITHUB_SETUP_TOKEN || "";
+}
+
+export async function ensureEnvironment(token, env, envName) {
+  const { owner, repo } = splitRepo(repoPath(env));
+  await ghFetch(token, `/repos/${owner}/${repo}/environments/${envName}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+}
+
+export async function putEnvironmentSecret(env, name, value, tokenOverride) {
+  const token = resolveToken(env, tokenOverride);
+  const envName = ghEnvName(env);
+  const { owner, repo } = splitRepo(repoPath(env));
+  await ensureEnvironment(token, env, envName);
+  const pub = await ghFetch(
+    token,
+    `/repos/${owner}/${repo}/environments/${envName}/secrets/public-key`
+  );
   const encrypted = encryptSecret(pub.key, value);
-  await ghFetch(env, `/repos/${owner}/${repo}/actions/secrets/${name}`, {
+  await ghFetch(token, `/repos/${owner}/${repo}/environments/${envName}/secrets/${name}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -66,13 +96,74 @@ export async function putRepoSecret(env, name, value) {
   });
 }
 
-export async function triggerMiniPcDeploy(env) {
-  const [owner, repo] = repoPath(env).split("/");
-  await ghFetch(env, `/repos/${owner}/${repo}/actions/workflows/${DEPLOY_WORKFLOW}/dispatches`, {
+export async function triggerWorkflow(env, workflowFile, tokenOverride) {
+  const token = resolveToken(env, tokenOverride);
+  const { owner, repo } = splitRepo(repoPath(env));
+  await ghFetch(token, `/repos/${owner}/${repo}/actions/workflows/${workflowFile}/dispatches`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ref: "main" }),
   });
+}
+
+export async function triggerMiniPcDeploy(env, tokenOverride) {
+  await triggerWorkflow(env, DEPLOY_WORKFLOW, tokenOverride);
+}
+
+export async function triggerAdminDeploy(env, tokenOverride) {
+  await triggerWorkflow(env, DEPLOY_ADMIN_WORKFLOW, tokenOverride);
+}
+
+/** Bootstrap: PAT + Cloudflare → GitHub Environment production + Workers Secrets */
+export async function saveBootstrap(env, payload, putWorkerSecretFn) {
+  const {
+    github_pat,
+    global_api_key,
+    account_email,
+    account_id,
+    super_admin_token,
+  } = payload;
+
+  if (!github_pat) throw new Error("github_pat wajib (PAT: repo secrets + actions write)");
+  if (!global_api_key || !account_email || !account_id) {
+    throw new Error("global_api_key, account_email, account_id wajib");
+  }
+
+  const scriptName = env.WORKER_SCRIPT_NAME || "seosementara";
+  const updated = [];
+
+  await putEnvironmentSecret(env, "GITHUB_SETUP_TOKEN", github_pat, github_pat);
+  updated.push("GITHUB_SETUP_TOKEN");
+  await putEnvironmentSecret(env, "CLOUDFLARE_API_KEY", global_api_key, github_pat);
+  updated.push("CLOUDFLARE_API_KEY");
+  await putEnvironmentSecret(env, "CLOUDFLARE_ACCOUNT_EMAIL", account_email, github_pat);
+  updated.push("CLOUDFLARE_ACCOUNT_EMAIL");
+  await putEnvironmentSecret(env, "CLOUDFLARE_ACCOUNT_ID", account_id, github_pat);
+  updated.push("CLOUDFLARE_ACCOUNT_ID");
+  if (super_admin_token) {
+    await putEnvironmentSecret(env, "SUPER_ADMIN_TOKEN", super_admin_token, github_pat);
+    updated.push("SUPER_ADMIN_TOKEN");
+  }
+
+  if (putWorkerSecretFn) {
+    await putWorkerSecretFn(account_id, account_email, global_api_key, scriptName, "GITHUB_SETUP_TOKEN", github_pat);
+    await putWorkerSecretFn(account_id, account_email, global_api_key, scriptName, "CF_GLOBAL_API_KEY", global_api_key);
+    await putWorkerSecretFn(account_id, account_email, global_api_key, scriptName, "CF_ACCOUNT_EMAIL", account_email);
+    await putWorkerSecretFn(account_id, account_email, global_api_key, scriptName, "CF_ACCOUNT_ID", account_id);
+  }
+
+  await triggerAdminDeploy(env, github_pat);
+
+  return {
+    ok: true,
+    environment: ghEnvName(env),
+    secrets_updated: updated,
+    worker_secrets_updated: putWorkerSecretFn
+      ? ["GITHUB_SETUP_TOKEN", "CF_GLOBAL_API_KEY", "CF_ACCOUNT_EMAIL", "CF_ACCOUNT_ID"]
+      : [],
+    deploy_admin_triggered: true,
+    message: "Bootstrap tersimpan di GitHub Environment production + Workers Secrets",
+  };
 }
 
 export async function saveInfraSecrets(env, payload) {
@@ -80,19 +171,38 @@ export async function saveInfraSecrets(env, payload) {
   if (!db_password || !master_encryption_key) {
     throw new Error("db_password dan master_encryption_key wajib");
   }
-  await putRepoSecret(env, "DB_PASSWORD", db_password);
-  await putRepoSecret(env, "MASTER_ENCRYPTION_KEY", master_encryption_key);
+  const updated = ["DB_PASSWORD", "MASTER_ENCRYPTION_KEY"];
+  await putEnvironmentSecret(env, "DB_PASSWORD", db_password);
+  await putEnvironmentSecret(env, "MASTER_ENCRYPTION_KEY", master_encryption_key);
   if (super_admin_token) {
-    await putRepoSecret(env, "SUPER_ADMIN_TOKEN", super_admin_token);
+    await putEnvironmentSecret(env, "SUPER_ADMIN_TOKEN", super_admin_token);
+    updated.push("SUPER_ADMIN_TOKEN");
   }
   await triggerMiniPcDeploy(env);
   return {
     ok: true,
-    secrets_updated: ["DB_PASSWORD", "MASTER_ENCRYPTION_KEY"].concat(
-      super_admin_token ? ["SUPER_ADMIN_TOKEN"] : []
-    ),
+    environment: ghEnvName(env),
+    secrets_updated: updated,
     deploy_triggered: true,
   };
+}
+
+/** Sync Cloudflare deploy secrets ke GitHub Environment (untuk wrangler CI) */
+export async function syncCloudflareToGitHub(env, { global_api_key, account_email, account_id }) {
+  const updated = [];
+  if (global_api_key) {
+    await putEnvironmentSecret(env, "CLOUDFLARE_API_KEY", global_api_key);
+    updated.push("CLOUDFLARE_API_KEY");
+  }
+  if (account_email) {
+    await putEnvironmentSecret(env, "CLOUDFLARE_ACCOUNT_EMAIL", account_email);
+    updated.push("CLOUDFLARE_ACCOUNT_EMAIL");
+  }
+  if (account_id) {
+    await putEnvironmentSecret(env, "CLOUDFLARE_ACCOUNT_ID", account_id);
+    updated.push("CLOUDFLARE_ACCOUNT_ID");
+  }
+  return updated;
 }
 
 export async function githubConfigured(env) {

@@ -1,13 +1,55 @@
 <div class="alert alert-info" style="margin-bottom:1rem">
-  <strong>Infra mini PC.</strong> Nilai disimpan ke <strong>GitHub Secrets</strong>, lalu workflow
-  <em>Deploy Mini PC</em> inject ke Docker (tanpa file <code>.env</code>).
+  Semua secret production disimpan ke <strong>GitHub Environment <code>production</code></strong>
+  dan <strong>Workers Secrets</strong> — tanpa buka GitHub Settings manual.
 </div>
 
 <div id="platform-status" class="panel" style="margin-bottom:1rem;font-size:0.9rem"></div>
 
-<div class="panel">
-  <div class="panel__head">PostgreSQL &amp; enkripsi</div>
+<div class="panel" style="margin-bottom:1.25rem">
+  <div class="panel__head">1. Bootstrap Platform (sekali / rotasi)</div>
   <div class="panel__body">
+    <p style="margin:0 0 1rem;font-size:0.9rem;color:var(--text-muted)">
+      GitHub PAT disimpan ke Environment <code>production</code> + Workers Secret
+      <code>GITHUB_SETUP_TOKEN</code>. Cloudflare untuk deploy Wrangler + Worker runtime.
+    </p>
+    <form id="form-bootstrap" class="form-grid">
+      <div class="form-row">
+        <label for="github-pat">GitHub PAT</label>
+        <input id="github-pat" name="github_pat" type="password" required autocomplete="off" />
+        <p style="margin:0.35rem 0 0;font-size:0.75rem;color:var(--text-muted)">
+          Fine-grained: repo <strong>Seosementara</strong> — Actions write, Secrets write.
+        </p>
+      </div>
+      <div class="form-row">
+        <label for="cf-global-bootstrap">Cloudflare Global API Key</label>
+        <input id="cf-global-bootstrap" name="global_api_key" type="password" required autocomplete="off" />
+      </div>
+      <div class="form-row">
+        <label for="cf-email-bootstrap">Email Cloudflare</label>
+        <input id="cf-email-bootstrap" name="account_email" type="email" required />
+      </div>
+      <div class="form-row">
+        <label for="cf-account-bootstrap">Account ID</label>
+        <input id="cf-account-bootstrap" name="account_id" required />
+      </div>
+      <div class="form-row">
+        <label for="super-token-bootstrap">SUPER_ADMIN_TOKEN (opsional)</label>
+        <input id="super-token-bootstrap" name="super_admin_token" type="password" autocomplete="new-password" />
+      </div>
+    </form>
+    <div id="bootstrap-msg" class="alert" hidden style="margin-top:1rem"></div>
+    <div style="margin-top:1rem">
+      <button type="button" class="btn btn-primary" id="btn-save-bootstrap">Simpan bootstrap</button>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel__head">2. Infra mini PC (PostgreSQL &amp; enkripsi)</div>
+  <div class="panel__body">
+    <p style="margin:0 0 1rem;font-size:0.9rem;color:var(--text-muted)">
+      Butuh GitHub PAT sudah tersimpan (langkah 1). Memicu workflow <em>Deploy Mini PC</em>.
+    </p>
     <form id="form-infra" class="form-grid">
       <div class="form-row">
         <label for="db-password">DB_PASSWORD</label>
@@ -16,16 +58,10 @@
       <div class="form-row">
         <label for="master-key">MASTER_ENCRYPTION_KEY</label>
         <input id="master-key" name="master_encryption_key" type="password" required autocomplete="new-password" />
-        <p style="margin:0.35rem 0 0;font-size:0.75rem;color:var(--text-muted)">
-          Base64 32 byte — jangan ganti setelah ada data terenkripsi di DB.
-        </p>
       </div>
       <div class="form-row">
         <label for="super-token">SUPER_ADMIN_TOKEN (opsional)</label>
         <input id="super-token" name="super_admin_token" type="password" autocomplete="new-password" />
-        <p style="margin:0.35rem 0 0;font-size:0.75rem;color:var(--text-muted)">
-          Untuk API Go + admin-config.js (GitHub Secret).
-        </p>
       </div>
     </form>
     <div id="infra-msg" class="alert" hidden style="margin-top:1rem"></div>
@@ -38,15 +74,26 @@
 <script src="/static/js/admin-platform.js"></script>
 <script>
 (function () {
-  var form = document.getElementById("form-infra");
-  var msg = document.getElementById("infra-msg");
   var status = document.getElementById("platform-status");
   if (window.SeosementaraPlatform && status) {
     SeosementaraPlatform.loadStatus(status).catch(function (e) {
       status.textContent = e.message;
     });
   }
-    document.getElementById("btn-save-infra").addEventListener("click", function () {
+  document.getElementById("btn-save-bootstrap").addEventListener("click", function () {
+    var form = document.getElementById("form-bootstrap");
+    var msg = document.getElementById("bootstrap-msg");
+    if (!form.reportValidity()) return;
+    msg.hidden = true;
+    SeosementaraPlatform.saveBootstrap(form, msg).catch(function (e) {
+      msg.textContent = e.message;
+      msg.hidden = false;
+      msg.className = "alert alert-error";
+    });
+  });
+  document.getElementById("btn-save-infra").addEventListener("click", function () {
+    var form = document.getElementById("form-infra");
+    var msg = document.getElementById("infra-msg");
     if (!form.reportValidity()) return;
     msg.hidden = true;
     SeosementaraPlatform.saveInfra(form, msg).catch(function (e) {
