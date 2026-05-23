@@ -1,0 +1,7 @@
+.git
+.github
+Plan
+Frontend-admin/node_modules
+Frontend-admin/.wrangler
+**/*.md
+!Backend/README.md
