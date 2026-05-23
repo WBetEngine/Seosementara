@@ -1,0 +1,78 @@
+# GitHub Actions → Mini PC (Windows) via SSH + SCP
+# Menulis .env dari Secret MINI_PC_DOTENV + sync migrasi/compose dari main.
+# Setup: mini-pc/GITHUB-SECRETS-SETUP.md
+
+name: Sync Mini PC
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Backend/migrations/**"
+      - "docker-compose.prod.yml"
+      - "scripts/mini-pc-*.ps1"
+      - "scripts/apply-migrations.ps1"
+      - "scripts/bootstrap-cloudflare.ps1"
+      - ".github/workflows/sync-mini-pc.yml"
+  workflow_run:
+    workflows: ["Deploy Backend API"]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: sync-mini-pc
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare deploy bundle
+        env:
+          MINI_PC_DOTENV: ${{ secrets.MINI_PC_DOTENV }}
+        run: |
+          set -e
+          mkdir -p bundle/Backend/migrations bundle/scripts
+          cp docker-compose.prod.yml bundle/
+          cp Backend/migrations/*.up.sql bundle/Backend/migrations/
+          cp scripts/mini-pc-pull.ps1 scripts/apply-migrations.ps1 scripts/bootstrap-cloudflare.ps1 scripts/mini-pc-remote-deploy.ps1 scripts/mini-pc-sync-from-github.ps1 bundle/scripts/
+          if [ -z "$MINI_PC_DOTENV" ]; then
+            echo "::error::Secret MINI_PC_DOTENV belum diisi. Lihat mini-pc/GITHUB-SECRETS-SETUP.md"
+            exit 1
+          fi
+          printf '%s\n' "$MINI_PC_DOTENV" > bundle/.env
+          tar czf deploy-bundle.tar.gz -C bundle .
+
+      - name: Upload bundle to mini PC
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          password: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_SSH_PORT || 22 }}
+          source: deploy-bundle.tar.gz
+          target: ${{ secrets.DEPLOY_PATH || 'C:/Seosementara' }}
+          overwrite: true
+
+      - name: Extract and deploy on mini PC
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          password: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            powershell -NoProfile -ExecutionPolicy Bypass -Command "
+              \$root = '${{ secrets.DEPLOY_PATH || 'C:/Seosementara' }}'.Replace('/','\');
+              Set-Location \$root;
+              tar -xzf deploy-bundle.tar.gz;
+              Remove-Item deploy-bundle.tar.gz -Force;
+              & (Join-Path \$root 'scripts\mini-pc-remote-deploy.ps1')
+            "

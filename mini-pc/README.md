@@ -37,7 +37,7 @@ curl http://localhost:8080/health
 
 ## Update setelah push ke GitHub
 
-**Otomatis (SSH):** lihat `Frontend-admin/DEPLOY-OPSI-A.md` — set variable `MINI_PC_DEPLOY=true` + secrets.
+**Otomatis (SSH):** lihat `mini-pc/GITHUB-SECRETS-SETUP.md` — workflow **Sync Mini PC** + secrets `MINI_PC_DOTENV`, `DEPLOY_*`.
 
 **Manual:**
 

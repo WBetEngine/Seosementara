@@ -62,20 +62,10 @@ jobs:
     runs-on: ubuntu-latest
     if: vars.MINI_PC_DEPLOY == 'true'
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_SSH_PORT }}
-          script_stop: true
-          script: |
-            set -e
-            cd "${{ secrets.DEPLOY_PATH }}"
-            docker compose -f docker-compose.prod.yml pull api
-            docker compose -f docker-compose.prod.yml up -d
-            curl -sf http://localhost:8080/health
+      - name: Trigger sync workflow
+        run: |
+          echo "Image pushed — Sync Mini PC workflow akan jalan via workflow_run hook."
+          echo "Pastikan Secrets DEPLOY_* dan MINI_PC_DOTENV sudah diisi."
 
   deploy-webhook:
     needs: build-and-push
