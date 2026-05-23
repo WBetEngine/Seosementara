@@ -208,3 +208,87 @@ export async function syncCloudflareToGitHub(env, { global_api_key, account_emai
 export async function githubConfigured(env) {
   return Boolean(env.GITHUB_SETUP_TOKEN);
 }
+
+/** Cek self-hosted runner via GitHub API (butuh PAT di Worker). */
+export async function getRunnerStatus(env) {
+  const token = resolveToken(env);
+  if (!token) {
+    return {
+      checked: false,
+      needs_runner_setup: true,
+      reason: "github_pat_missing",
+      online_count: 0,
+      total_count: 0,
+      runners: [],
+    };
+  }
+  try {
+    const { owner, repo } = splitRepo(repoPath(env));
+    const data = await ghFetch(token, `/repos/${owner}/${repo}/actions/runners?per_page=30`);
+    const runners = (data.runners || []).map((r) => ({
+      name: r.name,
+      status: r.status,
+      os: r.os,
+      busy: r.busy,
+    }));
+    const online = runners.filter((r) => r.status === "online");
+    return {
+      checked: true,
+      needs_runner_setup: runners.length === 0 || online.length === 0,
+      reason: runners.length === 0 ? "no_runners" : online.length === 0 ? "runners_offline" : null,
+      online_count: online.length,
+      total_count: runners.length,
+      runners,
+    };
+  } catch (e) {
+    return {
+      checked: false,
+      needs_runner_setup: true,
+      reason: "api_error",
+      error: e.message,
+      online_count: 0,
+      total_count: 0,
+      runners: [],
+    };
+  }
+}
+
+/** Nama secret di Environment production (tanpa nilai). */
+export async function listEnvironmentSecretNames(env) {
+  const token = resolveToken(env);
+  if (!token) return [];
+  try {
+    const envName = ghEnvName(env);
+    const { owner, repo } = splitRepo(repoPath(env));
+    const data = await ghFetch(
+      token,
+      `/repos/${owner}/${repo}/environments/${envName}/secrets?per_page=50`
+    );
+    return (data.secrets || []).map((s) => s.name);
+  } catch {
+    return [];
+  }
+}
+
+export async function getPlatformSetupStatus(env) {
+  const github_token_stored = await githubConfigured(env);
+  const secretNames = github_token_stored ? await listEnvironmentSecretNames(env) : [];
+  const runner = await getRunnerStatus(env);
+  const envName = ghEnvName(env);
+  const repo = repoPath(env);
+
+  return {
+    github_token_stored,
+    github_repo: repo,
+    github_environment: envName,
+    environment_secrets: secretNames,
+    bootstrap_complete: secretNames.includes("GITHUB_SETUP_TOKEN") && secretNames.includes("CLOUDFLARE_API_KEY"),
+    infra_complete: secretNames.includes("DB_PASSWORD") && secretNames.includes("MASTER_ENCRYPTION_KEY"),
+    runner,
+    runner_install: {
+      script_url: `https://raw.githubusercontent.com/${repo}/main/scripts/install-github-runner.ps1`,
+      runners_new_url: `https://github.com/${repo}/settings/actions/runners/new`,
+      expected_runner_name: "mini-pc-seosementara",
+    },
+  };
+}

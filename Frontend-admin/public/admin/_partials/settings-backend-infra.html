@@ -3,6 +3,8 @@
   dan <strong>Workers Secrets</strong> — tanpa buka GitHub Settings manual.
 </div>
 
+<div id="runner-setup-banner" class="alert alert-error" hidden style="margin-bottom:1rem"></div>
+
 <div id="platform-status" class="panel" style="margin-bottom:1rem;font-size:0.9rem"></div>
 
 <div class="panel" style="margin-bottom:1.25rem">
@@ -74,10 +76,13 @@
 <script src="/static/js/admin-platform.js"></script>
 <script>
 (function () {
-  var status = document.getElementById("platform-status");
-  if (window.SeosementaraPlatform && status) {
-    SeosementaraPlatform.loadStatus(status).catch(function (e) {
-      status.textContent = e.message;
+  if (window.SeosementaraPlatform) {
+    SeosementaraPlatform.loadStatus().catch(function (e) {
+      var banner = document.getElementById("runner-setup-banner");
+      if (banner) {
+        banner.hidden = false;
+        banner.textContent = "Gagal memuat status: " + e.message;
+      }
     });
   }
   document.getElementById("btn-save-bootstrap").addEventListener("click", function () {

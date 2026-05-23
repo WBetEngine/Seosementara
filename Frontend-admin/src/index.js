@@ -3,6 +3,7 @@ import {
   saveBootstrap,
   githubConfigured,
   syncCloudflareToGitHub,
+  getPlatformSetupStatus,
 } from "./github.js";
 import {
   saveCloudflareCredentials,
@@ -29,13 +30,16 @@ async function handleAdminAPI(request, env) {
   const path = url.pathname;
 
   if (request.method === "GET" && path === "/admin/api/platform/setup/status") {
-    return json({
-      github_token_stored: await githubConfigured(env),
-      cloudflare_configured: await cloudflareConfigured(env),
-      github_repo: env.GITHUB_REPO || "WBetEngine/Seosementara",
-      github_environment: env.GITHUB_ENVIRONMENT || "production",
-      worker_script: env.WORKER_SCRIPT_NAME || "seosementara",
-    });
+    try {
+      const status = await getPlatformSetupStatus(env);
+      return json({
+        ...status,
+        cloudflare_configured: await cloudflareConfigured(env),
+        worker_script: env.WORKER_SCRIPT_NAME || "seosementara",
+      });
+    } catch (e) {
+      return json({ error: e.message }, 500);
+    }
   }
 
   if (request.method === "POST" && path === "/admin/api/platform/bootstrap") {
