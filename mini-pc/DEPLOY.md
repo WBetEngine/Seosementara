@@ -1,65 +1,57 @@
-# Deploy mini PC (zero-touch)
+# Deploy mini PC (manual)
 
-Anda **tidak perlu** buka mini PC setelah runner terpasang.
+Deploy **langsung di mini PC** dengan file `.env`. Tidak ada runner atau sync otomatis.
 
-## Arsitektur
-
-```text
-push main → Build image (GHCR) → Deploy Mini PC (self-hosted runner)
-                                      ↓
-                              docker compose (env dari GitHub Secrets)
-                              tanpa file .env di disk
-```
-
-| Komponen | Lokasi |
-|----------|--------|
-| Kode | GitHub `main` |
-| Image API | GHCR |
-| Secret | GitHub → Settings → Secrets |
-| Runtime | Mini PC (Docker saja) |
-| Admin UI | Cloudflare Workers |
-
-## Setup sekali
-
-### 1. GitHub Secrets
-
-| Secret | Wajib |
-|--------|-------|
-| `DB_PASSWORD` | Ya |
-| `MASTER_ENCRYPTION_KEY` | Ya |
-| `SUPER_ADMIN_TOKEN` | Ya |
-| `CLOUDFLARE_API_KEY` | Bootstrap CF |
-| `CLOUDFLARE_ACCOUNT_ID` | Bootstrap CF |
-| `CLOUDFLARE_ACCOUNT_EMAIL` | Bootstrap CF + deploy Workers (Global API Key) |
-| `CLOUDFLARE_TUNNEL_ID` | Opsional |
-
-### 2. Self-hosted runner (mini PC, Administrator)
-
-```powershell
-cd C:\Seosementara
-.\scripts\install-github-runner.ps1
-```
-
-Token dari: **Settings → Actions → Runners → New self-hosted runner**
-
-## Setelah setup
-
-Edit kode di GitHub → push `main` → deploy otomatis.
-
-**Tidak ada** file `.env` di mini PC — Docker Compose membaca environment dari runner.
-
-## File di mini PC
+## Struktur folder
 
 ```
 C:\Seosementara\
+  .env                          ← salin dari mini-pc/env.production
   docker-compose.prod.yml
   Backend\migrations\
-  scripts\mini-pc-remote-deploy.ps1
-  scripts\bootstrap-cloudflare.ps1
+  mini-pc\
+    env.example                 ← template kosong
+    env.production              ← credential lengkap (gitignore)
+    DEPLOY.md
 ```
 
-## Infra sekali (sudah)
+## Setup sekali
+
+```powershell
+cd C:\Seosementara
+Copy-Item mini-pc\env.production .env
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d --force-recreate
+curl http://localhost:8080/health
+```
+
+File `mini-pc/env.production` berisi credential production lengkap (file lokal di repo, di-gitignore — tidak masuk GitHub). Alternatif: salin `mini-pc/env.example` ke `.env` dan isi manual.
+
+## Update image
+
+Setelah push ke GitHub, workflow **Deploy Backend API** build image baru ke GHCR. Di mini PC:
+
+```powershell
+cd C:\Seosementara
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d --force-recreate
+```
+
+## Dev lokal (laptop)
+
+Salin `mini-pc/env.example` ke `.env` di **root repo**, uncomment bagian DEV, lalu:
+
+```powershell
+docker compose up -d --build
+```
+
+## Admin UI
+
+Deploy Workers: lihat `Frontend-admin/DEPLOY-CLOUDFLARE-PAGES.md`.
+
+`SUPER_ADMIN_TOKEN` di `.env` mini PC harus sama dengan token di `admin-config.js`.
+
+## Prasyarat
 
 - Docker Desktop
-- cloudflared tunnel → api.apidevel.org
-- OpenSSH (opsional, tidak dipakai workflow utama)
+- cloudflared tunnel → `api.apidevel.org`

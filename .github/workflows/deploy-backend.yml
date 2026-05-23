@@ -1,4 +1,4 @@
-# Build image → GHCR. Deploy mini PC via workflow "Deploy Mini PC" (self-hosted runner).
+# Build image → GHCR. Deploy mini PC manual: docker compose pull && up (lihat mini-pc/DEPLOY.md).
 
 name: Deploy Backend API
 
