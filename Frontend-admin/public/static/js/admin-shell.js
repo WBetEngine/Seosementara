@@ -162,6 +162,22 @@
     }
   }
 
+  function loadAdminRoutePartial() {
+    var routes = {
+      "/admin/settings/backend/infra": "/admin/_partials/settings-backend-infra.html",
+      "/admin/settings/cloudflare/koneksi": "/admin/_partials/settings-cf-koneksi.html",
+      "/admin/settings/cloudflare": "/admin/_partials/settings-cloudflare.html",
+      "/admin/settings/rbac": "/admin/_partials/settings-rbac.html",
+      "/admin/settings/host": "/admin/_partials/settings-host.html",
+    };
+    var path = window.location.pathname.replace(/\/$/, "") || "/";
+    var partial = routes[path];
+    if (!partial || typeof htmx === "undefined") return;
+    var main = document.getElementById("main");
+    if (!main) return;
+    htmx.ajax("GET", partial, { target: "#main", swap: "innerHTML" });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     applyApiBase();
     if (typeof htmx === "undefined") {
@@ -202,6 +218,7 @@
     initPageTabs(document);
     var path = window.location.pathname;
     setActiveNav(path);
+    loadAdminRoutePartial();
   });
 
   document.body.addEventListener("htmx:afterSwap", function (ev) {

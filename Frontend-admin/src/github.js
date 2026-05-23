@@ -49,7 +49,10 @@ async function ghFetch(token, path, init = {}) {
     }
   }
   if (!res.ok) {
-    const msg = body?.message || body?.raw || res.statusText;
+    let msg = body?.message || body?.raw || res.statusText;
+    if (res.status === 403) {
+      msg += " — PAT perlu: Actions write, Secrets write, Administration write (repo Seosementara)";
+    }
     throw new Error(`GitHub API ${res.status}: ${msg}`);
   }
   return body;

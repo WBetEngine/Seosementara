@@ -82,9 +82,21 @@ async function handleAdminAPI(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname.startsWith("/admin/api/platform/")) {
+    const path = url.pathname;
+
+    if (path.startsWith("/admin/api/platform/")) {
       return handleAdminAPI(request, env);
     }
+
+    if (
+      path.startsWith("/admin/") &&
+      !path.startsWith("/admin/_partials/") &&
+      !/\.[a-zA-Z0-9]+$/.test(path)
+    ) {
+      const shell = new URL("/admin/index.html", url.origin);
+      return env.ASSETS.fetch(new Request(shell, request));
+    }
+
     return env.ASSETS.fetch(request);
   },
 };
