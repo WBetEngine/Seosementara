@@ -9,6 +9,10 @@ const DEFAULT_REPO = "WBetEngine/Seosementara";
 const DEFAULT_ENV = "production";
 const DEPLOY_WORKFLOW = "deploy-mini-pc.yml";
 const DEPLOY_ADMIN_WORKFLOW = "deploy-admin.yml";
+/** GitHub Environment — nama secret tidak boleh diawali GITHUB_ (reserved). */
+const GH_ENV_PAT_SECRET = "PLATFORM_GITHUB_PAT";
+/** Workers Secret — binding runtime Worker (Cloudflare). */
+const WORKER_PAT_SECRET = "GITHUB_SETUP_TOKEN";
 
 function repoPath(env) {
   return env.GITHUB_REPO || DEFAULT_REPO;
@@ -70,7 +74,7 @@ function encryptSecret(publicKeyB64, secretValue) {
 }
 
 function resolveToken(env, override) {
-  return override || env.GITHUB_SETUP_TOKEN || "";
+  return override || env[WORKER_PAT_SECRET] || "";
 }
 
 export async function ensureEnvironment(token, env, envName) {
@@ -138,8 +142,8 @@ export async function saveBootstrap(env, payload, putWorkerSecretFn) {
   const scriptName = env.WORKER_SCRIPT_NAME || "seosementara";
   const updated = [];
 
-  await putEnvironmentSecret(env, "GITHUB_SETUP_TOKEN", github_pat, github_pat);
-  updated.push("GITHUB_SETUP_TOKEN");
+  await putEnvironmentSecret(env, GH_ENV_PAT_SECRET, github_pat, github_pat);
+  updated.push(GH_ENV_PAT_SECRET);
   await putEnvironmentSecret(env, "CLOUDFLARE_API_KEY", global_api_key, github_pat);
   updated.push("CLOUDFLARE_API_KEY");
   await putEnvironmentSecret(env, "CLOUDFLARE_ACCOUNT_EMAIL", account_email, github_pat);
@@ -152,7 +156,7 @@ export async function saveBootstrap(env, payload, putWorkerSecretFn) {
   }
 
   if (putWorkerSecretFn) {
-    await putWorkerSecretFn(account_id, account_email, global_api_key, scriptName, "GITHUB_SETUP_TOKEN", github_pat);
+    await putWorkerSecretFn(account_id, account_email, global_api_key, scriptName, WORKER_PAT_SECRET, github_pat);
     await putWorkerSecretFn(account_id, account_email, global_api_key, scriptName, "CF_GLOBAL_API_KEY", global_api_key);
     await putWorkerSecretFn(account_id, account_email, global_api_key, scriptName, "CF_ACCOUNT_EMAIL", account_email);
     await putWorkerSecretFn(account_id, account_email, global_api_key, scriptName, "CF_ACCOUNT_ID", account_id);
@@ -165,7 +169,7 @@ export async function saveBootstrap(env, payload, putWorkerSecretFn) {
     environment: ghEnvName(env),
     secrets_updated: updated,
     worker_secrets_updated: putWorkerSecretFn
-      ? ["GITHUB_SETUP_TOKEN", "CF_GLOBAL_API_KEY", "CF_ACCOUNT_EMAIL", "CF_ACCOUNT_ID"]
+      ? [WORKER_PAT_SECRET, "CF_GLOBAL_API_KEY", "CF_ACCOUNT_EMAIL", "CF_ACCOUNT_ID"]
       : [],
     deploy_admin_triggered: true,
     message: "Bootstrap tersimpan di GitHub Environment production + Workers Secrets",
@@ -212,7 +216,7 @@ export async function syncCloudflareToGitHub(env, { global_api_key, account_emai
 }
 
 export async function githubConfigured(env) {
-  return Boolean(env.GITHUB_SETUP_TOKEN);
+  return Boolean(env[WORKER_PAT_SECRET]);
 }
 
 /** Cek self-hosted runner via GitHub API (butuh PAT di Worker). */
@@ -288,7 +292,9 @@ export async function getPlatformSetupStatus(env) {
     github_repo: repo,
     github_environment: envName,
     environment_secrets: secretNames,
-    bootstrap_complete: secretNames.includes("GITHUB_SETUP_TOKEN") && secretNames.includes("CLOUDFLARE_API_KEY"),
+    bootstrap_complete:
+      (secretNames.includes(GH_ENV_PAT_SECRET) || secretNames.includes("GITHUB_SETUP_TOKEN")) &&
+      secretNames.includes("CLOUDFLARE_API_KEY"),
     infra_complete: secretNames.includes("DB_PASSWORD") && secretNames.includes("MASTER_ENCRYPTION_KEY"),
     runner,
     runner_install: {

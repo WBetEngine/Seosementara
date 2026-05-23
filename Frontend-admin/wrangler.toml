@@ -12,7 +12,8 @@ GITHUB_ENVIRONMENT = "production"
 WORKER_SCRIPT_NAME = "seosementara"
 
 # Secrets (dari admin Bootstrap, atau wrangler secret put):
-# GITHUB_SETUP_TOKEN — PAT GitHub (disimpan admin + Environment production)
+# PLATFORM_GITHUB_PAT — PAT di GitHub Environment production (nama tanpa prefix GITHUB_)
+# GITHUB_SETUP_TOKEN — PAT di Workers Secret (runtime admin)
 # CF_GLOBAL_API_KEY, CF_ACCOUNT_EMAIL, CF_ACCOUNT_ID
 
 [assets]
