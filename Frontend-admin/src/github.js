@@ -3,7 +3,7 @@
  * Token: Workers Secret GITHUB_SETUP_TOKEN, atau PAT sekali dari form bootstrap.
  */
 
-import sodium from "tweetsodium";
+import { seal } from "tweetsodium";
 
 const DEFAULT_REPO = "WBetEngine/Seosementara";
 const DEFAULT_ENV = "production";
@@ -55,7 +55,7 @@ async function ghFetch(token, path, init = {}) {
 function encryptSecret(publicKeyB64, secretValue) {
   const messageBytes = new TextEncoder().encode(secretValue);
   const keyBytes = Uint8Array.from(atob(publicKeyB64), (c) => c.charCodeAt(0));
-  const encryptedBytes = sodium.seal(messageBytes, keyBytes);
+  const encryptedBytes = seal(messageBytes, keyBytes);
   let binary = "";
   for (let i = 0; i < encryptedBytes.length; i++) {
     binary += String.fromCharCode(encryptedBytes[i]);

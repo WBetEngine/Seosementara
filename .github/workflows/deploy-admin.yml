@@ -11,6 +11,9 @@ on:
       - "Frontend-admin/**"
       - ".github/workflows/deploy-admin.yml"
 
+permissions:
+  actions: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -18,6 +21,12 @@ jobs:
     # Setelah Bootstrap admin, secret juga disalin ke Environment `production`.
     steps:
       - uses: actions/checkout@v4
+
+      - name: Ensure GitHub Environment production
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method PUT "/repos/${{ github.repository }}/environments/production" --input - <<< '{}'
 
       - uses: actions/setup-node@v4
         with:
@@ -49,4 +58,9 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           npm ci
+          if [ -z "$CLOUDFLARE_API_KEY" ] || [ -z "$CLOUDFLARE_EMAIL" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Isi Repository Secrets: CLOUDFLARE_API_KEY, CLOUDFLARE_ACCOUNT_EMAIL, CLOUDFLARE_ACCOUNT_ID"
+            echo "https://github.com/WBetEngine/Seosementara/settings/secrets/actions"
+            exit 1
+          fi
           npx wrangler deploy

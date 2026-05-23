@@ -1,0 +1,22 @@
+# Buat GitHub Environment `production` (URL settings tidak 404).
+# Jalankan manual sekali — tidak butuh secret Cloudflare.
+
+name: Ensure Production Environment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  ensure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or update environment production
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method PUT "/repos/${{ github.repository }}/environments/production" --input - <<< '{}'
+          echo "Environment production siap:"
+          echo "https://github.com/${{ github.repository }}/settings/environments/production"
