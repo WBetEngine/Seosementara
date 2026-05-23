@@ -32,6 +32,7 @@ push main → Build image (GHCR) → Deploy Mini PC (self-hosted runner)
 | `CLOUDFLARE_ACCOUNT_ID` | Bootstrap CF |
 | `CLOUDFLARE_ACCOUNT_EMAIL` | Bootstrap CF |
 | `CLOUDFLARE_TUNNEL_ID` | Opsional |
+| `CLOUDFLARE_API_TOKEN` | Deploy Admin UI (Workers) |
 
 ### 2. Self-hosted runner (mini PC, Administrator)
 
