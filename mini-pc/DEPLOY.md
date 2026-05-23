@@ -45,14 +45,23 @@ Isi **Repository Secrets** (bukan Environment — link ini selalu ada):
 
 Lalu: **Actions → Deploy Admin UI → Run workflow**
 
-### Environment `production` (setelah Bootstrap)
+### Environment `production` (404 = belum dibuat)
 
-URL hanya ada **setelah** environment dibuat:
+URL ini **404** sampai environment `production` ada di repo:
 
-1. List: https://github.com/WBetEngine/Seosementara/settings/environments  
-2. Atau otomatis saat **Bootstrap Platform** di admin sukses  
+https://github.com/WBetEngine/Seosementara/settings/environments/production
 
-Jika `/settings/environments/production` → **404**, environment belum dibuat — normal.
+**Buat environment (pilih salah satu):**
+
+| Cara | Kapan |
+|------|--------|
+| **Actions → Ensure Production Environment → Run workflow** | Sekarang — tidak butuh secret Cloudflare |
+| **Actions → Deploy Admin UI** (sukses) | Otomatis membuat environment |
+| **Bootstrap Platform** di admin | Menulis secret ke environment |
+
+Daftar environment: https://github.com/WBetEngine/Seosementara/settings/environments
+
+Secret infra mini PC (`DB_PASSWORD`, dll.) baru muncul di environment **setelah Bootstrap + Infra** di admin — bukan isi manual di halaman 404.
 
 ---
 
