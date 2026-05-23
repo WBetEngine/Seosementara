@@ -1,24 +1,10 @@
-# GitHub Actions → Mini PC (Windows) via SSH + SCP
-# Menulis .env dari Secret MINI_PC_DOTENV + sync migrasi/compose dari main.
-# Setup: mini-pc/GITHUB-SECRETS-SETUP.md
+# GitHub Actions → Mini PC via SSH (cadangan jika ada IP publik).
+# Disarankan: self-hosted runner — deploy-mini-pc-local.yml
 
 name: Sync Mini PC
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "Backend/migrations/**"
-      - "docker-compose.prod.yml"
-      - "scripts/mini-pc-*.ps1"
-      - "scripts/apply-migrations.ps1"
-      - "scripts/bootstrap-cloudflare.ps1"
-      - ".github/workflows/sync-mini-pc.yml"
-  workflow_run:
-    workflows: ["Deploy Backend API"]
-    types: [completed]
-    branches: [main]
 
 concurrency:
   group: sync-mini-pc
@@ -27,24 +13,27 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Prepare deploy bundle
         env:
-          MINI_PC_DOTENV: ${{ secrets.MINI_PC_DOTENV }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MASTER_ENCRYPTION_KEY: ${{ secrets.MASTER_ENCRYPTION_KEY }}
+          SUPER_ADMIN_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_EMAIL: ${{ secrets.CLOUDFLARE_ACCOUNT_EMAIL }}
+          CLOUDFLARE_TUNNEL_ID: ${{ secrets.CLOUDFLARE_TUNNEL_ID }}
         run: |
           set -e
+          export DB_PASSWORD MASTER_ENCRYPTION_KEY SUPER_ADMIN_TOKEN
+          export CLOUDFLARE_API_KEY CLOUDFLARE_ACCOUNT_ID CLOUDFLARE_ACCOUNT_EMAIL CLOUDFLARE_TUNNEL_ID
           mkdir -p bundle/Backend/migrations bundle/scripts
           cp docker-compose.prod.yml bundle/
           cp Backend/migrations/*.up.sql bundle/Backend/migrations/
-          cp scripts/mini-pc-pull.ps1 scripts/apply-migrations.ps1 scripts/bootstrap-cloudflare.ps1 scripts/mini-pc-remote-deploy.ps1 scripts/mini-pc-sync-from-github.ps1 bundle/scripts/
-          if [ -z "$MINI_PC_DOTENV" ]; then
-            echo "::error::Secret MINI_PC_DOTENV belum diisi. Lihat mini-pc/GITHUB-SECRETS-SETUP.md"
-            exit 1
-          fi
-          printf '%s\n' "$MINI_PC_DOTENV" > bundle/.env
+          cp scripts/mini-pc-*.ps1 scripts/apply-migrations.ps1 scripts/bootstrap-cloudflare.ps1 bundle/scripts/ 2>/dev/null || true
+          envsubst < mini-pc/production.env.template > bundle/.env
           tar czf deploy-bundle.tar.gz -C bundle .
 
       - name: Upload bundle to mini PC
@@ -53,23 +42,21 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_SSH_PASSWORD }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_SSH_PORT || 22 }}
           source: deploy-bundle.tar.gz
           target: ${{ secrets.DEPLOY_PATH || 'C:/Seosementara' }}
           overwrite: true
 
-      - name: Extract and deploy on mini PC
+      - name: Extract and deploy
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_SSH_PASSWORD }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_SSH_PORT || 22 }}
           script_stop: true
           script: |
-            powershell -NoProfile -ExecutionPolicy Bypass -Command "
+            powershell -NoProfile -Command "
               \$root = '${{ secrets.DEPLOY_PATH || 'C:/Seosementara' }}'.Replace('/','\');
               Set-Location \$root;
               tar -xzf deploy-bundle.tar.gz;
