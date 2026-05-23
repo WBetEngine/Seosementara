@@ -23,6 +23,8 @@ function splitRepo(path) {
   return { owner, repo };
 }
 
+const GITHUB_USER_AGENT = "Seosementara-Platform/1.0 (Cloudflare Workers)";
+
 async function ghFetch(token, path, init = {}) {
   if (!token) {
     throw new Error("GitHub token belum ada — isi di Bootstrap Platform (PAT)");
@@ -33,6 +35,7 @@ async function ghFetch(token, path, init = {}) {
       Accept: "application/vnd.github+json",
       Authorization: `Bearer ${token}`,
       "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": GITHUB_USER_AGENT,
       ...(init.headers || {}),
     },
   });
