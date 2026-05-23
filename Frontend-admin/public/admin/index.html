@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/static/css/admin.css" />
   <script src="/static/js/htmx.min.js"></script>
 </head>
-<body class="admin-body" hx-headers='{"X-CSRF-Token": "prototype-static"}'>
+<body class="admin-body" data-api-base="https://api.apidevel.org" hx-headers='{"X-CSRF-Token": "prototype-static"}'>
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
     <symbol id="i-layout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
     <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
@@ -271,6 +271,7 @@
   <div id="drawer-backdrop" class="drawer-backdrop" aria-hidden="true"></div>
   <aside id="app-drawer" class="app-drawer" aria-hidden="true" aria-label="Panel edit"></aside>
 
+  <script src="/static/js/admin-config.js"></script>
   <script src="/static/js/admin-shell.js" defer></script>
 </body>
 </html>

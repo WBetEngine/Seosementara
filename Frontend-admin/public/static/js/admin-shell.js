@@ -143,8 +143,14 @@
   window.setActiveNav = setActiveNav;
 
   function applyApiBase() {
-    var base = document.body.getAttribute("data-api-base");
-    var token = document.body.getAttribute("data-super-admin-token");
+    var base =
+      document.body.getAttribute("data-api-base") ||
+      (typeof window !== "undefined" && window.SEOSEMENTARA_API_BASE) ||
+      "";
+    var token =
+      document.body.getAttribute("data-super-admin-token") ||
+      (typeof window !== "undefined" && window.SEOSEMENTARA_SUPER_ADMIN_TOKEN) ||
+      "";
     if (!base) return;
     document.querySelectorAll("[data-hx-api]").forEach(function (el) {
       var path = el.getAttribute("data-hx-api");
