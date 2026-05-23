@@ -1,5 +1,4 @@
-# Opsi A: build image di GitHub → GHCR → (opsional) SSH deploy ke mini PC.
-# Aktifkan deploy: Settings → Secrets and variables → Actions → Variables → MINI_PC_DEPLOY = true
+# Build image → GHCR. Deploy mini PC via workflow "Deploy Mini PC" (self-hosted runner).
 
 name: Deploy Backend API
 
@@ -9,10 +8,9 @@ on:
     paths:
       - "Backend/**"
       - "Frontend-admin/public/admin/_partials/**"
-      - "Frontend-admin/static/**"
+      - "Frontend-admin/public/static/**"
       - "Frontend-admin/templates/**"
       - "Backend/Dockerfile"
-      - "docker-compose.yml"
       - "docker-compose.prod.yml"
       - ".github/workflows/deploy-backend.yml"
       - ".dockerignore"
@@ -56,28 +54,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-  deploy-mini-pc:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: vars.MINI_PC_DEPLOY == 'true'
-    steps:
-      - name: Trigger sync workflow
-        run: |
-          echo "Image pushed — Sync Mini PC workflow akan jalan via workflow_run hook."
-          echo "Pastikan Secrets DEPLOY_* dan MINI_PC_DOTENV sudah diisi."
-
-  deploy-webhook:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: vars.MINI_PC_DEPLOY == 'webhook'
-    steps:
-      - name: Trigger mini PC webhook
-        env:
-          WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
-          WEBHOOK_TOKEN: ${{ secrets.DEPLOY_WEBHOOK_TOKEN }}
-        run: |
-          curl -fsS -X POST "$WEBHOOK_URL" \
-            -H "Authorization: Bearer $WEBHOOK_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"event":"deploy-backend","ref":"${{ github.sha }}"}'

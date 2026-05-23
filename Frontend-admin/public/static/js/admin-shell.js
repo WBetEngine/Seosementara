@@ -219,6 +219,7 @@
       target.id === "pixel-tab-panel" ||
       target.id === "cf-tab-panel"
     ) {
+      applyApiBase();
       var root =
         target.id === "main"
           ? target

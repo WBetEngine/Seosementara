@@ -1,23 +1,20 @@
-# Bootstrap Cloudflare credentials + domain env via API (mini PC / production).
-# Baca secret dari C:\Seosementara\.env — jangan commit file ini dengan secret hardcoded.
+# Bootstrap Cloudflare via API — baca dari environment (GitHub Secrets), bukan file .env.
 param(
-  [string]$ApiBase = "https://api.apidevel.org",
-  [string]$EnvFile = ".env"
+  [string]$ApiBase = "https://api.apidevel.org"
 )
 
 $ErrorActionPreference = "Stop"
-Set-Location $PSScriptRoot\..
 
-function Get-EnvValue([string]$Name) {
-  $line = Select-String -Path $EnvFile -Pattern "^$Name=" | Select-Object -First 1
-  if (-not $line) { throw "Missing $Name in $EnvFile" }
-  return ($line.Line -replace "^$Name=", "").Trim('"')
+function Require-Env([string]$Name) {
+  $v = [Environment]::GetEnvironmentVariable($Name)
+  if (-not $v) { throw "Missing environment variable: $Name" }
+  return $v
 }
 
-$token = Get-EnvValue "SUPER_ADMIN_TOKEN"
-$cfKey = Get-EnvValue "CLOUDFLARE_API_KEY"
-$cfEmail = Get-EnvValue "CLOUDFLARE_ACCOUNT_EMAIL"
-$cfAccount = Get-EnvValue "CLOUDFLARE_ACCOUNT_ID"
+$token = Require-Env "SUPER_ADMIN_TOKEN"
+$cfKey = Require-Env "CLOUDFLARE_API_KEY"
+$cfEmail = Require-Env "CLOUDFLARE_ACCOUNT_EMAIL"
+$cfAccount = Require-Env "CLOUDFLARE_ACCOUNT_ID"
 
 $headers = @{
   Authorization = "Bearer $token"
@@ -26,14 +23,13 @@ $headers = @{
 
 Write-Host "1. Save Cloudflare credentials..." -ForegroundColor Cyan
 $body = @{
-  auth_type     = "global_api_key"
+  auth_type      = "global_api_key"
   global_api_key = $cfKey
-  account_email = $cfEmail
-  account_id    = $cfAccount
+  account_email  = $cfEmail
+  account_id     = $cfAccount
 } | ConvertTo-Json
 
-$r = Invoke-RestMethod -Uri "$ApiBase/api/admin/setup/cloudflare/credentials?test=1" -Method Put -Headers $headers -Body $body
-$r | ConvertTo-Json
+Invoke-RestMethod -Uri "$ApiBase/api/admin/setup/cloudflare/credentials?test=1" -Method Put -Headers $headers -Body $body | Out-Null
 
 Write-Host "2. Update domain env..." -ForegroundColor Cyan
 $envBody = @{
@@ -46,6 +42,6 @@ $envBody = @{
 Invoke-RestMethod -Uri "$ApiBase/api/admin/setup/cloudflare/domain-env" -Method Put -Headers $headers -Body $envBody | Out-Null
 
 Write-Host "3. Refresh tunnel status..." -ForegroundColor Cyan
-Invoke-RestMethod -Uri "$ApiBase/api/admin/setup/cloudflare/tunnel/status" -Method Post -Headers $headers | ConvertTo-Json
+Invoke-RestMethod -Uri "$ApiBase/api/admin/setup/cloudflare/tunnel/status" -Method Post -Headers $headers | Out-Null
 
-Write-Host "OK — buka admin Settings → Cloudflare" -ForegroundColor Green
+Write-Host "Cloudflare bootstrap OK." -ForegroundColor Green

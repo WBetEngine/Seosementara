@@ -1,0 +1,47 @@
+# Deploy ke mini PC — self-hosted runner (tanpa file .env di disk).
+# Secret → environment variable → docker compose.
+# Setup sekali: scripts/install-github-runner.ps1
+
+name: Deploy Mini PC
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Deploy Backend API"]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: deploy-mini-pc
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync runtime files
+        shell: powershell
+        run: |
+          $root = "C:\Seosementara"
+          New-Item -ItemType Directory -Path "$root\Backend\migrations" -Force | Out-Null
+          New-Item -ItemType Directory -Path "$root\scripts" -Force | Out-Null
+          Copy-Item docker-compose.prod.yml $root -Force
+          Copy-Item Backend/migrations/*.up.sql "$root\Backend\migrations\" -Force
+          Copy-Item scripts/mini-pc-remote-deploy.ps1,scripts/bootstrap-cloudflare.ps1 "$root\scripts\" -Force
+
+      - name: Deploy Docker stack
+        shell: powershell
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MASTER_ENCRYPTION_KEY: ${{ secrets.MASTER_ENCRYPTION_KEY }}
+          SUPER_ADMIN_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_EMAIL: ${{ secrets.CLOUDFLARE_ACCOUNT_EMAIL }}
+          CLOUDFLARE_TUNNEL_ID: ${{ secrets.CLOUDFLARE_TUNNEL_ID }}
+        run: |
+          Set-Location C:\Seosementara
+          & .\scripts\mini-pc-remote-deploy.ps1

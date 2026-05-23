@@ -100,13 +100,6 @@ func main() {
 	})
 
 	guard := authmw.RequireSuperAdmin
-	if pool != nil {
-		migDir := os.Getenv("MIGRATIONS_DIR")
-		if migDir == "" {
-			migDir = "migrations"
-		}
-		r.With(guard).Post("/api/admin/setup/migrate", (&handler.MigrateHandler{Pool: pool, Dir: migDir}).ServeHTTP)
-	}
 	handler.MountCloudflare(r, adminCF, guard)
 
 	// background dispatcher

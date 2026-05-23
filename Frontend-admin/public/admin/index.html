@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="csrf" content="prototype-static" />
+  <meta name="csrf" content="" />
   <title>Admin — Seosementara CMS</title>
   <link rel="stylesheet" href="/static/css/admin.css" />
   <script src="/static/js/htmx.min.js"></script>
 </head>
-<body class="admin-body" data-api-base="https://api.apidevel.org" hx-headers='{"X-CSRF-Token": "prototype-static"}'>
+<body class="admin-body" data-api-base="https://api.apidevel.org">
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
     <symbol id="i-layout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
     <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
@@ -227,7 +227,7 @@
     </nav>
 
     <div class="admin-sidebar__footer">
-      Prototype UI · backend HTMX besok
+      Seosementara CMS
     </div>
   </aside>
 
@@ -256,9 +256,6 @@
     </header>
 
     <div class="admin-content">
-      <div class="alert alert-info">
-        <strong>Prototype UI v2</strong> — semua menu aktif. Pixel Facebook = port dari <code>templates/pixel/facebook/</code>.
-      </div>
       <main id="main"
         hx-get="/admin/_partials/dashboard-admin.html"
         hx-trigger="load"

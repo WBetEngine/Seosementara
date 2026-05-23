@@ -1,3 +1,3 @@
-/** Isi SUPER_ADMIN_TOKEN sebelum deploy Workers (sama dengan .env mini PC). */
+/** Generated at deploy — jangan commit token. Salin dari admin-config.example.js */
 window.SEOSEMENTARA_API_BASE = "https://api.apidevel.org";
-window.SEOSEMENTARA_SUPER_ADMIN_TOKEN = "xTI5KEksNh1dOLKkW+K4kqUpuDM4CVoR+i2HGNMPoXvvmBBUdyAzWDT+g359ocA4";
+window.SEOSEMENTARA_SUPER_ADMIN_TOKEN = "";

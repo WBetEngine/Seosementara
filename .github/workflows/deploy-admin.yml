@@ -1,0 +1,49 @@
+# Deploy admin UI ke Cloudflare Workers.
+# Token admin di-generate dari GitHub Secret (tidak di repo).
+
+name: Deploy Admin UI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Frontend-admin/public/**"
+      - "Frontend-admin/wrangler.toml"
+      - ".github/workflows/deploy-admin.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate admin-config.js
+        shell: bash
+        env:
+          SUPER_ADMIN_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
+        run: |
+          cd Frontend-admin
+          cp public/static/js/admin-config.example.js public/static/js/admin-config.js
+          if [ -n "$SUPER_ADMIN_TOKEN" ]; then
+            node -e "
+              const fs = require('fs');
+              const p = 'public/static/js/admin-config.js';
+              let s = fs.readFileSync(p, 'utf8');
+              s = s.replace('window.SEOSEMENTARA_SUPER_ADMIN_TOKEN = \"\";',
+                'window.SEOSEMENTARA_SUPER_ADMIN_TOKEN = ' + JSON.stringify(process.env.SUPER_ADMIN_TOKEN) + ';');
+              fs.writeFileSync(p, s);
+            "
+          fi
+
+      - name: Deploy Workers
+        working-directory: Frontend-admin
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npm ci
+          npx wrangler deploy

@@ -1,19 +1,21 @@
-# Dijalankan oleh GitHub Actions (SSH) atau manual di mini PC.
+# Deploy ke mini PC — dipanggil GitHub Actions self-hosted runner.
+# Tidak membutuhkan file .env: secret sudah di environment process.
 $ErrorActionPreference = "Stop"
 $Root = if ($PSScriptRoot) { Split-Path $PSScriptRoot -Parent } else { "C:\Seosementara" }
 Set-Location $Root
 
-Write-Host "=== Seosementara remote deploy ===" -ForegroundColor Cyan
-Write-Host "Root: $Root"
+Write-Host "=== Seosementara deploy ===" -ForegroundColor Cyan
 
-if (-not (Test-Path "$Root\.env")) {
-  throw ".env tidak ditemukan di $Root"
+foreach ($var in @("DB_PASSWORD", "MASTER_ENCRYPTION_KEY", "SUPER_ADMIN_TOKEN")) {
+  if (-not [Environment]::GetEnvironmentVariable($var)) {
+    throw "Environment variable $var belum diset (GitHub Secrets → Actions)"
+  }
 }
+
 if (-not (Test-Path "$Root\docker-compose.prod.yml")) {
   throw "docker-compose.prod.yml tidak ditemukan"
 }
 
-# Pastikan folder migrasi ada
 $migDir = Join-Path $Root "Backend\migrations"
 if (-not (Test-Path $migDir)) {
   New-Item -ItemType Directory -Path $migDir -Force | Out-Null
@@ -29,15 +31,12 @@ Start-Sleep -Seconds 8
 
 Write-Host "Health check..." -ForegroundColor Cyan
 docker compose -f docker-compose.prod.yml ps
-$local = curl.exe -sf http://localhost:8080/health 2>$null
-Write-Host "localhost:8080/health => $local"
+$health = curl.exe -sf http://localhost:8080/health 2>$null
+Write-Host "localhost:8080/health => $health"
 
-if (Test-Path "$Root\scripts\bootstrap-cloudflare.ps1") {
-  $hasCf = Select-String -Path "$Root\.env" -Pattern "^CLOUDFLARE_API_KEY=.+" -Quiet
-  if ($hasCf) {
-    Write-Host "Bootstrap Cloudflare..." -ForegroundColor Cyan
-    & "$Root\scripts\bootstrap-cloudflare.ps1" -EnvFile "$Root\.env" 2>&1 | Out-Host
-  }
+if ($env:CLOUDFLARE_API_KEY -and (Test-Path "$Root\scripts\bootstrap-cloudflare.ps1")) {
+  Write-Host "Bootstrap Cloudflare..." -ForegroundColor Cyan
+  & "$Root\scripts\bootstrap-cloudflare.ps1" 2>&1 | Out-Host
 }
 
 Write-Host "Deploy selesai." -ForegroundColor Green
