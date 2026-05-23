@@ -1,159 +1,77 @@
-# Deploy mini PC
+# Deploy mini PC (manual)
 
-Setup **sekali** di mini PC. Setelah itu, push ke GitHub = deploy otomatis.
+Semua deploy dilakukan **langsung di mini PC**. Tidak ada GitHub runner atau sync otomatis.
 
-## Ringkasan
-
-| Apa | Di mana |
-|-----|---------|
-| Secret (DB, token, Cloudflare) | File **`C:\Seosementara\.env`** (manual, sekali) |
-| Kode & migrasi | GitHub → sync otomatis via runner |
-| Image API | GHCR (pull otomatis) |
-| Admin UI | Cloudflare Workers (GitHub Actions terpisah) |
-
-```text
-push main → Build image (GHCR) → Deploy Mini PC (runner)
-                                      ↓
-                              docker compose + .env
-```
-
----
-
-## Langkah 1 — Buat folder & file `.env`
-
-PowerShell di mini PC:
-
-```powershell
-mkdir C:\Seosementara -Force
-mkdir C:\Seosementara\scripts -Force
-mkdir C:\Seosementara\Backend\migrations -Force
-notepad C:\Seosementara\.env
-```
-
-Isi `.env` (contoh — ganti dengan nilai Anda):
-
-```env
-DB_PASSWORD=password-db-anda
-MASTER_ENCRYPTION_KEY=base64-32-byte
-SUPER_ADMIN_TOKEN=token-panjang-random
-
-CLOUDFLARE_API_KEY=global-api-key-cloudflare
-CLOUDFLARE_ACCOUNT_ID=account-id
-CLOUDFLARE_ACCOUNT_EMAIL=email-cloudflare
-CLOUDFLARE_TUNNEL_ID=opsional
-```
-
-Template lengkap ada di repo: `mini-pc/env.example`
-
-> **Penting:** `.env` tidak pernah di-commit ke GitHub. Hanya ada di mini PC.
-
----
-
-## Langkah 2 — Pasang GitHub runner (sekali)
-
-PowerShell **Administrator**:
-
-### 2a. Download runner
-
-```powershell
-mkdir C:\actions-runner
-cd C:\actions-runner
-
-Invoke-WebRequest -Uri https://github.com/actions/runner/releases/download/v2.334.0/actions-runner-win-x64-2.334.0.zip -OutFile runner.zip
-Expand-Archive runner.zip -DestinationPath . -Force
-Remove-Item runner.zip
-```
-
-### 2b. Ambil registration token
-
-Buka: https://github.com/WBetEngine/Seosementara/settings/actions/runners/new
-
-Pilih **Windows x64**, salin token dari baris `config.cmd` (kadaluarsa ~1 jam).
-
-### 2c. Configure & install service
-
-Ganti `TOKEN_DARI_GITHUB` dengan token tadi:
-
-```powershell
-cd C:\actions-runner
-.\config.cmd --url https://github.com/WBetEngine/Seosementara --token TOKEN_DARI_GITHUB --name mini-pc-seosementara --work _work --unattended --replace
-.\install.cmd
-```
-
-### 2d. Cek runner online
-
-```powershell
-Get-Service actions.runner.*
-```
-
-Status **Running**. Di GitHub → **Settings → Actions → Runners** → `mini-pc-seosementara` **Idle** (hijau).
-
----
-
-## Langkah 3 — Deploy pertama
-
-GitHub → **Actions** → **Deploy Mini PC** → **Run workflow**
-
-Runner akan:
-1. Sync `docker-compose.prod.yml`, migrasi, dan script ke `C:\Seosementara`
-2. Baca secret dari **`.env`** Anda
-3. `docker compose pull` + `up -d`
-
-Cek health:
-
-```powershell
-curl http://localhost:8080/health
-```
-
----
-
-## Setelah setup
-
-Edit kode di GitHub → push `main` → deploy otomatis (tanpa sentuh mini PC).
-
----
-
-## File di mini PC
-
-```
-C:\Seosementara\
-  .env                          ← Anda buat manual (secret)
-  docker-compose.prod.yml       ← sync otomatis
-  env.example                   ← referensi (sync otomatis)
-  Backend\migrations\           ← sync otomatis
-  scripts\
-    load-dotenv.ps1
-    mini-pc-remote-deploy.ps1
-    bootstrap-cloudflare.ps1
-```
-
----
-
-## GitHub Secrets (hanya untuk Admin UI)
-
-Secret di GitHub **tidak** dipakai deploy mini PC lagi. Masih dipakai workflow **Deploy Admin UI**:
-
-| Secret | Fungsi |
-|--------|--------|
-| `SUPER_ADMIN_TOKEN` | Harus **sama** dengan di `.env` mini PC |
-| `CLOUDFLARE_API_KEY` | Deploy Workers |
-| `CLOUDFLARE_ACCOUNT_ID` | Deploy Workers |
-| `CLOUDFLARE_ACCOUNT_EMAIL` | Deploy Workers |
-
----
-
-## Troubleshooting
-
-| Masalah | Solusi |
-|---------|--------|
-| `.env belum ada` | Buat `C:\Seosementara\.env` (Langkah 1) |
-| Runner offline | `Start-Service actions.runner.*` |
-| 401 di admin | Samakan `SUPER_ADMIN_TOKEN` di `.env` dan GitHub Secret |
-| Docker error | Buka Docker Desktop |
-
----
-
-## Prasyarat (sudah)
+## Prasyarat
 
 - Docker Desktop
 - cloudflared tunnel → `api.apidevel.org`
+- Folder `C:\Seosementara`
+
+## Setup sekali
+
+### 1. File `.env`
+
+```powershell
+notepad C:\Seosementara\.env
+```
+
+Salin dari `mini-pc/env.example` dan isi nilainya:
+
+```env
+DB_PASSWORD=
+MASTER_ENCRYPTION_KEY=
+SUPER_ADMIN_TOKEN=
+
+CLOUDFLARE_API_KEY=
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_ACCOUNT_EMAIL=
+```
+
+### 2. File runtime
+
+Salin atau clone ke `C:\Seosementara`:
+
+```
+C:\Seosementara\
+  .env
+  docker-compose.prod.yml
+  Backend\migrations\*.up.sql
+```
+
+Clone (opsional):
+
+```powershell
+cd C:\
+git clone https://github.com/WBetEngine/Seosementara.git Seosementara
+Copy-Item C:\Seosementara\mini-pc\env.example C:\Seosementara\.env
+notepad C:\Seosementara\.env
+```
+
+## Deploy / update
+
+Jalankan di `C:\Seosementara`:
+
+```powershell
+cd C:\Seosementara
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d --force-recreate
+curl http://localhost:8080/health
+```
+
+Docker Compose membaca variabel dari `.env` otomatis.
+
+## Update image dari GHCR
+
+Setelah push ke GitHub, workflow **Deploy Backend API** build image baru ke GHCR.
+Di mini PC, jalankan perintah deploy di atas (`pull` + `up`).
+
+## Admin UI (Cloudflare Workers)
+
+Deploy terpisah — lihat `Frontend-admin/DEPLOY-CLOUDFLARE-PAGES.md`.
+
+Pastikan `SUPER_ADMIN_TOKEN` di `.env` mini PC sama dengan token di `admin-config.js`.
+
+## Cloudflare bootstrap
+
+Konfigurasi Cloudflare (credentials, domain) lewat **admin panel** — tidak ada script otomatis.
