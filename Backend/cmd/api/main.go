@@ -14,6 +14,7 @@ import (
 	"github.com/WBetEngine/Seosementara/Backend/internal/config"
 	"github.com/WBetEngine/Seosementara/Backend/internal/handler"
 	authmw "github.com/WBetEngine/Seosementara/Backend/internal/middleware"
+	"github.com/WBetEngine/Seosementara/Backend/internal/migrate"
 	"github.com/WBetEngine/Seosementara/Backend/internal/pixel/facebook"
 	"github.com/WBetEngine/Seosementara/Backend/internal/pixel/service"
 	"github.com/WBetEngine/Seosementara/Backend/internal/pixel/store"
@@ -42,6 +43,15 @@ func main() {
 			os.Exit(1)
 		}
 		logger.Info("database", "type", "postgres")
+		migDir := os.Getenv("MIGRATIONS_DIR")
+		if migDir == "" {
+			migDir = "migrations"
+		}
+		if err := migrate.Up(context.Background(), pool, migDir); err != nil {
+			logger.Error("migrate", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("migrate", "status", "ok", "dir", migDir)
 	}
 
 	var pixelSt store.PixelStore = store.NewMemoryStore()
@@ -90,6 +100,13 @@ func main() {
 	})
 
 	guard := authmw.RequireSuperAdmin
+	if pool != nil {
+		migDir := os.Getenv("MIGRATIONS_DIR")
+		if migDir == "" {
+			migDir = "migrations"
+		}
+		r.With(guard).Post("/api/admin/setup/migrate", (&handler.MigrateHandler{Pool: pool, Dir: migDir}).ServeHTTP)
+	}
 	handler.MountCloudflare(r, adminCF, guard)
 
 	// background dispatcher
