@@ -8,7 +8,7 @@
 | # | Prinsip |
 |---|---------|
 | 1 | **GitHub** = pusat kode, image GHCR, secrets infra |
-| 2 | **Tidak ada `.env`** di mini PC production |
+| 2 | **Mini PC = Docker saja** — tidak ada repo Git / source code di disk |
 | 3 | **Admin Workers URL** = titik setup operator |
 | 4 | **Cloudflare Global API Key** → **Workers Secrets** |
 | 5 | **DB + MASTER_ENCRYPTION_KEY** → **GitHub Secrets** → runner inject Docker |

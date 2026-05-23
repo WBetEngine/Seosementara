@@ -1,70 +1,95 @@
-# Deploy mini PC — GitHub pusat, tanpa file `.env`
+# Mini PC — Docker saja (tanpa kode / tanpa Git)
 
-## Arsitektur
+Mini PC **bukan** tempat kode. Hanya menjalankan container.
+
+## Yang boleh ada di mini PC
+
+| Komponen | Fungsi |
+|----------|--------|
+| Docker Desktop | Postgres + API (image dari GHCR) |
+| cloudflared | Tunnel → `api.apidevel.org` |
+| GitHub runner | Terima deploy dari GitHub Actions |
+| `C:\Seosementara\` | **Runtime saja** (bukan repo Git) — disync otomatis oleh CI |
 
 ```text
-Admin Workers → GitHub Environment production → runner → Docker inject
-Admin Workers → Workers Secrets (CF + GitHub PAT)
+C:\Seosementara\          ← disalin otomatis workflow Deploy Mini PC
+  docker-compose.prod.yml
+  Backend\migrations\*.sql
+  scripts\mini-pc-deploy.ps1
+
+Tidak ada: git, Frontend-admin, Backend source, .env
 ```
 
-**Tidak perlu** buka GitHub Settings → Environments manual.
+Semua kode & admin UI ada di **GitHub** + **Cloudflare Workers**.
 
 ---
 
-## Bootstrap (admin panel)
+## Setup operator (100% lewat admin Workers)
 
-Buka: **Settings → Infra & GitHub**
+Buka: **https://seosementara.seosementara3.workers.dev/admin/settings/backend/infra**
 
-### Langkah 1 — Bootstrap Platform (sekali)
+### 1. Bootstrap Platform
 
-| Field | Disimpan ke |
-|-------|-------------|
-| **GitHub PAT** | Environment `production` + Workers `GITHUB_SETUP_TOKEN` |
-| **Global API Key** | Environment + Workers `CF_GLOBAL_API_KEY` |
-| **Email + Account ID** | Environment + Workers |
-| **SUPER_ADMIN_TOKEN** (opsional) | Environment `production` |
+GitHub PAT + Global API Key + email + Account ID → GitHub Environment `production` + Workers Secrets.
 
-Klik **Simpan bootstrap** → otomatis trigger **Deploy Admin UI**.
+### 2. Infra mini PC
 
-### Langkah 2 — Infra mini PC
+DB_PASSWORD + MASTER_ENCRYPTION_KEY → GitHub Environment → runner inject Docker.
 
-Isi `DB_PASSWORD`, `MASTER_ENCRYPTION_KEY` → **Simpan & deploy mini PC**  
-→ Environment `production` + workflow Deploy Mini PC.
+### 3. Cloudflare (opsional)
 
-### Langkah 3 — Cloudflare (opsional update)
+Settings → Cloudflare → Koneksi.
 
-**Settings → Cloudflare → Koneksi** — update CF key (sync Workers + GitHub Environment jika PAT sudah ada).
+**Tidak perlu** buka GitHub Settings manual.
 
 ---
 
-## Mini PC sekali
+## Setup mini PC (sekali, tanpa Git)
+
+### A. Pasang runner
+
+PowerShell **Administrator** — download script saja (tanpa clone repo):
 
 ```powershell
-cd C:\Seosementara
-git pull
-.\scripts\install-github-runner.ps1   # Administrator
+mkdir C:\Seosementara\scripts -Force
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/WBetEngine/Seosementara/main/scripts/install-github-runner.ps1" -OutFile C:\Seosementara\scripts\install-github-runner.ps1
+C:\Seosementara\scripts\install-github-runner.ps1
 ```
 
-Docker + cloudflared harus sudah jalan.
+Token runner: https://github.com/WBetEngine/Seosementara/settings/actions/runners/new
 
----
+### B. Docker + cloudflared
 
-## Deploy Workers pertama kali (tanpa PAT di GitHub)
+Sudah terpasang (prasyarat).
 
-Jika Environment `production` masih kosong, deploy Worker pertama:
+### C. Deploy pertama
 
-```powershell
-cd Frontend-admin
-# Set CLOUDFLARE_* di shell, lalu:
-npx wrangler deploy
-```
+Setelah Bootstrap + Infra di admin → workflow **Deploy Mini PC** otomatis:
 
-Lalu lanjut **Bootstrap** di admin (langkah 1).
+1. Sync file runtime ke `C:\Seosementara`
+2. `docker compose pull` + `up` (secret dari GitHub, bukan `.env`)
+
+Manual: GitHub → **Actions → Deploy Mini PC → Run workflow**
 
 ---
 
 ## Update rutin
 
-Push `main` → GHCR build → Deploy Mini PC otomatis (runner).
+Anda **hanya** edit & push di GitHub. Mini PC tidak disentuh.
+
+```text
+push main → GHCR image → Deploy Mini PC (runner) → Docker restart
+push Frontend-admin → Deploy Admin UI → Cloudflare Workers
+```
+
+---
+
+## Verifikasi
+
+```powershell
+curl.exe http://localhost:8080/health
+```
+
+GitHub → **Actions** → Deploy Mini PC / Deploy Admin UI = Success.
 
 Panduan arsitektur: [Plan/28-platform-github-workers.md](../Plan/28-platform-github-workers.md)
