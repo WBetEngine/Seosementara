@@ -13,6 +13,17 @@ if (-not (Test-Path ".\config.cmd")) {
   Remove-Item runner.zip
 }
 $regToken = Read-Host "Registration token"
-.\config.cmd --url $repoUrl --token $regToken --name "mini-pc-seosementara" --work _work --unattended --replace
-.\install.cmd
-Write-Host "Runner online. Lanjut setup lewat admin Workers URL." -ForegroundColor Green
+Push-Location $runnerDir
+try {
+  if (-not (Test-Path ".\config.cmd")) {
+    throw "config.cmd tidak ada di $runnerDir — hapus folder dan jalankan script lagi."
+  }
+  & cmd /c "config.cmd --url $repoUrl --token $regToken --name mini-pc-seosementara --work _work --unattended --replace"
+  if (-not (Test-Path ".\install.cmd")) {
+    throw "install.cmd tidak ditemukan di $runnerDir. Coba: dir C:\actions-runner"
+  }
+  & cmd /c install.cmd
+} finally {
+  Pop-Location
+}
+Write-Host "Runner online. Cek: $repoUrl/settings/actions/runners" -ForegroundColor Green
