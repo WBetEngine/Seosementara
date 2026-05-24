@@ -21,4 +21,4 @@ Lihat panduan lengkap: [docs/MINI-PC-REMOTE-AGENT.md](../docs/MINI-PC-REMOTE-AGE
 
 ## Cursor
 
-Salin `.cursor/mcp.json.example` → konfigurasi MCP Cursor Desktop (jangan commit secret).
+Konfigurasi produksi: `.cursor/mcp.json` (gitignored — isi host/user/password mini PC).

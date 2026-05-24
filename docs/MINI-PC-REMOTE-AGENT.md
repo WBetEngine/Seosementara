@@ -17,32 +17,23 @@ ssh Administrator@mini-pc.tailxxxxx.ts.net "hostname"
 tailscale ssh Administrator@mini-pc "hostname"
 ```
 
-## Pasang MCP di Cursor (Desktop)
+## Pasang MCP di Cursor
 
-1. Clone repo / buka folder `mcp/mini-pc-remote`
-2. `npm install`
-3. Cursor → **Settings → MCP → Add server**
+File produksi: **`.cursor/mcp.json`** (sudah berisi IP Tailscale mini PC — file di-gitignore).
 
-Contoh `.cursor/mcp.json` (di mesin **Anda**, bukan di cloud):
+1. `cd mcp/mini-pc-remote && npm install`
+2. Restart Cursor → MCP **seosementara-mini-pc** harus hijau
+3. Di mini PC (RDP sekali): jalankan `scripts/enable-openssh-windows.ps1` as Administrator
+
+Contoh env di `mcp.json`:
 
 ```json
 {
-  "mcpServers": {
-    "seosementara-mini-pc": {
-      "command": "node",
-      "args": ["/path/to/Seosementara/mcp/mini-pc-remote/src/index.js"],
-      "env": {
-        "MINI_PC_SSH_HOST": "mini-pc.tailxxxxx.ts.net",
-        "MINI_PC_SSH_USER": "Administrator",
-        "MINI_PC_SSH_KEY_PATH": "/home/you/.ssh/id_ed25519",
-        "PLATFORM_GITHUB_PAT": "ghp_xxx_optional_for_runner_install"
-      }
-    }
-  }
+  "MINI_PC_SSH_HOST": "100.100.17.92",
+  "MINI_PC_SSH_USER": "seosementara",
+  "MINI_PC_SSH_PASSWORD": "..."
 }
 ```
-
-> **Jangan commit** PAT atau private key ke GitHub. Simpan hanya di MCP env lokal Cursor.
 
 ## Tools MCP yang tersedia
 

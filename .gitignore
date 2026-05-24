@@ -5,3 +5,6 @@ node_modules/
 .env.*
 Backend/.env
 mini-pc/env.production
+
+# Kredensial MCP mini PC (jangan push ke GitHub)
+.cursor/mcp.json
