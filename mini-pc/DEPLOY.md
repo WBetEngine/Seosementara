@@ -83,6 +83,10 @@ Runner **v2.334+** tidak punya `install.cmd` — service dipasang lewat `config.
 Jika sudah config tanpa service, jalankan `C:\actions-runner\run.cmd` (biarkan window terbuka)
 atau config ulang dengan token baru + `--runasservice`.
 
+**GHCR pull gagal `denied`:** buat package public di  
+https://github.com/orgs/WBetEngine/packages/container/seosementara-api/settings  
+atau tambah permission **Packages: Read** pada PAT Bootstrap (`PLATFORM_GITHUB_PAT`).
+
 ### B. Docker + cloudflared
 
 Sudah terpasang (prasyarat).
