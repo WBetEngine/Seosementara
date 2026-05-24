@@ -1,0 +1,28 @@
+# Pasang runner Windows Service via self-hosted runner (tanpa SSH manual).
+# PAT dari Environment production (PLATFORM_GITHUB_PAT). Butuh PowerShell Admin di mini PC
+# jika service belum pernah terpasang - atau jalankan script auto lokal sebagai Admin.
+
+name: Install Runner Service
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    runs-on: self-hosted
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install runner as Windows service (auto registration token)
+        shell: powershell
+        env:
+          PLATFORM_GITHUB_PAT: ${{ secrets.PLATFORM_GITHUB_PAT }}
+        run: |
+          if (-not $env:PLATFORM_GITHUB_PAT) {
+            throw "PLATFORM_GITHUB_PAT kosong - Bootstrap admin dulu"
+          }
+          & "$env:GITHUB_WORKSPACE\scripts\install-github-runner-service-auto.ps1" -GitHubPat $env:PLATFORM_GITHUB_PAT
