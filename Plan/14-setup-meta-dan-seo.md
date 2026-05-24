@@ -17,8 +17,8 @@ flowchart TB
 
 | Level | Scope | Contoh path admin |
 |-------|-------|-------------------|
-| **Global** | Seluruh produk `seosementara.org` | `/admin/setup/meta` |
-| **Host** | `bola.seosementara.org`, apex, … | `/admin/setup/host/{id}/meta` |
+| **Global** | Seluruh produk `seosementara.org` | `/admin/settings/meta` |
+| **Host** | `bola.seosementara.org`, apex, … | `/admin/settings/host/{id}/meta` |
 | **Domain portfolio** | `toko-abc.com` (managed) | `/admin/sites/{id}/seo` |
 | **Konten** | Satu post / page | Sidebar editor konten |
 
@@ -48,7 +48,7 @@ Disimpan sebagai **JSONB** `meta` pada masing-masing tabel.
 
 ## 3. Per Level — Detail
 
-### 3.1 Global (`/admin/setup/meta`)
+### 3.1 Global (`/admin/settings/meta`)
 
 | Field | Contoh |
 |-------|--------|
@@ -63,7 +63,7 @@ Disimpan sebagai **JSONB** `meta` pada masing-masing tabel.
 
 ---
 
-### 3.2 Per Host / Subdomain (`/admin/setup/host/{id}/meta`)
+### 3.2 Per Host / Subdomain (`/admin/settings/host/{id}/meta`)
 
 Override untuk tampilan publik di hostname tersebut.
 
@@ -215,7 +215,7 @@ Konten → Edit → Sidebar SEO
 
 | Method | Path |
 |--------|------|
-| GET/PATCH | `/api/admin/setup/meta/global` |
+| GET/PATCH | `/api/admin/settings/meta/global` |
 | GET/PATCH | `/api/admin/hosts/{id}/meta` |
 | GET/PATCH | `/api/admin/managed-domains/{id}/meta` |
 | GET/PATCH | `/api/admin/posts/{id}/seo` |

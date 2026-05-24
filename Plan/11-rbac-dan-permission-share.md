@@ -35,7 +35,7 @@ flowchart TB
 
 ### 2.1 Kelola dari admin panel
 
-**Path:** `/admin/setup/backend/rbac/`
+**Path:** `/admin/settings/backend/rbac/`
 
 | Halaman | Fungsi |
 |---------|--------|

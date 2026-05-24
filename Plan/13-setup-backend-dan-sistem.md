@@ -1,7 +1,7 @@
 # 13 — Setup Backend (Pusat Pengaturan di Admin Panel)
 
 > **Semua** konfigurasi yang mempengaruhi backend Go, keamanan, RBAC, dan perilaku API **harus** dapat diatur dari admin panel — bukan hanya file `.env` manual.  
-> Path induk: **`/admin/setup/backend/`**  
+> Path induk: **`/admin/settings/backend/`**  
 > Akses: **Super Admin** (default); role sistem kustom bisa diberi akses subset (§2).
 
 Dokumen detail:
@@ -23,10 +23,10 @@ Dokumen detail:
 
 ---
 
-## 2. Peta Menu Lengkap — Setup Backend
+## 2. Peta Menu Lengkap — Settings Backend
 
 ```
-/admin/setup/
+/admin/settings/
 │
 ├── backend/                          ← PUSAT (dokumen ini)
 │   ├── ringkasan/                    → health, versi, uptime, deploy info [16]
@@ -57,7 +57,7 @@ Dokumen detail:
 └── notifications/                    → channel alert platform
 ```
 
-Sidebar **Setup** → submenu dikelompokkan: **Backend**, **Cloudflare**, **Host**, **Meta**.
+Sidebar **Settings** → submenu dikelompokkan: **Backend**, **Cloudflare**, **Host**, **Meta**.
 
 ---
 
@@ -66,7 +66,7 @@ Sidebar **Setup** → submenu dikelompokkan: **Backend**, **Cloudflare**, **Host
 > Detail permission domain (share checklist): [11](./11-rbac-dan-permission-share.md).  
 > Di sini fokus **lapisan sistem** yang dikelola Super Admin.
 
-### 3.1 UI (`/admin/setup/backend/rbac/`)
+### 3.1 UI (`/admin/settings/backend/rbac/`)
 
 | Halaman | Fungsi |
 |---------|--------|
@@ -137,7 +137,7 @@ Role kustom: centang subset di form HTMX.
 ## 4. Autentikasi & Login Aman (di Admin Panel)
 
 > Implementasi teknis: [12-autentikasi-dan-login-aman.md](./12-autentikasi-dan-login-aman.md).  
-> **Semua parameter** di bawah ini editable di `/admin/setup/backend/autentikasi/`.
+> **Semua parameter** di bawah ini editable di `/admin/settings/backend/autentikasi/`.
 
 ### 4.1 Kebijakan password (`system_settings` group `auth`)
 
@@ -176,7 +176,7 @@ Role kustom: centang subset di form HTMX.
 
 ### 4.5 UI form
 
-Satu halaman per grup + tombol **Simpan** → `PATCH /api/admin/setup/backend/auth`  
+Satu halaman per grup + tombol **Simpan** → `PATCH /api/admin/settings/backend/auth`  
 Tombol **Terapkan ke runtime** → refresh cache settings di Go (tanpa restart jika memungkinkan).
 
 | Dampak ubah session TTL | User harus login ulang setelah TTL baru — tampilkan peringatan di UI |
@@ -195,7 +195,7 @@ flowchart LR
   Go --> API[Handler]
 ```
 
-### 5.1 Lapisan Cloudflare (`/admin/setup/backend/rate-limit/cloudflare-edge/`)
+### 5.1 Lapisan Cloudflare (`/admin/settings/backend/rate-limit/cloudflare-edge/`)
 
 Membutuhkan kredensial [Setup Cloudflare](./15-setup-cloudflare-integrasi.md).
 
@@ -226,7 +226,7 @@ CREATE TABLE cloudflare_rate_rules (
 );
 ```
 
-### 5.2 Lapisan aplikasi — Go (`/admin/setup/backend/rate-limit/aplikasi-origin/`)
+### 5.2 Lapisan aplikasi — Go (`/admin/settings/backend/rate-limit/aplikasi-origin/`)
 
 | Setting | Key | Default | Harus ≤ CF? |
 |---------|-----|---------|-------------|
@@ -259,7 +259,7 @@ CREATE TABLE cloudflare_rate_rules (
 
 ## 6. Operasional Backend
 
-Path: `/admin/setup/backend/operasional/`
+Path: `/admin/settings/backend/operasional/`
 
 ### 6.1 Umum & maintenance
 
@@ -301,7 +301,7 @@ Tombol **Purge cache aplikasi** + link ke Cloudflare purge [15].
 
 ## 7. Media & Storage
 
-Path: `/admin/setup/backend/media-storage/`
+Path: `/admin/settings/backend/media-storage/`
 
 | Key | Contoh |
 |-----|--------|
@@ -314,7 +314,7 @@ Path: `/admin/setup/backend/media-storage/`
 
 ## 8. API, Webhook, Turnstile
 
-Path: `/admin/setup/backend/api-webhook/`
+Path: `/admin/settings/backend/api-webhook/`
 
 | Key | Contoh |
 |-----|--------|
@@ -337,15 +337,15 @@ Path: `/admin/setup/backend/api-webhook/`
 
 | Method | Path |
 |--------|------|
-| GET | `/api/admin/setup/backend/overview` |
-| GET/PATCH | `/api/admin/setup/backend/settings?group=auth` |
-| GET/POST/PATCH/DELETE | `/api/admin/setup/backend/roles` |
-| GET/POST/PATCH | `/api/admin/setup/backend/users` |
-| GET/PATCH | `/api/admin/setup/backend/rate-limit/app` |
-| GET/POST | `/api/admin/setup/backend/rate-limit/cloudflare/sync` |
-| GET | `/api/admin/setup/backend/audit-config` |
+| GET | `/api/admin/settings/backend/overview` |
+| GET/PATCH | `/api/admin/settings/backend/settings?group=auth` |
+| GET/POST/PATCH/DELETE | `/api/admin/settings/backend/roles` |
+| GET/POST/PATCH | `/api/admin/settings/backend/users` |
+| GET/PATCH | `/api/admin/settings/backend/rate-limit/app` |
+| GET/POST | `/api/admin/settings/backend/rate-limit/cloudflare/sync` |
+| GET | `/api/admin/settings/backend/audit-config` |
 
-Setelah simpan: `POST /api/admin/setup/backend/reload` → invalidate settings cache.
+Setelah simpan: `POST /api/admin/settings/backend/reload` → invalidate settings cache.
 
 ---
 
@@ -353,12 +353,12 @@ Setelah simpan: `POST /api/admin/setup/backend/reload` → invalidate settings c
 
 | Area | Di panel? | Path |
 |------|:---------:|------|
-| RBAC & role admin | ✅ | `/admin/setup/backend/rbac/` |
-| Rate limit app + CF | ✅ | `/admin/setup/backend/rate-limit/` |
-| Autentikasi / login | ✅ | `/admin/setup/backend/autentikasi/` |
-| Worker, cache, DB | ✅ | `/admin/setup/backend/operasional/` |
-| Media / API keys | ✅ | `/admin/setup/backend/` |
-| Cloudflare Tunnel/Pages | ✅ | `/admin/setup/cloudflare/` [15] |
+| RBAC & role admin | ✅ | `/admin/settings/backend/rbac/` |
+| Rate limit app + CF | ✅ | `/admin/settings/backend/rate-limit/` |
+| Autentikasi / login | ✅ | `/admin/settings/backend/autentikasi/` |
+| Worker, cache, DB | ✅ | `/admin/settings/backend/operasional/` |
+| Media / API keys | ✅ | `/admin/settings/backend/` |
+| Cloudflare Tunnel/Pages | ✅ | `/admin/settings/cloudflare/` [15] |
 | Share permission domain | ✅ | `/admin/sites/{id}/sharing` [11] |
 
 | Bukan di panel (tetap env server) | Alasan |

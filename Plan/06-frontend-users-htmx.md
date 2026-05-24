@@ -39,7 +39,7 @@ Setiap subdomain punya **UI HTMX sendiri** (layout, menu, fungsi):
 
 Daftar subdomain **bukan hardcode** — didaftarkan di admin:
 
-`https://seosementara.org/admin/setup/host`
+`https://seosementara.org/admin/settings/host`
 
 ## 3. Stack
 
@@ -48,7 +48,7 @@ Daftar subdomain **bukan hardcode** — didaftarkan di admin:
 | Interaktivitas | **HTMX** |
 | Render | Go `html/template` + partial swap |
 | Hosting | **Cloudflare Pages** + API via Tunnel [15](./15-setup-cloudflare-integrasi.md) |
-| Sumber file | Repo `Frontend-Users/` (+ subfolder per subdomain opsional) |
+| Sumber file | Repo `Frontend-Publik/` (+ subfolder per subdomain opsional) |
 
 ## 4. Routing (Backend)
 
@@ -91,21 +91,17 @@ Domain portfolio (mis. `toko-abc.com`) dikelola sebagai **situs native CMS** di 
 ## 8. Struktur Folder (Usulan)
 
 ```
-Frontend-Users/
-├── apex/
-│   ├── layouts/
-│   ├── pages/
-│   └── partials/
-├── subdomains/
-│   ├── bola/
-│   ├── cdn/
-│   ├── url/
-│   ├── ads/
-│   ├── comments/
-│   └── review/
-├── static/
-│   ├── css/
-│   └── js/htmx.min.js
+Frontend-Publik/
+├── public/
+│   ├── apex/
+│   ├── subdomains/
+│   │   ├── bola/
+│   │   ├── cdn/
+│   │   ├── url/
+│   │   ├── ads/
+│   │   ├── comments/
+│   │   └── review/
+│   └── assets/
 └── README.md
 ```
 

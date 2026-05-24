@@ -2,7 +2,7 @@
 
 > Admin: `https://seosementara.org/admin/login` — same origin API.  
 > **Semua parameter** (password, session, lockout, CSRF) dikonfigurasi dari admin panel:  
-> **`/admin/setup/backend/autentikasi/`** — lihat [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) §4.
+**Path:** `/admin/settings/backend/auth/` — lihat [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) §4.
 
 ## 1. Tujuan Keamanan
 

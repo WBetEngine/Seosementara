@@ -135,42 +135,43 @@ Jika API publik subdomain memanggil apex: set `Access-Control-Allow-Origin` hany
 | POST | `/api/admin/auth/logout` |
 | GET | `/api/admin/auth/me` |
 
-### Setup Backend (pusat) — [13](./13-setup-backend-dan-sistem.md)
+### Settings Backend (pusat) — [13](./13-setup-backend-dan-sistem.md)
 
 | Method | Path |
 |--------|------|
-| GET | `/api/admin/setup/backend/overview` |
-| GET/PATCH | `/api/admin/setup/backend/settings` |
-| GET/POST/PATCH/DELETE | `/api/admin/setup/backend/roles` |
-| GET/POST/PATCH | `/api/admin/setup/backend/users` |
-| GET/PATCH | `/api/admin/setup/backend/auth` |
-| GET/PATCH | `/api/admin/setup/backend/rate-limit/app` |
-| POST | `/api/admin/setup/backend/rate-limit/cloudflare/sync` |
-| POST | `/api/admin/setup/backend/reload` |
+| GET | `/api/admin/settings/backend/overview` |
+| GET/PATCH | `/api/admin/settings/backend/settings` |
+| GET/POST/PATCH/DELETE | `/api/admin/settings/backend/roles` |
+| GET/POST/PATCH | `/api/admin/settings/backend/users` |
+| GET/PATCH | `/api/admin/settings/backend/auth` |
+| GET/PATCH | `/api/admin/settings/backend/rate-limit/app` |
+| POST | `/api/admin/settings/backend/rate-limit/cloudflare/sync` |
+| POST | `/api/admin/settings/backend/reload` |
 
-### Setup lain — [14](./14-setup-meta-dan-seo.md), [15](./15-setup-cloudflare-integrasi.md)
+### Settings lain — [14](./14-setup-meta-dan-seo.md), [15](./15-setup-cloudflare-integrasi.md)
+
+> Path API memakai prefix `/api/admin/settings/*`. Alias legacy `/api/admin/setup/*` → redirect 308 selama migrasi.
 
 | Method | Path |
 |--------|------|
-| GET/PATCH | `/api/admin/setup/settings` |
-| GET/PATCH | `/api/admin/setup/meta/global` |
+| GET/PATCH | `/api/admin/settings/meta/global` |
 | GET/PATCH | `/api/admin/hosts/{id}/meta` |
 | GET/PATCH | `/api/admin/managed-domains/{id}/meta` |
-| GET/PUT | `/api/admin/setup/cloudflare/credentials` |
-| POST | `/api/admin/setup/cloudflare/credentials/test` |
-| GET/PUT | `/api/admin/setup/cloudflare/domain-env` |
-| POST | `/api/admin/setup/cloudflare/domain-env/sync-pages` |
-| GET/PUT | `/api/admin/setup/cloudflare/tunnel` |
-| POST | `/api/admin/setup/cloudflare/tunnel/routes/apply` |
-| GET/PUT | `/api/admin/setup/cloudflare/pages` |
-| POST | `/api/admin/setup/cloudflare/pages/deploy` |
-| POST | `/api/admin/setup/cloudflare/dns/apply` |
+| GET/PUT | `/api/admin/settings/cloudflare/credentials` |
+| POST | `/api/admin/settings/cloudflare/credentials/test` |
+| GET/PUT | `/api/admin/settings/cloudflare/domain-env` |
+| POST | `/api/admin/settings/cloudflare/domain-env/sync-pages` |
+| GET/PUT | `/api/admin/settings/cloudflare/tunnel` |
+| POST | `/api/admin/settings/cloudflare/tunnel/routes/apply` |
+| GET/PUT | `/api/admin/settings/cloudflare/pages` |
+| POST | `/api/admin/settings/cloudflare/pages/deploy` |
+| POST | `/api/admin/settings/cloudflare/dns/apply` |
 
-### Setup → Host (Super Admin saja)
+### Settings → Host (Super Admin saja)
 
 Middleware: `RequireSuperAdmin` pada semua `/api/admin/hosts/*`.
 
-### Setup → Host (subdomain produk)
+### Settings → Host (subdomain produk)
 
 | Method | Path | Deskripsi |
 |--------|------|-----------|

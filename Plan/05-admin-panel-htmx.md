@@ -1,6 +1,7 @@
 # 05 — Admin Panel (HTMX di `/admin/`)
 
-> URL produksi: `https://seosementara.org/admin/` — model domain: [09](./09-model-domain-host-dan-subdomain.md)
+> URL produksi: `https://seosementara.org/admin/` — model domain: [09](./09-model-domain-host-dan-subdomain.md)  
+> **First boot infra:** GitHub Pages onboarding — **bukan** halaman di admin CF Pages ([29](./29-frontend-admin-dan-onboarding.md), [28](./28-platform-github-workers.md))
 
 ## 1. Peran
 
@@ -9,7 +10,7 @@ Panel admin adalah antarmuka **banyak pekerja** yang mengelola:
 - **Ribuan domain portfolio** (situs native CMS — bukan WordPress)
 - Hanya domain **milik sendiri** + yang **di-share** (kecuali Super Admin)
 - Konten, SEO, media, job batch per domain
-- **Host & subdomain produk** (`/admin/setup/host`)
+- **Host & subdomain produk** (`/admin/settings/host`)
 
 Logika bisnis di backend Go — HTMX hanya memanggil endpoint **sama origin** (`/api/admin/*`).
 
@@ -22,7 +23,7 @@ Logika bisnis di backend Go — HTMX hanya memanggil endpoint **sama origin** (`
 | Styling | CSS ringan |
 | URL base | `/admin/` (prefix wajib) |
 | Hosting | **Cloudflare Pages** — env dari Setup Cloudflare [15](./15-setup-cloudflare-integrasi.md) |
-| Sumber repo | Folder `Frontend-admin/` |
+| Sumber repo | Folder `Frontend-Ui-Admin/` |
 
 ## 3. Routing Admin
 
@@ -34,9 +35,8 @@ Logika bisnis di backend Go — HTMX hanya memanggil endpoint **sama origin** (`
 | `/admin/sites/{id}/sharing` | Berbagi akses + daftar undangan pending (owner) |
 | `/admin/sites/{id}/transfer-owner` | Transfer ownership (**Super Admin**) |
 | `/admin/notifications` | Notifikasi (undangan co-admin, transfer, dll.) |
-| `/admin/setup/host` | Subdomain produk (**Super Admin**) |
-| `/admin/posts` | Konten domain aktif |
-| `/admin/setup/host` | Konfigurasi host & subdomain |
+| `/admin/settings/host` | Subdomain produk (**Super Admin**) |
+| `/admin/content/posts` | Konten domain aktif |
 | `/admin/users` | Manajemen pekerja |
 | `/admin/pixel/` | Pixel Hub overview — [20](./20-pixel-admin-facebook-tiktok-gads.md) |
 | `/admin/pixel/events/` | Event catalog (single source → 3 platform) |
@@ -126,21 +126,20 @@ Middleware: semua `/admin/*` kecuali login → cek session.
 ## 9. Struktur Folder
 
 ```
-Frontend-admin/
-├── templates/
-│   ├── layouts/admin.html
-│   ├── pages/
-│   │   ├── dashboard.html
-│   │   ├── sites/
-│   │   └── setup/
-│   │       └── host.html
-│   └── partials/
-├── static/css/
-└── static/js/htmx.min.js
+Frontend-Ui-Admin/
+└── public/
+    ├── admin/              # halaman CMS (HTML statis / HTMX)
+    ├── assets/css/
+    ├── assets/js/
+    ├── partials/           # sidebar, topbar
+    └── mock-api/           # fase mock — hapus saat apiMode=live
 ```
+
+Onboarding wizard **tidak** ada di folder ini — lihat `Frontend-Onboarding/` ([29](./29-frontend-admin-dan-onboarding.md)).
 
 ## 10. Dokumen Terkait
 
+- Bootstrap & onboarding → [29-frontend-admin-dan-onboarding.md](./29-frontend-admin-dan-onboarding.md)
 - Kontrak HTMX & komponen → [17-kontrak-htmx-dan-komponen-ui.md](./17-kontrak-htmx-dan-komponen-ui.md)
 - Menu lengkap → [03-menu-dan-modul-cms.md](./03-menu-dan-modul-cms.md)
 - Model domain → [09](./09-model-domain-host-dan-subdomain.md)

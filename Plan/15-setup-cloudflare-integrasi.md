@@ -12,7 +12,7 @@
 | DB password, encryption key | **GitHub Secrets** → Docker (admin Infra) |
 
 UI koneksi: `POST /admin/api/platform/cloudflare/credentials` (Worker).  
-UI domain/tunnel: Go API ` /api/admin/setup/cloudflare/*` setelah `api.apidevel.org` hidup.
+UI domain/tunnel: Go API `/api/admin/settings/cloudflare/*` setelah backend hidup via Tunnel (`seosementara.org/api/*`).
 
 ---
 
@@ -23,7 +23,7 @@ UI domain/tunnel: Go API ` /api/admin/setup/cloudflare/*` setelah `api.apidevel.
 | Satu panel | API key/token, Tunnel, Pages UI, DNS, .env domain utama |
 | Terhubung langsung | Backend Go memanggil **Cloudflare API** saat simpan / sync / test |
 | Mini CPU aman | Backend API tidak perlu port publik — pakai **Cloudflare Tunnel** |
-| UI di edge | **Cloudflare Pages** untuk HTMX admin & publik (repo `Frontend-admin`, `Frontend-Users`) |
+| UI di edge | **Cloudflare Pages** untuk HTMX admin & publik (`Frontend-Ui-Admin/`, `Frontend-Publik/`) |
 
 ---
 
@@ -74,7 +74,7 @@ flowchart TB
 ## 3. Menu Setup Cloudflare (Admin)
 
 ```
-/admin/setup/cloudflare/
+/admin/settings/cloudflare/
 ├── koneksi/           → API Token / Global API Key, validasi, Account ID
 ├── domain-utama/      → .env domain utama (apex), Zone ID, sync DNS
 ├── tunnel/            → Buat/kelola tunnel, route, status connector
@@ -119,7 +119,7 @@ CREATE TABLE cloudflare_credentials (
 | GET API **tidak** mengembalikan token lengkap | UI tampil `cfpat_****…xxxx` |
 | Setiap simpan → `POST /test-connection` ke CF API | Token salah ketahuan segera |
 
-### 4.3 UI form (`/admin/setup/cloudflare/koneksi`)
+### 4.3 UI form (`/admin/settings/cloudflare/koneksi`)
 
 | Field | Fungsi |
 |-------|--------|
@@ -130,7 +130,7 @@ CREATE TABLE cloudflare_credentials (
 
 ---
 
-## 5. Domain Utama & .env (`/admin/setup/cloudflare/domain-utama`)
+## 5. Domain Utama & .env (`/admin/settings/cloudflare/domain-utama`)
 
 Konfigurasi setara file **`.env`** untuk domain produk — disimpan DB + disinkronkan ke **Pages environment variables** via API.
 
@@ -240,7 +240,7 @@ CREATE TABLE cloudflare_tunnel_routes (
 
 Implementasi: **Cloudflare Rules** / **Worker** route — konfigurasi disimpan di `cloudflare_worker_routes` (fase 2) atau manual satu kali di dashboard dengan dokumentasi dari admin.
 
-### 6.5 UI Tunnel (`/admin/setup/cloudflare/tunnel`)
+### 6.5 UI Tunnel (`/admin/settings/cloudflare/tunnel`)
 
 | Elemen | Fungsi |
 |--------|--------|
@@ -249,7 +249,7 @@ Implementasi: **Cloudflare Rules** / **Worker** route — konfigurasi disimpan d
 | **Salin perintah install** | Untuk SSH ke mini CPU |
 | Tabel routes | Edit hostname, path, upstream |
 | **Apply routes** | Push config ke CF API |
-| Test | `GET /api/admin/setup/cloudflare/tunnel/health` |
+| Test | `GET /api/admin/settings/cloudflare/tunnel/health` |
 
 | Skenario | Dampak |
 |----------|--------|
@@ -265,8 +265,8 @@ Implementasi: **Cloudflare Rules** / **Worker** route — konfigurasi disimpan d
 
 | Proyek | Repo folder | Custom domain |
 |--------|-------------|---------------|
-| `seosementara-admin` | `Frontend-admin/` | `seosementara.org` (+ path `/admin` di Pages redirects) |
-| `seosementara-public` | `Frontend-Users/` | `seosementara.org` (root) |
+| `seosementara-admin` | `Frontend-Ui-Admin/public/` | `seosementara.org` (+ path `/admin` di Pages redirects) |
+| `seosementara-public` | `Frontend-Publik/public/` | `seosementara.org` (root) |
 
 **Alternatif:** satu proyek Pages dengan monorepo — admin tetap path `/admin/*`.
 
@@ -289,7 +289,7 @@ CREATE TABLE cloudflare_pages_projects (
 );
 ```
 
-### 7.3 Yang dikelola dari admin (`/admin/setup/cloudflare/pages`)
+### 7.3 Yang dikelola dari admin (`/admin/settings/cloudflare/pages`)
 
 | Aksi | CF API |
 |------|--------|
@@ -335,7 +335,7 @@ Jika API di subdomain terpisah:
 
 ---
 
-## 8. DNS Otomatis (`/admin/setup/cloudflare/dns`)
+## 8. DNS Otomatis (`/admin/settings/cloudflare/dns`)
 
 Setelah Tunnel + Pages dikonfigurasi, admin bisa **Apply DNS**:
 
@@ -403,17 +403,21 @@ CREATE TABLE cloudflare_api_logs (
 
 ---
 
-## 11. Checklist Setup Awal (Super Admin)
+## 11. Checklist Setup Awal
 
-1. [ ] Masukkan **API Token** Cloudflare → Test & Simpan  
-2. [ ] Set **domain utama** + variabel `.env`  
-3. [ ] **Buat Tunnel** → install `cloudflared` di mini CPU  
-4. [ ] **Apply tunnel routes** (`/api`, `/admin`, wildcard)  
-5. [ ] Buat / link **Pages** projects (admin + public)  
+**First boot (infra belum ada):** ikuti [28-platform-github-workers.md](./28-platform-github-workers.md) via **GitHub Pages onboarding** — bukan checklist manual di bawah.
+
+**Post-bootstrap (Super Admin di Settings admin):**
+
+1. [ ] Verifikasi **API Token** Cloudflare → Test & Simpan  
+2. [ ] Set **domain utama** + variabel env apex  
+3. [ ] Cek **Tunnel** + connector healthy  
+4. [ ] **Apply tunnel routes** (`/api`, wildcard subdomain)  
+5. [ ] Link **Pages** projects (admin + public)  
 6. [ ] **Sync env** ke Pages  
-7. [ ] **Apply DNS** records  
+7. [ ] **Apply DNS** records (jika belum dari onboarding)  
 8. [ ] Test: login admin, HTMX API call, subdomain contoh  
-9. [ ] Tambah **Setup Host** subdomain → sync DNS jika perlu  
+9. [ ] Tambah **Settings → Host** subdomain → sync DNS jika perlu  
 
 ---
 
@@ -421,37 +425,22 @@ CREATE TABLE cloudflare_api_logs (
 
 | Method | Path |
 |--------|------|
-| GET/PUT | `/api/admin/setup/cloudflare/credentials` |
-| POST | `/api/admin/setup/cloudflare/credentials/test` |
-| GET/PUT | `/api/admin/setup/cloudflare/domain-env` |
-| POST | `/api/admin/setup/cloudflare/domain-env/sync-pages` |
-| GET/PUT | `/api/admin/setup/cloudflare/tunnel` |
-| POST | `/api/admin/setup/cloudflare/tunnel/routes/apply` |
-| GET | `/api/admin/setup/cloudflare/tunnel/status` |
-| GET/PUT | `/api/admin/setup/cloudflare/pages` |
-| POST | `/api/admin/setup/cloudflare/pages/deploy` |
-| POST | `/api/admin/setup/cloudflare/dns/apply` |
-| GET | `/api/admin/setup/cloudflare/logs` |
+| GET/PUT | `/api/admin/settings/cloudflare/credentials` |
+| POST | `/api/admin/settings/cloudflare/credentials/test` |
+| GET/PUT | `/api/admin/settings/cloudflare/domain-env` |
+| POST | `/api/admin/settings/cloudflare/domain-env/sync-pages` |
+| GET/PUT | `/api/admin/settings/cloudflare/tunnel` |
+| POST | `/api/admin/settings/cloudflare/tunnel/routes/apply` |
+| GET | `/api/admin/settings/cloudflare/tunnel/status` |
+| GET/PUT | `/api/admin/settings/cloudflare/pages` |
+| POST | `/api/admin/settings/cloudflare/pages/deploy` |
+| POST | `/api/admin/settings/cloudflare/dns/apply` |
+| GET | `/api/admin/settings/cloudflare/logs` |
 
 Semua: **`RequireSuperAdmin`**.
 
 ---
 
-## 13. Env Mini CPU (Server — bukan di panel)
-
-Tetap di file env / systemd, **tidak** disimpan di Cloudflare:
-
-```bash
-DATABASE_URL=postgres://...
-SESSION_SECRET=...
-MASTER_ENCRYPTION_KEY=...
-CLOUDFLARE_CREDENTIALS_FROM_DB=true   # token utama dari DB via admin
-HTTP_ADDR=127.0.0.1:8080
-```
-
-| Dampak | Pemisahan secret server vs CF config UI |
-
----
 
 ## 14. Roadmap
 
@@ -469,4 +458,4 @@ HTTP_ADDR=127.0.0.1:8080
 - [02-arsitektur-dan-infrastruktur.md](./02-arsitektur-dan-infrastruktur.md)
 - [05-admin-panel-htmx.md](./05-admin-panel-htmx.md)
 - [06-frontend-users-htmx.md](./06-frontend-users-htmx.md)
-- [10-database-postgresql.md](./10-database-postgresql.md)
+- [28-platform-github-workers.md](./28-platform-github-workers.md) — bootstrap first boot

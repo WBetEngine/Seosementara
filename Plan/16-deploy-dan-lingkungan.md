@@ -5,14 +5,16 @@
 
 ## Implementasi v2 (production mini PC)
 
-| Langkah | Tool |
-|---------|------|
-| Build API image | `deploy-backend.yml` → GHCR |
-| Deploy Docker | `deploy-mini-pc.yml` → self-hosted runner, secrets inject |
-| Deploy admin UI | `deploy-admin.yml` → Workers + `GITHUB_SETUP_TOKEN` |
-| Setup operator | Admin Workers → Infra & Cloudflare |
+| Langkah | Tool | Folder |
+|---------|------|--------|
+| Onboarding first boot | GitHub Pages + Workers Platform API | `Frontend-Onboarding/` — [28](./28-platform-github-workers.md) |
+| Build API image | `deploy-backend.yml` → GHCR | `Backend/` |
+| Deploy Docker | `deploy-mini-pc.yml` → self-hosted runner | secrets inject, tanpa `.env` file |
+| Deploy admin UI | `deploy-admin.yml` → Cloudflare Pages | `Frontend-Ui-Admin/public/` |
+| Deploy publik UI | `deploy-public.yml` → Cloudflare Pages | `Frontend-Publik/public/` |
+| Onboarding GitHub Pages | `pages-onboarding.yml` | `Frontend-Onboarding/public/` |
 
-Secrets infra (`DB_PASSWORD`, `MASTER_ENCRYPTION_KEY`) diisi dari admin, bukan commit ke repo.
+Secrets infra (`DB_PASSWORD`, `MASTER_ENCRYPTION_KEY`) diisi dari onboarding / Settings admin, bukan commit ke repo.
 
 ---
 
@@ -24,7 +26,7 @@ Secrets infra (`DB_PASSWORD`, `MASTER_ENCRYPTION_KEY`) diisi dari admin, bukan c
 | Deploy dapat diulang | Script / CI sama setiap rilis |
 | Mini CPU aman | Rolling restart tanpa buka port publik |
 | UI di edge | Pages deploy terpisah dari binary Go |
-| Konfigurasi | Env server + `domain_env_config` + Setup admin per lingkungan |
+| Konfigurasi | GitHub Secrets + `domain_env_config` + Settings admin per lingkungan |
 
 ---
 
@@ -69,16 +71,19 @@ flowchart TB
 
 ## 3. Artefak Deploy (Per Komponen)
 
-| Komponen | Artefak | Target | Tool |
-|----------|---------|--------|------|
-| **Backend API** | `sse-api` binary Linux amd64/arm64 | Mini CPU `/opt/seosementara/bin/` | `go build`, rsync/scp, systemd |
-| **Worker** | `sse-worker` atau flag `-mode worker` | Mini CPU systemd | sama |
-| **Migrasi DB** | `migrations/*.sql` | PostgreSQL | `goose` / `migrate` |
-| **cloudflared** | Config + tunnel token | Mini CPU systemd | Setup admin [15] + CLI |
-| **Admin UI** | `Frontend-admin/` build | Cloudflare Pages | GitHub Actions + `wrangler` |
-| **Publik UI** | `Frontend-Users/` build | Cloudflare Pages | GitHub Actions + `wrangler` |
+| Komponen | Artefak | Target (Production) | Tool |
+|----------|---------|---------------------|------|
+| **Backend API** | Docker image `sse-api` (GHCR) | Mini PC container | GitHub Actions + runner |
+| **Worker jobs** | Image `sse-worker` atau sidecar | Mini PC container | docker compose |
+| **Migrasi DB** | `migrations/*.sql` | PostgreSQL container | `goose` / `migrate` |
+| **cloudflared** | Config + tunnel token | Mini PC | Onboarding [28] + Settings [15] |
+| **Onboarding UI** | Static HTML | GitHub Pages | push `main` |
+| **Admin UI** | `Frontend-Ui-Admin/public/` | Cloudflare Pages | GitHub Actions + `wrangler` |
+| **Publik UI** | `Frontend-Publik/public/` | Cloudflare Pages | GitHub Actions + `wrangler` |
 
-**Bukan satu deploy monolith** — 4 pipeline terpisah yang dirilis berurutan (§6).
+**Bukan satu deploy monolith** — pipeline terpisah; urutan bootstrap: [28](./28-platform-github-workers.md) §4.
+
+> **Legacy (dev lokal):** binary ke `/opt/seosementara/bin/` + systemd — bukan alur production.
 
 ---
 
@@ -115,7 +120,7 @@ Dev lokal boleh pakai env process atau file lokal — tidak di-commit.
 | `API_BASE_URL` | sama dengan APEX_URL | sama |
 | `ENVIRONMENT` | `staging` | `production` |
 
-Diset lewat **`/admin/setup/cloudflare/domain-utama`** per lingkungan (staging admin terpisah atau flag di DB).
+Diset lewat **`/admin/settings/cloudflare/domain-utama`** per lingkungan (staging admin terpisah atau flag di DB).
 
 ### 4.3 Cloudflare (DB terenkripsi — [15])
 
@@ -149,15 +154,15 @@ Diset lewat **`/admin/setup/cloudflare/domain-utama`** per lingkungan (staging a
 
 ## 6. Urutan Deploy (Runbook)
 
-### 6.1 Production — urutan wajib
+### 6.1 Production — urutan wajib (post-bootstrap)
 
 ```text
 1. Backup PostgreSQL (pg_dump)
 2. Migrasi DB (goose up) — backward-compatible only
-3. Deploy binary Go + restart sse-api, sse-worker
-4. Cek /health & /health/ready
+3. Pull & restart Docker containers (API + worker)
+4. Cek /health & /health/ready via Tunnel
 5. Deploy Pages (admin + public) — jika UI berubah
-6. Sync env Pages dari admin (jika .env domain berubah)
+6. Sync env Pages dari Settings admin (jika domain env berubah)
 7. Apply Tunnel routes (jika berubah) — biasanya jarang
 8. Purge cache Cloudflare (opsional)
 9. Smoke test: login admin, list domain, 1 API publik
@@ -166,67 +171,62 @@ Diset lewat **`/admin/setup/cloudflare/domain-utama`** per lingkungan (staging a
 | Langkah gagal | Rollback |
 |---------------|----------|
 | Migrasi | `goose down 1` + restore dump |
-| Binary | systemd restart binary sebelumnya (simpan `.bak`) |
+| Container API | Redeploy image tag sebelumnya |
 | Pages | Redeploy deployment sebelumnya di dashboard CF |
 
 ### 6.2 Staging
 
 Sama seperti production, tanpa backup formal wajib — bisa reset DB dari seed.
 
-### 6.3 Local
+### 6.3 Local (opsional — hanya dev pekerja)
 
 ```bash
 docker compose up -d postgres
 cd Backend && go run ./cmd/api
-cd Frontend-admin && npx wrangler pages dev
-# atau Pages mock + API saja di :8080
+cd Frontend-Ui-Admin && npx wrangler pages dev public
 ```
+
+**Bukan** alur onboarding produksi. Operator first boot memakai GitHub Pages ([28](./28-platform-github-workers.md)).
 
 ---
 
-## 7. Backend Go — Detail Deploy (Mini CPU)
+## 7. Backend Go — Detail Deploy (Mini PC Docker)
 
-### 7.1 Build (CI atau lokal)
+### 7.1 Build image (CI)
 
 ```bash
 cd Backend
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-  go build -ldflags="-s -w -X main.version=${GIT_SHA}" \
-  -o dist/sse-api ./cmd/api
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-  go build -ldflags="-s -w" -o dist/sse-worker ./cmd/worker
+docker build -t ghcr.io/<org>/sse-api:${GIT_SHA} .
+docker push ghcr.io/<org>/sse-api:${GIT_SHA}
 ```
 
-| Target mini CPU | Rekomendasi |
-|-----------------|-------------|
-| `GOARCH` | `amd64` atau `arm64` sesuai hardware |
-| Static binary | `CGO_ENABLED=0` — mudah deploy |
+Self-hosted runner di mini PC:
 
-### 7.2 Layout di server
+```bash
+docker compose pull && docker compose up -d
+```
+
+Secrets inject via GitHub Actions env — **tanpa** file `.env` di disk.
+
+### 7.2 Layout production (Docker)
 
 ```text
-/opt/seosementara/
-├── bin/
-│   ├── sse-api
-│   ├── sse-worker
-│   └── sse-api.bak          # rollback
-├── migrations/
-├── config/
-│   └── env                  # chmod 600
-└── data/
-    └── media/               # jika storage local
+/opt/sse-docker/          # hanya compose + volume mounts
+├── docker-compose.yml
+├── data/postgres/
+└── data/media/
 ```
 
-### 7.3 systemd
+> **Legacy dev:** binary di `/opt/seosementara/bin/` + systemd — lihat §7.3 jika masih dipakai lokal.
+
+### 7.3 systemd (legacy / dev binary — opsional)
 
 ```ini
-# /etc/systemd/system/sse-api.service
+# /etc/systemd/system/sse-api.service — HANYA jika tidak pakai Docker
 [Service]
 ExecStart=/opt/seosementara/bin/sse-api
 EnvironmentFile=/etc/seosementara/env
 Restart=on-failure
-RestartSec=5
-LimitNOFILE=65535
 ```
 
 ```ini
@@ -268,10 +268,10 @@ Service terpisah: `cloudflared.service` — restart tidak wajib saat deploy Go k
 
 | Project | Branch CF Pages | Folder |
 |---------|-----------------|--------|
-| `seosementara-admin-staging` | `staging` | `Frontend-admin` |
-| `seosementara-admin` | `main` | `Frontend-admin` |
-| `seosementara-public-staging` | `staging` | `Frontend-Users` |
-| `seosementara-public` | `main` | `Frontend-Users` |
+| `seosementara-admin-staging` | `staging` | `Frontend-Ui-Admin` |
+| `seosementara-admin` | `main` | `Frontend-Ui-Admin` |
+| `seosementara-public-staging` | `staging` | `Frontend-Publik` |
+| `seosementara-public` | `main` | `Frontend-Publik` |
 
 ### 8.2 GitHub Actions (contoh)
 
@@ -281,7 +281,7 @@ jobs:
   pages-admin:
     steps:
       - uses: actions/checkout@v4
-      - run: npx wrangler pages deploy Frontend-admin/public \
+      - run: npx wrangler pages deploy Frontend-Ui-Admin/public \
           --project-name=seosementara-admin-staging
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN_STAGING }}
@@ -364,16 +364,16 @@ Otomatisasi: script `scripts/smoke.sh` dengan `curl` + exit code.
 
 | Aksi deploy | Dari mana |
 |-------------|-----------|
-| Lihat versi terdeploy | `/admin/setup/backend/ringkasan` — `GIT_SHA`, `build_time` |
-| Trigger Pages deploy | `/admin/setup/cloudflare/pages` (fase 2) |
-| Env domain | `/admin/setup/cloudflare/domain-utama` |
-| Maintenance mode | `/admin/setup/backend/operasional` |
-| Health tunnel | `/admin/setup/cloudflare/tunnel` |
+| Lihat versi terdeploy | `/admin/settings/backend/ringkasan` — `GIT_SHA`, `build_time` |
+| Trigger Pages deploy | `/admin/settings/cloudflare/pages` (fase 2) |
+| Env domain | `/admin/settings/cloudflare/domain-utama` |
+| Maintenance mode | `/admin/settings/backend/operasional` |
+| Health tunnel | `/admin/settings/cloudflare/tunnel` |
 
 Backend expose:
 
 ```json
-GET /api/admin/setup/backend/overview
+GET /api/admin/settings/backend/overview
 {
   "version": "abc123",
   "env": "production",
@@ -403,17 +403,20 @@ GET /api/admin/setup/backend/overview
 
 ## 15. Checklist Pertama Kali (Bootstrap Production)
 
-1. [ ] Install PostgreSQL + PgBouncer di mini CPU  
-2. [ ] Buat user DB + `DATABASE_URL` di `/etc/seosementara/env`  
-3. [ ] Setup Cloudflare: token, tunnel, Pages, DNS [15]  
-4. [ ] Install `cloudflared` + routes  
-5. [ ] Deploy binary + systemd `sse-api`, `sse-worker`  
+**First boot:** ikuti [28-platform-github-workers.md](./28-platform-github-workers.md) — wizard **GitHub Pages onboarding**, bukan checklist manual SSH.
+
+Ringkasan hasil bootstrap:
+
+1. [ ] Workers Platform API online  
+2. [ ] GitHub Secrets terisi (DB, encryption)  
+3. [ ] Self-hosted runner terdaftar di mini PC  
+4. [ ] Tunnel + routes aktif  
+5. [ ] Docker API + PostgreSQL running  
 6. [ ] `goose up` migrasi awal  
-7. [ ] Buat Super Admin pertama (CLI seed — bukan dari web)  
-8. [ ] Deploy Pages admin + public  
-9. [ ] Sync `domain_env_config` → Pages  
-10. [ ] Smoke test §11  
-11. [ ] Backup otomatis harian (cron `pg_dump`)  
+7. [ ] Super Admin pertama (seed CLI)  
+8. [ ] CF Pages admin + publik deployed  
+9. [ ] Smoke test §11  
+10. [ ] Backup otomatis harian (cron `pg_dump`)  
 
 ---
 
@@ -421,9 +424,9 @@ GET /api/admin/setup/backend/overview
 
 | Fase | Deliverable |
 |------|-------------|
-| MVP | Script manual `deploy.sh` + systemd + goose |
-| Fase 2 | GitHub Actions staging auto, prod manual |
-| Fase 3 | Smoke otomatis, overview versi di admin, Pages dari admin |
+| MVP | Onboarding GH Pages + Docker deploy via Actions |
+| Fase 2 | GitHub Actions staging auto, prod manual approve |
+| Fase 3 | Smoke otomatis, overview versi di Settings admin |
 
 ---
 
