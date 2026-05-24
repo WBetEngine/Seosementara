@@ -79,6 +79,10 @@ C:\Seosementara\scripts\install-github-runner.ps1
 
 Token runner: https://github.com/WBetEngine/Seosementara/settings/actions/runners/new
 
+Runner **v2.334+** tidak punya `install.cmd` — service dipasang lewat `config.cmd --runasservice`.
+Jika sudah config tanpa service, jalankan `C:\actions-runner\run.cmd` (biarkan window terbuka)
+atau config ulang dengan token baru + `--runasservice`.
+
 ### B. Docker + cloudflared
 
 Sudah terpasang (prasyarat).
