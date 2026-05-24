@@ -87,24 +87,38 @@ atau config ulang dengan token baru + `--runasservice`.
 https://github.com/orgs/WBetEngine/packages/container/seosementara-api/settings  
 atau tambah permission **Packages: Read** pada PAT Bootstrap (`PLATFORM_GITHUB_PAT`).
 
-### A2. Runner sebagai Windows Service (auto-start)
+### A2. Runner sebagai Windows Service (auto token, tanpa copy manual)
 
-Setelah runner pernah jalan dengan `run.cmd`, pasang service agar tidak mati saat window ditutup.
+**Cloud agent tidak punya SSH ke mini PC Anda.** Otomatisasi lewat GitHub API + script/workflow.
 
-PowerShell **Administrator**:
+#### Opsi 1 — Workflow (dari GitHub, jalan di mini PC)
+
+1. Tutup `run.cmd` (Ctrl+C)
+2. **Actions → Install Runner Service → Run workflow**
+3. PAT `PLATFORM_GITHUB_PAT` dari Bootstrap dipakai otomatis
+
+Jika gagal (butuh UAC Admin), gunakan Opsi 2.
+
+#### Opsi 2 — Script auto di mini PC (PowerShell Administrator)
 
 ```powershell
-# Tutup dulu jendela run.cmd (Ctrl+C)
-mkdir C:\Seosementara\scripts -Force
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/WBetEngine/Seosementara/main/scripts/install-github-runner-service.ps1" -OutFile C:\Seosementara\scripts\install-github-runner-service.ps1
-C:\Seosementara\scripts\install-github-runner-service.ps1
+# Tutup run.cmd dulu
+$env:PLATFORM_GITHUB_PAT = Read-Host "GitHub PAT (Administration write)"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/WBetEngine/Seosementara/main/scripts/install-github-runner-service-auto.ps1" -OutFile C:\Seosementara\scripts\install-github-runner-service-auto.ps1
+C:\Seosementara\scripts\install-github-runner-service-auto.ps1
 ```
 
-Token baru: https://github.com/WBetEngine/Seosementara/settings/actions/runners/new  
-(Salin token dari baris `config.cmd --token ...` di halaman itu.)
+Token registrasi diambil otomatis via `POST .../runners/registration-token` — tidak perlu buka halaman runners/new.
 
-Verifikasi: **services.msc** → cari **GitHub Actions Runner** → status **Running**.  
-Runner di GitHub harus **Idle** tanpa membuka `run.cmd`.
+#### Opsi 3 — Manual (token dari halaman GitHub)
+
+```powershell
+cd C:\actions-runner
+$token = Read-Host "Registration token"
+cmd /c "config.cmd --url https://github.com/WBetEngine/Seosementara --token $token --name mini-pc-seosementara --work _work --unattended --replace --runasservice"
+```
+
+Verifikasi: **services.msc** → GitHub Actions Runner → **Running**.
 
 ### B. Docker + cloudflared
 
