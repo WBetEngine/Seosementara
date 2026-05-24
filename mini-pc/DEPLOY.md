@@ -87,6 +87,25 @@ atau config ulang dengan token baru + `--runasservice`.
 https://github.com/orgs/WBetEngine/packages/container/seosementara-api/settings  
 atau tambah permission **Packages: Read** pada PAT Bootstrap (`PLATFORM_GITHUB_PAT`).
 
+### A2. Runner sebagai Windows Service (auto-start)
+
+Setelah runner pernah jalan dengan `run.cmd`, pasang service agar tidak mati saat window ditutup.
+
+PowerShell **Administrator**:
+
+```powershell
+# Tutup dulu jendela run.cmd (Ctrl+C)
+mkdir C:\Seosementara\scripts -Force
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/WBetEngine/Seosementara/main/scripts/install-github-runner-service.ps1" -OutFile C:\Seosementara\scripts\install-github-runner-service.ps1
+C:\Seosementara\scripts\install-github-runner-service.ps1
+```
+
+Token baru: https://github.com/WBetEngine/Seosementara/settings/actions/runners/new  
+(Salin token dari baris `config.cmd --token ...` di halaman itu.)
+
+Verifikasi: **services.msc** → cari **GitHub Actions Runner** → status **Running**.  
+Runner di GitHub harus **Idle** tanpa membuka `run.cmd`.
+
 ### B. Docker + cloudflared
 
 Sudah terpasang (prasyarat).
