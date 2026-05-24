@@ -9,6 +9,7 @@ const DEFAULT_REPO = "WBetEngine/Seosementara";
 const DEFAULT_ENV = "production";
 const DEPLOY_WORKFLOW = "deploy-mini-pc.yml";
 const DEPLOY_ADMIN_WORKFLOW = "deploy-admin.yml";
+const INSTALL_RUNNER_SERVICE_WORKFLOW = "install-runner-service.yml";
 /** GitHub Environment — nama secret tidak boleh diawali GITHUB_ (reserved). */
 const GH_ENV_PAT_SECRET = "PLATFORM_GITHUB_PAT";
 /** Workers Secret — binding runtime Worker (Cloudflare). */
@@ -120,6 +121,10 @@ export async function triggerMiniPcDeploy(env, tokenOverride) {
   await triggerWorkflow(env, DEPLOY_WORKFLOW, tokenOverride);
 }
 
+export async function triggerInstallRunnerService(env, tokenOverride) {
+  await triggerWorkflow(env, INSTALL_RUNNER_SERVICE_WORKFLOW, tokenOverride);
+}
+
 export async function triggerAdminDeploy(env, tokenOverride) {
   await triggerWorkflow(env, DEPLOY_ADMIN_WORKFLOW, tokenOverride);
 }
@@ -164,6 +169,17 @@ export async function saveBootstrap(env, payload, putWorkerSecretFn) {
 
   await triggerAdminDeploy(env, github_pat);
 
+  const runner = await getRunnerStatus(env);
+  let runner_service_triggered = false;
+  if (runner.online_count > 0) {
+    try {
+      await triggerInstallRunnerService(env, github_pat);
+      runner_service_triggered = true;
+    } catch {
+      /* runner service optional on bootstrap */
+    }
+  }
+
   return {
     ok: true,
     environment: ghEnvName(env),
@@ -172,6 +188,7 @@ export async function saveBootstrap(env, payload, putWorkerSecretFn) {
       ? [WORKER_PAT_SECRET, "CF_GLOBAL_API_KEY", "CF_ACCOUNT_EMAIL", "CF_ACCOUNT_ID"]
       : [],
     deploy_admin_triggered: true,
+    runner_service_triggered,
     message: "Bootstrap tersimpan di GitHub Environment production + Workers Secrets",
   };
 }
@@ -188,12 +205,45 @@ export async function saveInfraSecrets(env, payload) {
     await putEnvironmentSecret(env, "SUPER_ADMIN_TOKEN", super_admin_token);
     updated.push("SUPER_ADMIN_TOKEN");
   }
+
+  const runner = await getRunnerStatus(env);
+  const workflows_triggered = [];
+
+  if (runner.online_count > 0) {
+    await triggerInstallRunnerService(env);
+    workflows_triggered.push(INSTALL_RUNNER_SERVICE_WORKFLOW);
+  }
+
   await triggerMiniPcDeploy(env);
+  workflows_triggered.push(DEPLOY_WORKFLOW);
+
   return {
     ok: true,
     environment: ghEnvName(env),
     secrets_updated: updated,
     deploy_triggered: true,
+    runner_service_triggered: runner.online_count > 0,
+    workflows_triggered,
+    message:
+      runner.online_count > 0
+        ? "Secret tersimpan. Workflow: pasang runner service + deploy mini PC (jalan di mini PC via GitHub Actions)."
+        : "Secret tersimpan. Deploy Mini PC dipicu — jalankan run.cmd sekali di mini PC jika job mengantre.",
+  };
+}
+
+/** Pasang runner Windows Service via workflow (token registrasi otomatis dari PAT). */
+export async function installRunnerServiceFromAdmin(env) {
+  const runner = await getRunnerStatus(env);
+  if (runner.online_count === 0) {
+    throw new Error(
+      "Runner belum online — jalankan C:\\actions-runner\\run.cmd sekali di mini PC, lalu coba lagi"
+    );
+  }
+  await triggerInstallRunnerService(env);
+  return {
+    ok: true,
+    workflow: INSTALL_RUNNER_SERVICE_WORKFLOW,
+    message: "Install Runner Service dipicu — registration token otomatis via GitHub API",
   };
 }
 
@@ -298,9 +348,10 @@ export async function getPlatformSetupStatus(env) {
     infra_complete: secretNames.includes("DB_PASSWORD") && secretNames.includes("MASTER_ENCRYPTION_KEY"),
     runner,
     runner_install: {
-      script_url: `https://raw.githubusercontent.com/${repo}/main/scripts/install-github-runner.ps1`,
+      script_url: `https://raw.githubusercontent.com/${repo}/main/scripts/install-github-runner-service-auto.ps1`,
       runners_new_url: `https://github.com/${repo}/settings/actions/runners/new`,
       expected_runner_name: "mini-pc-seosementara",
+      auto_via_infra_save: true,
     },
   };
 }

@@ -26,6 +26,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Ensure runner Windows service (auto registration token)
+        continue-on-error: true
+        shell: powershell
+        env:
+          PLATFORM_GITHUB_PAT: ${{ secrets.PLATFORM_GITHUB_PAT }}
+        run: |
+          $svc = Get-Service | Where-Object { $_.Name -like "actions.runner.*" } | Select-Object -First 1
+          if ($svc -and $svc.Status -eq "Running") {
+            Write-Host "Runner service sudah jalan: $($svc.Name)"
+            exit 0
+          }
+          if (-not $env:PLATFORM_GITHUB_PAT) {
+            Write-Host "Skip: PLATFORM_GITHUB_PAT kosong"
+            exit 0
+          }
+          $script = "$env:GITHUB_WORKSPACE\scripts\install-github-runner-service-auto.ps1"
+          if (-not (Test-Path $script)) { exit 0 }
+          & $script -GitHubPat $env:PLATFORM_GITHUB_PAT
+
       - name: Sync runtime files
         shell: powershell
         run: |
@@ -35,6 +54,7 @@ jobs:
           Copy-Item docker-compose.prod.yml $root -Force
           Copy-Item Backend/migrations/*.up.sql "$root\Backend\migrations\" -Force
           Copy-Item scripts/mini-pc-deploy.ps1 "$root\scripts\" -Force
+          Copy-Item scripts/install-github-runner-service-auto.ps1 "$root\scripts\" -Force -ErrorAction SilentlyContinue
 
       - name: Log in to GHCR
         continue-on-error: true

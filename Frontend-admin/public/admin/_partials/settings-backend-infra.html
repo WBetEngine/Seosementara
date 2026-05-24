@@ -50,7 +50,8 @@
   <div class="panel__head">2. Infra mini PC (PostgreSQL &amp; enkripsi)</div>
   <div class="panel__body">
     <p style="margin:0 0 1rem;font-size:0.9rem;color:var(--text-muted)">
-      Butuh GitHub PAT sudah tersimpan (langkah 1). Memicu workflow <em>Deploy Mini PC</em>.
+      Otomatis via GitHub Actions di mini PC (tanpa SSH): pasang runner Windows Service (token registrasi
+      dari PAT) + deploy Docker. Runner harus online (<code>run.cmd</code> sekali jika belum pernah).
     </p>
     <form id="form-infra" class="form-grid">
       <div class="form-row">
@@ -68,7 +69,7 @@
     </form>
     <div id="infra-msg" class="alert" hidden style="margin-top:1rem"></div>
     <div style="margin-top:1.25rem">
-      <button type="button" class="btn btn-primary" id="btn-save-infra">Simpan &amp; deploy mini PC</button>
+      <button type="button" class="btn btn-primary" id="btn-save-infra">Simpan &amp; jalankan otomatis</button>
     </div>
   </div>
 </div>

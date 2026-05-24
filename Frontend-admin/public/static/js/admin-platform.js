@@ -39,20 +39,18 @@
       container.innerHTML = "";
       return;
     }
-    var url = (status.runner_install && status.runner_install.script_url) || "";
-    var runnersNew =
-      (status.runner_install && status.runner_install.runners_new_url) ||
-      "https://github.com/WBetEngine/Seosementara/settings/actions/runners/new";
-    var ps =
-      "mkdir C:\\Seosementara\\scripts -Force\n" +
-      'Invoke-WebRequest -Uri "' +
-      url +
-      '" -OutFile C:\\Seosementara\\scripts\\install-github-runner.ps1\n' +
-      "C:\\Seosementara\\scripts\\install-github-runner.ps1";
-    var title = "Self-hosted runner belum siap";
-    if (r.reason === "runners_offline") title = "Runner terdaftar tapi offline";
-    if (r.reason === "github_pat_missing")
-      title = "Isi Bootstrap Platform dulu — lalu cek runner otomatis";
+    var title = "Runner belum siap";
+    var hint =
+      "Jalankan sekali di mini PC (PowerShell): cd C:\\actions-runner; .\\run.cmd — biarkan terbuka, lalu Simpan Infra lagi (otomatis pasang service + deploy).";
+    if (r.reason === "runners_offline") {
+      title = "Runner offline";
+      hint =
+        "Buka C:\\actions-runner\\run.cmd atau pasang Windows Service lewat tombol di bawah / Simpan Infra.";
+    }
+    if (r.reason === "github_pat_missing") {
+      title = "Isi Bootstrap Platform dulu";
+      hint = "PAT harus punya Administration write untuk registration token otomatis.";
+    }
 
     container.hidden = false;
     container.className = "alert alert-error";
@@ -61,18 +59,33 @@
       esc(title) +
       "</strong>" +
       '<p style="margin:0.5rem 0 0.75rem;font-size:0.9rem">' +
-      "Mini PC hanya Docker. Pasang runner sekali di mini PC — PowerShell <strong>Administrator</strong>, tanpa clone repo." +
+      esc(hint) +
       "</p>" +
-      '<p style="margin:0 0 0.35rem;font-size:0.85rem">Token registrasi: ' +
-      '<a href="' +
-      esc(runnersNew) +
-      '" target="_blank" rel="noopener">GitHub → New self-hosted runner</a></p>' +
-      '<pre style="margin:0;padding:0.75rem;background:#1e1e1e;color:#e5e5e5;border-radius:6px;font-size:0.8rem;overflow:auto;white-space:pre-wrap;user-select:all">' +
-      esc(ps) +
-      "</pre>" +
+      '<button type="button" class="btn btn-secondary" id="btn-install-runner-service" style="margin-top:0.25rem">' +
+      "Pasang runner service otomatis (GitHub Actions)" +
+      "</button>" +
       '<p style="margin:0.5rem 0 0;font-size:0.8rem;color:var(--text-muted)">' +
-      "Setelah selesai, runner harus <strong>Idle</strong> di GitHub. Muat ulang halaman ini." +
+      "Tanpa SSH — workflow jalan di mini PC, token registrasi dari PAT Bootstrap." +
       "</p>";
+
+    var btn = document.getElementById("btn-install-runner-service");
+    if (btn && !btn._bound) {
+      btn._bound = true;
+      btn.addEventListener("click", function () {
+        btn.disabled = true;
+        api("/admin/api/platform/runner/install-service", { method: "POST" })
+          .then(function (res) {
+            alert(res.message || "Workflow dipicu");
+            return SeosementaraPlatform.refreshSetupUI();
+          })
+          .catch(function (e) {
+            alert(e.message);
+          })
+          .finally(function () {
+            btn.disabled = false;
+          });
+      });
+    }
   }
 
   function renderStatusSummary(el, s) {
@@ -101,6 +114,7 @@
       (s.infra_complete ? "OK" : "belum") +
       "<br/>" +
       runnerLine +
+      "<br/>Simpan Infra: otomatis runner service + deploy Docker (via GitHub Actions)" +
       "<br/>Environment: <code>" +
       esc(s.github_environment || "production") +
       "</code>";
@@ -119,9 +133,10 @@
           super_admin_token: fd.get("super_admin_token") || undefined,
         }),
       }).then(function (r) {
+        var extra = r.runner_service_triggered ? " + Install Runner Service" : "";
         showMsg(
           msgEl,
-          (r.message || "Bootstrap OK") + " — " + (r.secrets_updated || []).join(", "),
+          (r.message || "Bootstrap OK") + extra + " — " + (r.secrets_updated || []).join(", "),
           true
         );
         return SeosementaraPlatform.refreshSetupUI();
@@ -137,11 +152,8 @@
           super_admin_token: fd.get("super_admin_token") || undefined,
         }),
       }).then(function (r) {
-        showMsg(
-          msgEl,
-          "Environment production: " + r.secrets_updated.join(", ") + " — deploy dipicu",
-          true
-        );
+        var wf = (r.workflows_triggered || []).join(", ") || "deploy-mini-pc.yml";
+        showMsg(msgEl, (r.message || "OK") + " Workflows: " + wf, true);
         return SeosementaraPlatform.refreshSetupUI();
       });
     },
