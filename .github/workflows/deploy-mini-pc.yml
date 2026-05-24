@@ -54,6 +54,7 @@ jobs:
           Copy-Item docker-compose.prod.yml $root -Force
           Copy-Item Backend/migrations/*.up.sql "$root\Backend\migrations\" -Force
           Copy-Item scripts/mini-pc-deploy.ps1 "$root\scripts\" -Force
+          Copy-Item scripts/mini-pc-diagnostics.ps1 "$root\scripts\" -Force -ErrorAction SilentlyContinue
           Copy-Item scripts/install-github-runner-service-auto.ps1 "$root\scripts\" -Force -ErrorAction SilentlyContinue
 
       - name: Log in to GHCR
