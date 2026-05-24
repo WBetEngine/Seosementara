@@ -1,0 +1,70 @@
+<div class="sidebar-brand">Seosementara</div>
+<div class="sidebar-domain">
+  Domain aktif
+  <strong id="sidebar-active-domain">— belum dipilih —</strong>
+</div>
+<nav class="sidebar-nav" aria-label="Menu utama">
+  <div class="nav-group">
+    <button type="button" class="nav-group__toggle" aria-expanded="true">Ringkasan</button>
+    <div class="nav-group__items">
+      <a class="nav-link" href="/admin/dashboard.html">Dashboard Admin</a>
+      <a class="nav-link" href="/admin/dashboard-domain.html">Dashboard Domain</a>
+      <a class="nav-link" href="/admin/dashboard-global.html">Dashboard Global</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <button type="button" class="nav-group__toggle" aria-expanded="true">Domain</button>
+    <div class="nav-group__items">
+      <a class="nav-link" href="/admin/domain/index.html">Domain portfolio</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <button type="button" class="nav-group__toggle" aria-expanded="true">Konten</button>
+    <div class="nav-group__items">
+      <a class="nav-link" href="/admin/content/posts.html">Post</a>
+      <a class="nav-link" href="/admin/content/pages.html">Halaman</a>
+      <a class="nav-link" href="/admin/content/taxonomy.html">Kategori &amp; tag</a>
+      <a class="nav-link" href="/admin/content/media.html">Media</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <button type="button" class="nav-group__toggle" aria-expanded="true">SEO &amp; pertumbuhan</button>
+    <div class="nav-group__items">
+      <a class="nav-link" href="/admin/seo/meta.html">Meta &amp; schema</a>
+      <a class="nav-link" href="/admin/seo/sitemap.html">Sitemap &amp; robots</a>
+      <a class="nav-link" href="/admin/seo/redirects.html">Redirect manager</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <button type="button" class="nav-group__toggle" aria-expanded="true">Plugins</button>
+    <div class="nav-group__items">
+      <a class="nav-link" href="/admin/plugins/shortlink.html">Shortlink</a>
+      <a class="nav-link" href="/admin/plugins/pixel.html">Pixel Hub</a>
+    </div>
+  </div>
+  <div class="nav-group">
+    <button type="button" class="nav-group__toggle" aria-expanded="true">Settings</button>
+    <div class="nav-group__items">
+      <a class="nav-link" href="/admin/settings/index.html">Ringkasan sistem</a>
+      <a class="nav-link" href="/admin/settings/rbac.html">RBAC</a>
+      <a class="nav-link" href="/admin/settings/auth.html">Autentikasi</a>
+      <a class="nav-link" href="/admin/settings/ratelimit.html">Rate limit</a>
+      <a class="nav-link" href="/admin/settings/ops.html">Operasional</a>
+      <a class="nav-link" href="/admin/settings/cloudflare.html">Cloudflare</a>
+      <a class="nav-link" href="/admin/settings/host.html">Host &amp; subdomain</a>
+      <a class="nav-link" href="/admin/settings/meta.html">Meta global</a>
+      <a class="nav-link" href="/admin/settings/notifications.html">Notifikasi</a>
+    </div>
+  </div>
+</nav>
+<div class="sidebar-footer">
+  <a href="/admin/bootstrap.html">Setup bootstrap</a><br>
+  <a href="/admin/login.html">Keluar</a>
+</div>
+<script>
+  (function () {
+    var d = localStorage.getItem('active_managed_domain_name');
+    var el = document.getElementById('sidebar-active-domain');
+    if (el && d) el.textContent = d;
+  })();
+</script>

@@ -1,0 +1,16 @@
+<div class="drawer-header">
+  <h2>Edit pengguna</h2>
+  <button type="button" class="btn-icon" onclick="closeDrawer()" aria-label="Tutup">×</button>
+</div>
+<form class="drawer-body form-grid form-grid--2" data-demo-form data-storage-key="sseo_user_edit" data-close-drawer>
+  <div class="form-group"><label>Email</label><input class="form-control" name="email" type="email" value="worker@example.com"></div>
+  <div class="form-group"><label>Nama</label><input class="form-control" name="name" value="Pekerja Demo"></div>
+  <div class="form-group"><label>Role sistem</label><select class="form-control" name="role"><option>worker</option><option>super_admin</option></select></div>
+</form>
+<div class="drawer-footer">
+  <div></div>
+  <div class="drawer-footer__actions">
+    <button type="button" class="btn btn--secondary" onclick="closeDrawer()">Batal</button>
+    <button type="button" class="btn btn--primary" onclick="document.querySelector('#app-drawer form').requestSubmit()">Simpan</button>
+  </div>
+</div>

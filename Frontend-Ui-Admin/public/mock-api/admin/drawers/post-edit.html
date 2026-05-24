@@ -1,0 +1,19 @@
+<div class="drawer-header">
+  <h2>Edit post</h2>
+  <button type="button" class="btn-icon" onclick="closeDrawer()" aria-label="Tutup">×</button>
+</div>
+<div class="drawer-read-strip">Status: Draft · Slug: tips-seo-2026</div>
+<form class="drawer-body form-grid" data-demo-form data-storage-key="sseo_post_edit" data-close-drawer>
+  <div class="form-group"><label>Judul</label><input class="form-control" name="title" value="Tips SEO 2026"></div>
+  <div class="form-group"><label>Slug</label><input class="form-control" name="slug" value="tips-seo-2026"></div>
+  <div class="form-group"><label>Status</label><select class="form-control" name="status"><option>Draft</option><option selected>Published</option></select></div>
+  <div class="form-group"><label>Meta description</label><textarea class="form-control" name="meta_desc" rows="2"></textarea></div>
+  <div class="form-group"><label>Isi artikel</label><textarea class="form-control" name="body" rows="8" placeholder="Konten…"></textarea></div>
+</form>
+<div class="drawer-footer">
+  <div></div>
+  <div class="drawer-footer__actions">
+    <button type="button" class="btn btn--secondary" onclick="closeDrawer()">Batal</button>
+    <button type="button" class="btn btn--primary" onclick="document.querySelector('#app-drawer form').requestSubmit()">Simpan</button>
+  </div>
+</div>

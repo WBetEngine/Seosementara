@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Admin — Seosementara Admin</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="/assets/js/config.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="toast"></div>
+  <div id="drawer-backdrop" hidden></div>
+  <aside id="app-drawer" class="app-drawer" aria-hidden="true"></aside>
+  <aside id="sidebar" hx-get="/partials/sidebar.html" hx-trigger="load" hx-swap="innerHTML"></aside>
+  <div class="admin-layout">
+    <div class="admin-main">
+      <header class="topbar" hx-get="/partials/topbar.html" hx-trigger="load" hx-swap="innerHTML"></header>
+      <main id="main">
+        <span id="page-title" class="sr-only">Dashboard Admin</span>
+        <div class="alert alert--demo">Mode demo — belum ada database, backend, atau Tunnel. Form disimpan ke localStorage.</div>
+        
+<div class="page-header"><div><h1>Dashboard Admin</h1><p>Ringkasan akun — domain milik & dibagikan</p></div></div>
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-card__label">Domain milik</div><div class="stat-card__value">12</div><div class="stat-card__hint">Demo</div></div>
+  <div class="stat-card"><div class="stat-card__label">Dibagikan</div><div class="stat-card__value">3</div></div>
+  <div class="stat-card"><div class="stat-card__label">Undangan</div><div class="stat-card__value">1</div></div>
+  <div class="stat-card"><div class="stat-card__label">Notifikasi</div><div class="stat-card__value">4</div></div>
+</div>
+<div class="card"><div class="card__header">Aktivitas terbaru</div><div class="card__body text-muted">Data muncul setelah backend aktif.</div></div>
+
+      </main>
+    </div>
+  </div>
+</body>
+</html>

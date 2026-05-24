@@ -1,0 +1,16 @@
+<div class="drawer-header">
+  <h2>SEO domain</h2>
+  <button type="button" class="btn-icon" onclick="closeDrawer()" aria-label="Tutup">×</button>
+</div>
+<form class="drawer-body form-grid" data-demo-form data-storage-key="sseo_seo_edit" data-close-drawer>
+  <div class="form-group"><label>Title template</label><input class="form-control" name="title_tpl" value="{page_title} - Toko ABC"></div>
+  <div class="form-group"><label>Default description</label><textarea class="form-control" name="description" rows="3"></textarea></div>
+  <div class="form-group"><label><input type="checkbox" name="sitemap" checked> Sitemap enabled</label></div>
+</form>
+<div class="drawer-footer">
+  <div></div>
+  <div class="drawer-footer__actions">
+    <button type="button" class="btn btn--secondary" onclick="closeDrawer()">Batal</button>
+    <button type="button" class="btn btn--primary" onclick="document.querySelector('#app-drawer form').requestSubmit()">Simpan</button>
+  </div>
+</div>

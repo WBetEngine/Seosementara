@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pixel Hub — Seosementara Admin</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="/assets/js/config.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="toast"></div>
+  <div id="drawer-backdrop" hidden></div>
+  <aside id="app-drawer" class="app-drawer" aria-hidden="true"></aside>
+  <aside id="sidebar" hx-get="/partials/sidebar.html" hx-trigger="load" hx-swap="innerHTML"></aside>
+  <div class="admin-layout">
+    <div class="admin-main">
+      <header class="topbar" hx-get="/partials/topbar.html" hx-trigger="load" hx-swap="innerHTML"></header>
+      <main id="main">
+        <span id="page-title" class="sr-only">Pixel Hub</span>
+        <div class="alert alert--demo">Mode demo — belum ada database, backend, atau Tunnel. Form disimpan ke localStorage.</div>
+        
+<div class="page-header"><div><h1>Pixel Hub</h1><p>Kolaborasi Meta, TikTok, Google Ads</p></div></div>
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-card__label">Facebook</div><div class="stat-card__value"><span class="badge badge--muted">Belum setup</span></div></div>
+  <div class="stat-card"><div class="stat-card__label">Antrian</div><div class="stat-card__value">0</div></div>
+  <div class="stat-card"><div class="stat-card__label">Recovery</div><div class="stat-card__value">—</div></div>
+</div>
+<div class="card"><div class="card__header">Kanal</div><div class="card__body">
+  <a class="btn btn--secondary" href="#">Facebook Pro</a>
+  <a class="btn btn--secondary" href="#">TikTok</a>
+  <a class="btn btn--secondary" href="#">Google Ads</a>
+</div></div>
+
+      </main>
+    </div>
+  </div>
+</body>
+</html>

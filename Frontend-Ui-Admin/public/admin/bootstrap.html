@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Setup Bootstrap — Seosementara</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="/assets/js/config.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="toast"></div>
+  <div class="login-page" style="align-items:flex-start;padding-top:2rem">
+    <div class="login-card" style="max-width:560px">
+      <h1>Setup pertama kali</h1>
+      <p class="subtitle">Belum ada database · tanpa .env · Tunnel belum aktif</p>
+
+      <div class="wizard-steps" id="wizard-steps">
+        <div class="wizard-step is-active" data-step="1"><div class="wizard-step__num">1</div>GitHub</div>
+        <div class="wizard-step" data-step="2"><div class="wizard-step__num">2</div>Database</div>
+        <div class="wizard-step" data-step="3"><div class="wizard-step__num">3</div>Cloudflare</div>
+        <div class="wizard-step" data-step="4"><div class="wizard-step__num">4</div>Tunnel</div>
+        <div class="wizard-step" data-step="5"><div class="wizard-step__num">5</div>Selesai</div>
+      </div>
+
+      <form id="wizard-form" data-demo-form data-storage-key="sseo_bootstrap_wizard">
+        <div class="wizard-panel" data-panel="1">
+          <h2 style="font-size:1.1rem;margin:0 0 1rem">Infra &amp; GitHub</h2>
+          <div class="form-group"><label>GitHub PAT (setup)</label><input class="form-control" name="github_pat" type="password" placeholder="ghp_..."><p class="hint">Disimpan ke GitHub Environment — bukan file .env</p></div>
+        </div>
+        <div class="wizard-panel" data-panel="2" hidden>
+          <h2 style="font-size:1.1rem;margin:0 0 1rem">Database</h2>
+          <div class="form-grid form-grid--2">
+            <div class="form-group"><label>DB Host</label><input class="form-control" name="db_host" value="postgres"></div>
+            <div class="form-group"><label>DB Password</label><input class="form-control" name="db_password" type="password"></div>
+            <div class="form-group" style="grid-column:1/-1"><label>Master encryption key</label><input class="form-control" name="master_key" type="password"><p class="hint">→ GitHub Secrets, inject ke Docker</p></div>
+          </div>
+        </div>
+        <div class="wizard-panel" data-panel="3" hidden>
+          <h2 style="font-size:1.1rem;margin:0 0 1rem">Cloudflare</h2>
+          <div class="form-group"><label>API Token</label><input class="form-control" name="cf_token" type="password"></div>
+          <div class="form-group"><label>Account ID</label><input class="form-control" name="cf_account"></div>
+          <div class="form-group"><label>Domain utama</label><input class="form-control" name="primary_domain" value="seosementara.org"></div>
+        </div>
+        <div class="wizard-panel" data-panel="4" hidden>
+          <h2 style="font-size:1.1rem;margin:0 0 1rem">Tunnel (preview)</h2>
+          <div class="alert alert--warning">Tunnel aktif setelah backend Go deploy. Salin perintah ini nanti dari Settings → Cloudflare.</div>
+          <pre style="background:#f1f5f9;padding:1rem;border-radius:8px;font-size:0.75rem;overflow:auto">cloudflared service install &lt;token-dari-admin&gt;</pre>
+        </div>
+        <div class="wizard-panel" data-panel="5" hidden>
+          <div class="alert alert--success">Konfigurasi bootstrap tersimpan (demo). Lanjut ke dashboard — backend akan terhubung di fase berikutnya.</div>
+          <a class="btn btn--primary" href="/admin/dashboard.html" style="margin-top:1rem">Buka Dashboard</a>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-top:1.5rem;flex-wrap:wrap">
+          <button type="button" class="btn btn--secondary" id="btn-prev" disabled>Kembali</button>
+          <button type="button" class="btn btn--primary" id="btn-next">Lanjut</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var step = 1, max = 5;
+      var form = document.getElementById('wizard-form');
+      var prev = document.getElementById('btn-prev');
+      var next = document.getElementById('btn-next');
+      function show(s) {
+        step = s;
+        form.querySelectorAll('.wizard-panel').forEach(function (p) {
+          p.hidden = p.getAttribute('data-panel') !== String(s);
+        });
+        document.querySelectorAll('.wizard-step').forEach(function (el) {
+          var n = +el.getAttribute('data-step');
+          el.classList.toggle('is-active', n === s);
+          el.classList.toggle('is-done', n < s);
+        });
+        prev.disabled = s <= 1;
+        next.textContent = s >= max ? 'Selesai' : 'Lanjut';
+        next.style.display = s >= max ? 'none' : '';
+      }
+      prev.addEventListener('click', function () { if (step > 1) show(step - 1); });
+      next.addEventListener('click', function () {
+        if (step < max) show(step + 1);
+        else {
+          localStorage.setItem(window.SSEO.bootstrapKey, '1');
+          try {
+            var data = {}; new FormData(form).forEach(function (v, k) { data[k] = v; });
+            localStorage.setItem('sseo_bootstrap_wizard', JSON.stringify(data));
+          } catch (e) {}
+          show(max);
+          if (window.showToast) showToast('Bootstrap selesai (demo)', 'success');
+        }
+      });
+      show(1);
+    })();
+  </script>
+</body>
+</html>

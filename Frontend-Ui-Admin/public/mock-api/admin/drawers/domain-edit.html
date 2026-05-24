@@ -1,0 +1,25 @@
+<div class="drawer-header">
+  <h2>Edit domain</h2>
+  <button type="button" class="btn-icon" onclick="closeDrawer()" aria-label="Tutup">×</button>
+</div>
+<div class="drawer-read-strip">Status: Active · ID: demo-1 · Diperbarui: 24 Mei 2026</div>
+<div class="drawer-tabs">
+  <button type="button" class="drawer-tab is-active">Domain</button>
+  <button type="button" class="drawer-tab">Tema</button>
+  <button type="button" class="drawer-tab">Kepemilikan</button>
+  <button type="button" class="drawer-tab">Pembagian</button>
+  <button type="button" class="drawer-tab">SEO</button>
+</div>
+<form class="drawer-body form-grid form-grid--2" data-demo-form data-storage-key="sseo_domain_edit" data-close-drawer>
+  <div class="form-group"><label>Hostname</label><input class="form-control" name="hostname" value="toko-abc.com"></div>
+  <div class="form-group"><label>Status</label><select class="form-control" name="status"><option>Active</option><option>Suspended</option></select></div>
+  <div class="form-group" style="grid-column:1/-1"><label>Catatan</label><textarea class="form-control" name="notes" rows="3"></textarea></div>
+  <p class="form-group"><label><input type="checkbox" name="auto_shortlink" checked> Shortlink otomatis</label></p>
+</form>
+<div class="drawer-footer">
+  <div></div>
+  <div class="drawer-footer__actions">
+    <button type="button" class="btn btn--secondary" onclick="closeDrawer()">Batal</button>
+    <button type="button" class="btn btn--primary" onclick="document.querySelector('#app-drawer form').requestSubmit()">Simpan</button>
+  </div>
+</div>

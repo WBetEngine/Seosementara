@@ -23,6 +23,7 @@ Baca berurutan jika Anda baru memulai. Jika fokus ke satu lapisan, buka file yan
 | 13 | [13-setup-backend-dan-sistem.md](./13-setup-backend-dan-sistem.md) | **Pusat Setup Backend:** RBAC, auth, rate limit, operasional |
 | 14 | [14-setup-meta-dan-seo.md](./14-setup-meta-dan-seo.md) | Meta: global, subdomain, domain, halaman |
 | 15 | [15-setup-cloudflare-integrasi.md](./15-setup-cloudflare-integrasi.md) | **Cloudflare:** Tunnel, DNS, Workers Secrets, domain di DB |
+| 29 | [29-bootstrap-admin-ui-pertama-kali.md](./29-bootstrap-admin-ui-pertama-kali.md) | **Bootstrap:** UI-first, tanpa DB/env/Tunnel, admin HTMX mock |
 | 28 | [28-platform-github-workers.md](./28-platform-github-workers.md) | **Platform:** GitHub Secrets, Workers setup API, Docker inject (tanpa `.env`) |
 | 16 | [16-deploy-dan-lingkungan.md](./16-deploy-dan-lingkungan.md) | **Deploy:** local / staging / prod, CI/CD, rollback |
 | 17 | [17-kontrak-htmx-dan-komponen-ui.md](./17-kontrak-htmx-dan-komponen-ui.md) | **HTMX:** header, error, swap, komponen admin & publik |
@@ -88,4 +89,4 @@ Detail teknis: performa **04**, **07**, **10**; keamanan & hak akses **11**, **1
 | 2.3 | 2026-05-22 | Plan/26: peta URL Help + Meta Pixel + CAPI business (26) |
 | 2.4 | 2026-05-22 | Plan/27: desain admin — 3 dashboard, nav berkelompok, tanpa Cart/Toko (27) |
 | 2.5 | 2026-05-22 | Plan/27 v1.1: Plugins, Settings, domain drawer, SEO domain-panel, tanpa jobs (27) |
-| 2.6 | 2026-05-22 | Plan/27 v1.2: drawer universal #app-drawer semua modul (referensi UI) (27) |
+| 2.7 | 2026-05-24 | Plan/29: bootstrap UI-first — admin HTMX tanpa backend |

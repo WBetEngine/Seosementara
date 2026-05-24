@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notifikasi — Seosementara Admin</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="/assets/js/config.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="toast"></div>
+  <div id="drawer-backdrop" hidden></div>
+  <aside id="app-drawer" class="app-drawer" aria-hidden="true"></aside>
+  <aside id="sidebar" hx-get="/partials/sidebar.html" hx-trigger="load" hx-swap="innerHTML"></aside>
+  <div class="admin-layout">
+    <div class="admin-main">
+      <header class="topbar" hx-get="/partials/topbar.html" hx-trigger="load" hx-swap="innerHTML"></header>
+      <main id="main">
+        <span id="page-title" class="sr-only">Notifikasi</span>
+        <div class="alert alert--demo">Mode demo — belum ada database, backend, atau Tunnel. Form disimpan ke localStorage.</div>
+        
+<div class="settings-layout">
+  <nav class="settings-subnav">
+    <a href="/admin/settings/index.html">Ringkasan</a>
+    <a href="/admin/settings/rbac.html">RBAC</a>
+    <a href="/admin/settings/auth.html">Autentikasi</a>
+    <a href="/admin/settings/ratelimit.html">Rate limit</a>
+    <a href="/admin/settings/ops.html">Operasional</a>
+    <a href="/admin/settings/cloudflare.html">Cloudflare</a>
+    <a href="/admin/settings/host.html">Host</a>
+    <a href="/admin/settings/meta.html">Meta global</a>
+    <a href="/admin/settings/notifications.html" class="is-active">Notifikasi</a>
+  </nav>
+  <div>
+<div class="page-header"><h1>Notifikasi platform</h1></div>
+<form class="card card__body form-grid" data-demo-form data-storage-key="sseo_notifications">
+  <div class="form-group"><label>Webhook URL</label><input class="form-control" name="webhook" placeholder="https://..."></div>
+  <div class="form-group"><label>Email alert</label><input class="form-control" name="email" type="email"></div>
+  <button type="submit" class="btn btn--primary">Simpan</button>
+</form>
+</div>
+</div>
+
+      </main>
+    </div>
+  </div>
+</body>
+</html>

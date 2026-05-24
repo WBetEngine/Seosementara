@@ -1,0 +1,17 @@
+<div class="drawer-header">
+  <h2>Koneksi Cloudflare</h2>
+  <button type="button" class="btn-icon" onclick="closeDrawer()" aria-label="Tutup">×</button>
+</div>
+<form class="drawer-body form-grid" data-demo-form data-storage-key="sseo_cf_token" data-close-drawer>
+  <div class="form-group"><label>Tipe</label><select class="form-control" name="auth_type"><option>API Token</option><option>Global API Key</option></select></div>
+  <div class="form-group"><label>Token / Key</label><input class="form-control" name="token" type="password"></div>
+  <div class="form-group"><label>Account ID</label><input class="form-control" name="account_id"></div>
+  <p class="hint">Disimpan di Workers Secrets — bukan .env mini PC.</p>
+</form>
+<div class="drawer-footer">
+  <div></div>
+  <div class="drawer-footer__actions">
+    <button type="button" class="btn btn--secondary" onclick="closeDrawer()">Batal</button>
+    <button type="button" class="btn btn--primary" onclick="document.querySelector('#app-drawer form').requestSubmit()">Test &amp; Simpan</button>
+  </div>
+</div>
