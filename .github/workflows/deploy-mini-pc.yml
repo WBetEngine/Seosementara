@@ -37,11 +37,12 @@ jobs:
           Copy-Item scripts/mini-pc-deploy.ps1 "$root\scripts\" -Force
 
       - name: Log in to GHCR
+        continue-on-error: true
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ github.token }}
+          password: ${{ secrets.PLATFORM_GITHUB_PAT }}
 
       - name: Deploy Docker stack
         shell: powershell
