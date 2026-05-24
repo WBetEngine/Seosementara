@@ -27,12 +27,12 @@ function Ensure-RunnerFiles {
 
   $stillMissing = $need | Where-Object { -not (Test-Path (Join-Path $Dir $_)) }
   if ($stillMissing.Count -gt 0) {
-    throw "Runner package tidak lengkap di $Dir — missing: $($stillMissing -join ', ')"
+    throw "Runner package tidak lengkap di $Dir - missing: $($stillMissing -join ', ')"
   }
 }
 
 Write-Host "Registration token: $repoUrl/settings/actions/runners/new" -ForegroundColor Yellow
-Write-Host "Catatan: runner v2.334+ tidak punya install.cmd — pakai --runasservice saat config." -ForegroundColor Cyan
+Write-Host "Catatan: runner v2.334+ tidak punya install.cmd - pakai --runasservice saat config." -ForegroundColor Cyan
 if (-not (Test-Path $runnerDir)) { New-Item -ItemType Directory -Path $runnerDir -Force | Out-Null }
 Ensure-RunnerFiles -Dir $runnerDir -Version $ver
 
