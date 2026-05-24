@@ -16,7 +16,7 @@ if (-not (Test-Admin)) {
 }
 
 if (-not (Test-Path (Join-Path $runnerDir "config.cmd"))) {
-  throw "Runner belum ada di $runnerDir — jalankan install-github-runner.ps1 dulu"
+  throw "Runner belum ada di $runnerDir - jalankan install-github-runner.ps1 dulu"
 }
 
 Write-Host ""
@@ -44,9 +44,9 @@ if ($svc) {
     Write-Host "Menyalakan service $($svc.Name) ..." -ForegroundColor Yellow
     Start-Service $svc.Name
   }
-  Write-Host "Service: $($svc.Name) — $($svc.Status)" -ForegroundColor Green
+  Write-Host "Service: $($svc.Name) - $($svc.Status)" -ForegroundColor Green
 } else {
-  Write-Host "Service tidak terdeteksi — buka services.msc, cari 'GitHub Actions Runner'" -ForegroundColor Yellow
+  Write-Host "Service tidak terdeteksi - buka services.msc, cari GitHub Actions Runner" -ForegroundColor Yellow
 }
 
 Write-Host ""
