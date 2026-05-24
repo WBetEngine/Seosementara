@@ -1,3 +1,0 @@
-# Hanya redirect apex workers.dev → login.
-# JANGAN redirect /admin/ ↔ /admin/index.html (menyebabkan ERR_TOO_MANY_REDIRECTS).
-/    /admin/login.html    302
