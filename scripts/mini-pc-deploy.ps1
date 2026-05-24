@@ -4,8 +4,8 @@ $Root = if ($PSScriptRoot) { Split-Path $PSScriptRoot -Parent } else { "C:\Seose
 Set-Location $Root
 
 foreach ($var in @("DB_PASSWORD", "MASTER_ENCRYPTION_KEY")) {
-  if (-not [Environment]::GetEnvironmentVariable($var)) {
-    throw "$var belum diset — isi lewat admin Settings → Infra & GitHub"
+  if (-not [Environment]::GetEnvironmentVariable($var, "Process")) {
+    throw "$var belum diset - isi lewat admin Infra and GitHub"
   }
 }
 

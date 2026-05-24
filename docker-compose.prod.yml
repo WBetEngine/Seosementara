@@ -27,7 +27,7 @@ services:
       DATABASE_URL: postgres://seosementara:${DB_PASSWORD}@db:5432/seosementara?sslmode=disable
       MASTER_ENCRYPTION_KEY: ${MASTER_ENCRYPTION_KEY:?MASTER_ENCRYPTION_KEY required}
       PIXEL_ENCRYPTION_KEY: ${PIXEL_ENCRYPTION_KEY:-}
-      SUPER_ADMIN_TOKEN: ${SUPER_ADMIN_TOKEN:?SUPER_ADMIN_TOKEN required}
+      SUPER_ADMIN_TOKEN: ${SUPER_ADMIN_TOKEN:-}
       ADMIN_PARTIALS_DIR: /app/partials
       STATIC_DIR: /app/static
       ADMIN_TEMPLATES_DIR: /app/templates
