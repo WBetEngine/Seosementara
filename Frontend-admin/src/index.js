@@ -4,6 +4,7 @@ import {
   githubConfigured,
   syncCloudflareToGitHub,
   getPlatformSetupStatus,
+  installRunnerServiceFromAdmin,
 } from "./github.js";
 import {
   saveCloudflareCredentials,
@@ -58,6 +59,15 @@ async function handleAdminAPI(request, env) {
     if (!body) return json({ error: "JSON invalid" }, 400);
     try {
       const result = await saveInfraSecrets(env, body);
+      return json(result);
+    } catch (e) {
+      return json({ error: e.message }, 400);
+    }
+  }
+
+  if (request.method === "POST" && path === "/admin/api/platform/runner/install-service") {
+    try {
+      const result = await installRunnerServiceFromAdmin(env);
       return json(result);
     } catch (e) {
       return json({ error: e.message }, 400);
