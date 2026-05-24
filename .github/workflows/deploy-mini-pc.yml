@@ -37,12 +37,11 @@ jobs:
           Copy-Item scripts/mini-pc-deploy.ps1 "$root\scripts\" -Force
 
       - name: Log in to GHCR
-        shell: powershell
-        env:
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if (-not $env:GHCR_TOKEN) { throw "GITHUB_TOKEN kosong - tidak bisa pull image GHCR" }
-          $env:GHCR_TOKEN | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
 
       - name: Deploy Docker stack
         shell: powershell
