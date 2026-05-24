@@ -163,12 +163,13 @@
   }
 
   function loadAdminRoutePartial() {
+    // Tanpa .html — Workers Assets strip ekstensi (307) dan bisa gagal di HTMX
     var routes = {
-      "/admin/settings/backend/infra": "/admin/_partials/settings-backend-infra.html",
-      "/admin/settings/cloudflare/koneksi": "/admin/_partials/settings-cf-koneksi.html",
-      "/admin/settings/cloudflare": "/admin/_partials/settings-cloudflare.html",
-      "/admin/settings/rbac": "/admin/_partials/settings-rbac.html",
-      "/admin/settings/host": "/admin/_partials/settings-host.html",
+      "/admin/settings/backend/infra": "/admin/_partials/settings-backend-infra",
+      "/admin/settings/cloudflare/koneksi": "/admin/_partials/settings-cf-koneksi",
+      "/admin/settings/cloudflare": "/admin/_partials/settings-cloudflare",
+      "/admin/settings/rbac": "/admin/_partials/settings-rbac",
+      "/admin/settings/host": "/admin/_partials/settings-host",
     };
     var path = window.location.pathname.replace(/\/$/, "") || "/";
     var partial = routes[path];
@@ -243,6 +244,14 @@
           : target.closest("#main") || document.getElementById("main") || document;
       initPageTabs(root);
       if (window.innerWidth < 1024) closeSidebar();
+      if (
+        window.SeosementaraPlatform &&
+        (target.id === "main" ? target : root).querySelector("#platform-status")
+      ) {
+        window.SeosementaraPlatform.loadStatus().catch(function (e) {
+          console.error("[Seosementara Platform]", e.message);
+        });
+      }
     }
   });
 
