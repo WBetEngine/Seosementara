@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login — Seosementara Admin</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="toast"></div>
+  <div class="login-page">
+    <div class="login-card">
+      <h1>Seosementara</h1>
+      <p class="subtitle">Panel admin — mode bootstrap (tanpa backend)</p>
+      <div class="alert alert--info">Login demo: isi email &amp; password apa saja.</div>
+      <form id="login-form" class="form-grid" style="margin-top:1rem">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input class="form-control" id="email" name="email" type="email" required autocomplete="username" placeholder="admin@seosementara.org">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input class="form-control" id="password" name="password" type="password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn--primary" style="width:100%">Masuk</button>
+      </form>
+      <p class="text-muted mt-1" style="font-size:0.8rem;text-align:center">
+        Pertama kali? <a href="/admin/bootstrap.html">Wizard setup bootstrap</a>
+      </p>
+    </div>
+  </div>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      localStorage.setItem('sseo_demo_logged_in', '1');
+      var boot = localStorage.getItem(window.SSEO.bootstrapKey);
+      window.location.href = boot ? '/admin/dashboard.html' : '/admin/bootstrap.html';
+    });
+  </script>
+</body>
+</html>

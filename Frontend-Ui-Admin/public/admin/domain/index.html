@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Domain portfolio — Seosementara Admin</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="/assets/js/config.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="toast"></div>
+  <div id="drawer-backdrop" hidden></div>
+  <aside id="app-drawer" class="app-drawer" aria-hidden="true"></aside>
+  <aside id="sidebar" hx-get="/partials/sidebar.html" hx-trigger="load" hx-swap="innerHTML"></aside>
+  <div class="admin-layout">
+    <div class="admin-main">
+      <header class="topbar" hx-get="/partials/topbar.html" hx-trigger="load" hx-swap="innerHTML"></header>
+      <main id="main">
+        <span id="page-title" class="sr-only">Domain portfolio</span>
+        <div class="alert alert--demo">Mode demo — belum ada database, backend, atau Tunnel. Form disimpan ke localStorage.</div>
+        
+<div class="page-header">
+  <div><h1>Domain portfolio</h1><p>Kelola ribuan domain native CMS</p></div>
+  <div class="page-actions">
+    <button class="btn btn--primary" hx-get="/mock-api/admin/drawers/domain-new.html" hx-target="#app-drawer" hx-swap="innerHTML">+ Tambah domain</button>
+  </div>
+</div>
+<div class="tabs">
+  <button class="tab is-active">Domain saya</button>
+  <button class="tab">Dibagikan</button>
+  <button class="tab">Semua (SA)</button>
+</div>
+<div class="card table-wrap">
+  <table class="data-table">
+    <thead><tr><th>Hostname</th><th>Status</th><th>Owner</th><th></th></tr></thead>
+    <tbody>
+      <tr>
+        <td data-label="Hostname">toko-abc.com</td>
+        <td data-label="Status"><span class="badge badge--success">Active</span></td>
+        <td data-label="Owner">Anda</td>
+        <td data-label="Aksi">
+          <button class="btn btn--secondary btn--sm" hx-get="/mock-api/admin/drawers/domain-edit.html" hx-target="#app-drawer" hx-swap="innerHTML">Edit</button>
+        </td>
+      </tr>
+      <tr>
+        <td data-label="Hostname">rezekibelanja.com</td>
+        <td data-label="Status"><span class="badge badge--success">Active</span></td>
+        <td data-label="Owner">Anda</td>
+        <td data-label="Aksi">
+          <button class="btn btn--secondary btn--sm" hx-get="/mock-api/admin/drawers/domain-edit.html" hx-target="#app-drawer" hx-swap="innerHTML">Edit</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+      </main>
+    </div>
+  </div>
+</body>
+</html>

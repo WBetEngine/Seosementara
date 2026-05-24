@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shortlink — Seosementara Admin</title>
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="/assets/js/config.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script src="/assets/js/app.js" defer></script>
+</head>
+<body>
+  <div id="toast"></div>
+  <div id="drawer-backdrop" hidden></div>
+  <aside id="app-drawer" class="app-drawer" aria-hidden="true"></aside>
+  <aside id="sidebar" hx-get="/partials/sidebar.html" hx-trigger="load" hx-swap="innerHTML"></aside>
+  <div class="admin-layout">
+    <div class="admin-main">
+      <header class="topbar" hx-get="/partials/topbar.html" hx-trigger="load" hx-swap="innerHTML"></header>
+      <main id="main">
+        <span id="page-title" class="sr-only">Shortlink</span>
+        <div class="alert alert--demo">Mode demo — belum ada database, backend, atau Tunnel. Form disimpan ke localStorage.</div>
+        
+<div class="page-header">
+  <div><h1>Shortlink</h1><p>url.seosementara.org/{kode}</p></div>
+  <button class="btn btn--primary" hx-get="/mock-api/admin/drawers/shortlink-new.html" hx-target="#app-drawer" hx-swap="innerHTML">+ Buat manual</button>
+</div>
+<div class="card table-wrap"><table class="data-table"><thead><tr><th>Kode</th><th>Target</th><th>Sumber</th><th>Klik</th></tr></thead>
+<tbody>
+<tr><td data-label="Kode">rezekibelanja</td><td data-label="Target">https://rezekibelanja.com</td><td data-label="Sumber">Auto</td><td data-label="Klik">128</td></tr>
+<tr><td data-label="Kode">promo2025</td><td data-label="Target">https://example.com/p</td><td data-label="Sumber">Manual</td><td data-label="Klik">42</td></tr>
+</tbody></table></div>
+
+      </main>
+    </div>
+  </div>
+</body>
+</html>
