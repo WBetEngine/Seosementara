@@ -206,7 +206,7 @@
   function initInfoIcons() {
     qsa('.info-icon').forEach(function (btn) {
       var tipText = btn.getAttribute('data-tip') || '';
-      var group = btn.closest('.form-group');
+      var group = btn.closest('.form-group') || btn.closest('.api-config');
       var tipEl = group ? qs('.info-tip', group) : null;
 
       btn.addEventListener('click', function (e) {

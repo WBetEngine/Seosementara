@@ -31,6 +31,12 @@
     githubActions: 'https://github.com/WBetEngine/Seosementara/actions',
     platformWorkerDeploy:
       'https://github.com/WBetEngine/Seosementara/actions/workflows/deploy-workers-platform.yml',
+    platformWorkerUrlHelp:
+      'https://github.com/WBetEngine/Seosementara/actions/workflows/deploy-workers-platform.yml',
+    cfWorkers:
+      'https://dash.cloudflare.com/?to=/:account/workers-and-pages',
+    cfWorkersDocs:
+      'https://developers.cloudflare.com/workers/configuration/integrations/',
     cfDashboard: 'https://dash.cloudflare.com/',
     cfApiTokens: 'https://dash.cloudflare.com/profile/api-tokens',
     cfZeroTrust: 'https://one.dash.cloudflare.com/',

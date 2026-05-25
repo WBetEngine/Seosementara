@@ -380,6 +380,12 @@ a { color: var(--color-brand); }
 .api-banner__hint { margin: 0.5rem 0 0.75rem; line-height: 1.45; }
 .api-config { margin-top: 0.75rem; }
 .api-config .form-label { margin-bottom: 0.35rem; }
+.api-config__links {
+  margin: 0.5rem 0 0.75rem;
+}
+.api-config__links .btn--external {
+  font-size: 0.8125rem;
+}
 .api-config__actions {
   display: flex;
   flex-wrap: wrap;
