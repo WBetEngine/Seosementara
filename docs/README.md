@@ -1,5 +1,3 @@
-# GitHub Pages (branch deploy)
+# GitHub Pages
 
-Folder ini **otomatis** disalin dari `Frontend-Onboarding/public/` oleh workflow `sync-onboarding-docs.yml`.
-
-**Pengaturan repo:** Settings → Pages → Source: **Deploy from a branch** → Branch `main` → Folder **`/docs`**.
+Disalin dari Frontend-Onboarding/public — sync-onboarding-docs.yml

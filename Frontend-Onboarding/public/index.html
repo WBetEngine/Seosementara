@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Setup Infra — Seosementara</title>
-  <link id="onboarding-css" rel="stylesheet" href="assets/css/onboarding.css?v=20250524">
+  <link id="onboarding-css" rel="stylesheet" href="assets/css/onboarding.css?v=20250524b">
   <script src="assets/js/config.js?v=20250524"></script>
   <script src="assets/js/platform-api-url.js?v=20250524"></script>
   <script src="assets/js/platform-api.js?v=20250524"></script>
@@ -15,90 +15,71 @@
     <div class="onboarding-card">
       <span class="badge-host">GitHub Pages · First boot</span>
       <h1>Setup infrastruktur</h1>
-      <p class="subtitle">Tanpa database · tanpa .env di mini PC · Tunnel belum aktif. Validasi realtime · tombol bantuan ke dashboard eksternal.</p>
+      <p class="subtitle">Wizard first boot — ikuti nomor langkah. Worker API = <strong>Cloudflare</strong> (bukan GitHub).</p>
 
-      <div id="api-banner" class="alert alert--warning">
-        <div id="api-banner-connected" hidden>
-          <strong>Platform API terhubung.</strong>
-          <code id="api-banner-url"></code>
-          <button type="button" class="btn btn--ghost btn--sm" id="btn-api-change">Ubah URL</button>
-        </div>
-        <div id="api-banner-setup">
-          <strong>Platform API belum terhubung.</strong>
-          <p class="api-banner__hint">Langkah 1–2: deploy worker via GitHub Actions. Setelah Actions hijau, tempel URL Worker di bawah lalu <strong>Simpan &amp; tes koneksi</strong>. Langkah 3+ membutuhkan API terhubung.</p>
-          <div class="api-config form-group">
-            <label class="form-label" for="platform-api-input">
-              <span class="form-label__text">URL Platform Worker</span>
-              <button type="button" class="info-icon" aria-label="Cara mendapatkan URL Worker" aria-expanded="false" data-tip="URL tidak dibuat manual di form ini. Setelah workflow Deploy Platform Worker sukses: (1) buka log job di GitHub Actions — cari baris deployment-url, biasanya https://sse-platform.&lt;subdomain&gt;.workers.dev — atau (2) Cloudflare Dashboard → Workers &amp; Pages → layanan sse-platform → Trigger → workers.dev. Tempel URL di sini lalu Simpan &amp; tes.">i</button>
-            </label>
-            <p class="info-tip" aria-live="polite"></p>
-            <input class="form-control" id="platform-api-input" type="url" inputmode="url" placeholder="https://sse-platform.&lt;subdomain&gt;.workers.dev" autocomplete="off">
-            <div class="external-links api-config__links">
-              <a class="btn--external" data-ext="platformWorkerDeploy" target="_blank" rel="noopener noreferrer" id="link-deploy-worker">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-                1. Deploy worker (Actions)
-              </a>
-              <a class="btn--external" data-ext="platformWorkerUrlHelp" target="_blank" rel="noopener noreferrer">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-                2. Salin URL dari log Actions
-              </a>
-              <a class="btn--external" data-ext="cfWorkers" target="_blank" rel="noopener noreferrer">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-                3. Workers di Cloudflare
-              </a>
-            </div>
-            <div class="api-config__actions">
-              <button type="button" class="btn btn--secondary" id="btn-api-save-test">Simpan &amp; tes koneksi</button>
-            </div>
-            <div class="api-url-help" role="note">
-              <strong>URL tidak diketik manual</strong> — muncul setelah deploy worker:
-              <ol>
-                <li>Jalankan <strong>Deploy worker (Actions)</strong> (isi token + account dari langkah 1).</li>
-                <li>Buka run hijau → log job → cari <code>deployment-url</code> (mis. <code>https://sse-platform.*.workers.dev</code>).</li>
-                <li>Atau <strong>Workers di Cloudflare</strong> → layanan <code>sse-platform</code> → Trigger.</li>
-              </ol>
-            </div>
-            <p class="api-config__note">Setelah deploy, URL juga bisa dari <code>?api=...</code> atau <code>platform-api-url.js</code> (CI).</p>
-          </div>
-        </div>
-      </div>
-      <div class="alert alert--info">
-        Urutan: <strong>Cloudflare Worker</strong> (token + account) → <strong>GitHub PAT</strong> (simpan secrets + deploy worker) → Zone/DNS → infra. Tombol <strong>Test</strong> memanggil Platform API nyata setelah worker hidup.
+      <div class="arch-map" id="arch-map">
+        <p class="arch-map__title">Yang Anda bangun (jangan tertukar)</p>
+        <table class="arch-table">
+          <thead>
+            <tr><th>Komponen</th><th>Platform</th><th>Peran</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Halaman ini</strong></td>
+              <td>GitHub Pages</td>
+              <td>UI wizard saja (statis)</td>
+            </tr>
+            <tr class="arch-table__highlight">
+              <td><strong>Platform Worker</strong> <code>sse-platform</code></td>
+              <td><strong>Cloudflare Workers</strong></td>
+              <td>API bootstrap — <em>ini yang butuh URL</em> <code>*.workers.dev</code></td>
+            </tr>
+            <tr>
+              <td>Deploy worker</td>
+              <td>GitHub Actions</td>
+              <td>CI: mengirim kode ke Cloudflare (bukan “GitHub Worker”)</td>
+            </tr>
+            <tr>
+              <td>Runner <span class="arch-muted">(langkah 5)</span></td>
+              <td>GitHub + mini PC</td>
+              <td>Self-hosted runner untuk deploy backend — terpisah dari Worker API</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
+      <div id="api-status-bar" class="api-status-bar" hidden aria-live="polite">
+        <span class="api-status-bar__label">API Cloudflare terhubung:</span>
+        <code id="api-status-url"></code>
+        <button type="button" class="btn btn--ghost btn--sm" id="btn-api-change">Ubah</button>
+      </div>
+
+      <p class="wizard-phase-label" id="wizard-phase-label">Fase 1 · Platform API (Cloudflare Worker)</p>
       <div class="wizard-steps" id="wizard-steps">
-        <div class="wizard-step is-active" data-step="1"><div class="wizard-step__num">1</div>CF Worker</div>
-        <div class="wizard-step" data-step="2"><div class="wizard-step__num">2</div>GitHub</div>
-        <div class="wizard-step" data-step="3"><div class="wizard-step__num">3</div>CF Zone</div>
-        <div class="wizard-step" data-step="4"><div class="wizard-step__num">4</div>Mini PC</div>
-        <div class="wizard-step" data-step="5"><div class="wizard-step__num">5</div>Runner</div>
-        <div class="wizard-step" data-step="6"><div class="wizard-step__num">6</div>Tunnel</div>
-        <div class="wizard-step" data-step="7"><div class="wizard-step__num">7</div>DB</div>
-        <div class="wizard-step" data-step="8"><div class="wizard-step__num">8</div>Deploy</div>
-        <div class="wizard-step" data-step="9"><div class="wizard-step__num">9</div>Selesai</div>
+        <div class="wizard-step is-active" data-step="1" data-phase="1" title="Kredensial Cloudflare untuk deploy"><div class="wizard-step__num">1</div>CF Token</div>
+        <div class="wizard-step" data-step="2" data-phase="1" title="PAT + deploy Worker ke Cloudflare"><div class="wizard-step__num">2</div>Deploy API</div>
+        <div class="wizard-step" data-step="3" data-phase="2" title="Zone & domain produk"><div class="wizard-step__num">3</div>CF Zone</div>
+        <div class="wizard-step" data-step="4" data-phase="3" title="SSH ke mini PC"><div class="wizard-step__num">4</div>SSH</div>
+        <div class="wizard-step" data-step="5" data-phase="3" title="Runner di mini PC (bukan CF Worker)"><div class="wizard-step__num">5</div>Runner</div>
+        <div class="wizard-step" data-step="6" data-phase="3"><div class="wizard-step__num">6</div>Tunnel</div>
+        <div class="wizard-step" data-step="7" data-phase="3"><div class="wizard-step__num">7</div>DB</div>
+        <div class="wizard-step" data-step="8" data-phase="3"><div class="wizard-step__num">8</div>Deploy</div>
+        <div class="wizard-step" data-step="9" data-phase="3"><div class="wizard-step__num">9</div>Selesai</div>
       </div>
 
       <form id="wizard-form" autocomplete="off" novalidate>
-        <!-- Step 1: Platform Worker -->
+        <!-- Step 1: Kredensial Cloudflare -->
         <div class="wizard-panel" data-panel="1">
-          <h2 class="panel-title">Cloudflare Platform Worker</h2>
-          <div class="alert alert--warning">Deploy pertama: isi kredensial yang sama dengan GitHub Secrets <code>CLOUDFLARE_API_TOKEN</code> dan <code>CLOUDFLARE_ACCOUNT_ID</code>.</div>
+          <h2 class="panel-title">Langkah 1 · Kredensial Cloudflare</h2>
+          <p class="panel-lead">Untuk deploy <strong>Cloudflare Worker</strong> <code>sse-platform</code> (bukan layanan GitHub). Nilai ini sama dengan GitHub Secrets <code>CLOUDFLARE_*</code>.</p>
           <div class="external-links">
             <a class="btn--external" data-ext="cfApiTokens" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-              Buat API Token
+              Buat token di Cloudflare
             </a>
             <a class="btn--external" data-ext="cfDashboard" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-              Dashboard CF
-            </a>
-            <a class="btn--external" data-ext="platformWorkerDeploy" target="_blank" rel="noopener noreferrer" id="link-deploy-worker-step1">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-              Deploy Worker (Actions)
-            </a>
-            <a class="btn--external" data-ext="cfWorkers" target="_blank" rel="noopener noreferrer">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-              Lihat URL di CF Workers
+              Dashboard Cloudflare
             </a>
           </div>
           <div class="form-group">
@@ -129,9 +110,15 @@
           <button type="button" class="btn btn--ghost" data-action="cf-bootstrap-local">Simpan sementara di browser</button>
         </div>
 
-        <!-- Step 2: GitHub PAT -->
+        <!-- Step 2: Deploy Cloudflare Worker via GitHub -->
         <div class="wizard-panel" data-panel="2" hidden>
-          <h2 class="panel-title">GitHub &amp; repository</h2>
+          <h2 class="panel-title">Langkah 2 · Deploy Worker Cloudflare</h2>
+          <p class="panel-lead">GitHub PAT dipakai agar <strong>GitHub Actions</strong> bisa menulis secrets dan menjalankan workflow <em>Deploy Platform Worker</em> — yang mengunggah kode ke <strong>Cloudflare</strong>.</p>
+          <ol class="step-checklist">
+            <li>Isi PAT → klik <strong>Simpan PAT &amp; deploy</strong></li>
+            <li>Tunggu workflow hijau di GitHub Actions</li>
+            <li>Salin URL <code>https://sse-platform.*.workers.dev</code> → tempel di bagian 2c di bawah</li>
+          </ol>
           <div class="external-links">
             <a class="btn--external" data-ext="githubTokens" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
@@ -161,20 +148,51 @@
             </div>
             <p class="field-error" data-error-for="github_pat"></p>
           </div>
-          <button type="button" class="btn btn--primary" data-action="github-initial-setup">Simpan PAT &amp; deploy Platform Worker</button>
+          <button type="button" class="btn btn--primary" data-action="github-initial-setup">Simpan PAT &amp; deploy ke Cloudflare</button>
           <button type="button" class="btn btn--secondary" data-action="github-pat">Hanya validasi PAT</button>
+
+          <section class="subpanel" id="step2-connect-api">
+            <h3 class="subpanel__title">2c · URL Worker Cloudflare (Platform API)</h3>
+            <p class="subpanel__lead">URL ini dari layanan <strong>Cloudflare Workers</strong> <code>sse-platform</code>, bukan dari GitHub. Muncul setelah deploy sukses.</p>
+            <div id="api-banner-setup" class="api-config form-group">
+              <label class="form-label" for="platform-api-input">
+                <span class="form-label__text">URL Worker (*.workers.dev)</span>
+                <button type="button" class="info-icon" aria-label="Cara mendapatkan URL" aria-expanded="false" data-tip="Buka GitHub Actions → workflow Deploy Platform Worker → run terakhir (hijau) → log job Deploy → cari deployment-url. Alternatif: Cloudflare Dashboard → Workers &amp; Pages → sse-platform → Trigger.">i</button>
+              </label>
+              <p class="info-tip" aria-live="polite"></p>
+              <input class="form-control" id="platform-api-input" type="url" inputmode="url" placeholder="https://sse-platform.&lt;subdomain&gt;.workers.dev" autocomplete="off">
+              <div class="external-links">
+                <a class="btn--external" data-ext="platformWorkerDeploy" target="_blank" rel="noopener noreferrer" id="link-deploy-worker">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+                  Buka workflow deploy
+                </a>
+                <a class="btn--external" data-ext="platformWorkerUrlHelp" target="_blank" rel="noopener noreferrer">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+                  Salin URL dari log Actions
+                </a>
+                <a class="btn--external" data-ext="cfWorkers" target="_blank" rel="noopener noreferrer">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+                  Lihat di Cloudflare Workers
+                </a>
+              </div>
+              <button type="button" class="btn btn--secondary" id="btn-api-save-test">Simpan &amp; tes koneksi API</button>
+            </div>
+            <div id="api-banner-connected" class="alert alert--success" hidden>
+              Worker Cloudflare terhubung: <code id="api-banner-url"></code>
+            </div>
+          </section>
         </div>
 
         <!-- Step 3: CF Zone -->
         <div class="wizard-panel" data-panel="3" hidden>
-          <h2 class="panel-title">Cloudflare Zone &amp; domain</h2>
+          <h2 class="panel-title">Langkah 3 · Zone &amp; domain produk</h2>
+          <p class="panel-lead">Membutuhkan Platform API (Worker Cloudflare) sudah terhubung di langkah 2.</p>
           <div class="external-links">
             <a class="btn--external" data-ext="cfDns" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
               DNS Zone
             </a>
           </div>
-          <p class="api-banner__hint">Token &amp; Account ID dari langkah 1 dipakai otomatis. Di sini hanya Zone ID dan domain produk.</p>
           <div class="form-grid form-grid--2">
             <div class="form-group">
               <label class="form-label" for="cf_zone">
@@ -201,7 +219,7 @@
 
         <!-- Step 4 -->
         <div class="wizard-panel" data-panel="4" hidden>
-          <h2 class="panel-title">Mini PC (SSH)</h2>
+          <h2 class="panel-title">Langkah 4 · Mini PC (SSH)</h2>
           <div class="external-links">
             <a class="btn--external" data-ext="cfZeroTrust" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
@@ -257,7 +275,8 @@
 
         <!-- Step 5 -->
         <div class="wizard-panel" data-panel="5" hidden>
-          <h2 class="panel-title">GitHub Actions runner</h2>
+          <h2 class="panel-title">Langkah 5 · Runner di mini PC</h2>
+          <p class="panel-lead"><strong>Bukan</strong> Cloudflare Worker. Ini <strong>GitHub Actions self-hosted runner</strong> yang terpasang di mini PC untuk build/deploy Docker.</p>
           <div class="external-links">
             <a class="btn--external" data-ext="githubRunners" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
@@ -268,7 +287,6 @@
               Actions
             </a>
           </div>
-          <div class="alert alert--warning">Runner self-hosted terpasang di mini PC via onboarding (bukan di laptop operator).</div>
           <div class="form-group">
             <label class="form-label" for="runner_label">
               <span class="form-label__text">Label runner</span>
@@ -393,6 +411,6 @@
       </form>
     </div>
   </div>
-  <script src="assets/js/onboarding.js?v=20250524"></script>
+  <script src="assets/js/onboarding.js?v=20250524b"></script>
 </body>
 </html>

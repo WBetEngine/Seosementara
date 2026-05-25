@@ -3,6 +3,17 @@
 
   var MAX_STEP = 9;
   var CF_BOOTSTRAP_KEY = 'sse_cf_bootstrap';
+  var PHASE_BY_STEP = {
+    1: 'Fase 1 · Platform API (Cloudflare Worker)',
+    2: 'Fase 1 · Platform API (Cloudflare Worker)',
+    3: 'Fase 2 · Cloudflare zone & domain',
+    4: 'Fase 3 · Infrastruktur mini PC',
+    5: 'Fase 3 · Infrastruktur mini PC',
+    6: 'Fase 3 · Infrastruktur mini PC',
+    7: 'Fase 3 · Infrastruktur mini PC',
+    8: 'Fase 3 · Infrastruktur mini PC',
+    9: 'Fase 3 · Selesai'
+  };
   var API = function () {
     return window.SSEOPlatform;
   };
@@ -261,22 +272,26 @@
   }
 
   function refreshApiBanner() {
-    var banner = qs('#api-banner');
+    var bar = qs('#api-status-bar');
+    var barUrl = qs('#api-status-url');
     var connected = qs('#api-banner-connected');
     var setup = qs('#api-banner-setup');
     var urlEl = qs('#api-banner-url');
     var input = qs('#platform-api-input');
-    if (!banner) return;
-
     var base = API() && API().apiBase();
+
     if (base) {
-      banner.className = 'alert alert--info';
+      if (bar) {
+        bar.hidden = false;
+        bar.className = 'api-status-bar api-status-bar--ok';
+      }
+      if (barUrl) barUrl.textContent = base;
       if (connected) connected.hidden = false;
       if (setup) setup.hidden = true;
       if (urlEl) urlEl.textContent = base;
       if (input && !input.value) input.value = base;
     } else {
-      banner.className = 'alert alert--warning';
+      if (bar) bar.hidden = true;
       if (connected) connected.hidden = true;
       if (setup) setup.hidden = false;
       try {
@@ -328,17 +343,12 @@
 
     if (changeBtn) {
       changeBtn.addEventListener('click', function () {
-        var connected = qs('#api-banner-connected');
-        var setup = qs('#api-banner-setup');
-        var banner = qs('#api-banner');
-        if (connected) connected.hidden = true;
-        if (setup) setup.hidden = false;
-        if (banner) banner.className = 'alert alert--warning';
+        API().setApiBase('');
         if (input) {
-          input.value = (API() && API().apiBase()) || '';
+          input.value = '';
           input.focus();
         }
-        API().setApiBase('');
+        refreshApiBanner();
       });
     }
 
@@ -380,15 +390,17 @@
       var apiOk = !needsApi || (API() && API().apiBase());
       if (step === 1) {
         statusEl.textContent = ok
-          ? 'Langkah 1 siap — Lanjut ke GitHub PAT'
-          : 'Isi CLOUDFLARE_API_TOKEN dan CLOUDFLARE_ACCOUNT_ID';
+          ? 'Lanjut ke langkah 2 (deploy Worker ke Cloudflare)'
+          : 'Isi token & Account ID Cloudflare';
       } else if (step === 2) {
-        statusEl.textContent = ok
-          ? 'Deploy worker via tombol utama, lalu hubungkan URL API di banner'
-          : 'Isi GitHub PAT';
+        statusEl.textContent = !ok
+          ? 'Isi GitHub PAT'
+          : !apiOk
+            ? 'Deploy + tempel URL Worker Cloudflare (bagian 2c)'
+            : 'Worker Cloudflare terhubung — bisa lanjut';
       } else {
         statusEl.textContent = !apiOk
-          ? 'Hubungkan Platform API (banner) setelah deploy worker'
+          ? 'Kembali ke langkah 2 — hubungkan URL Worker Cloudflare dulu'
           : ok
             ? 'Langkah siap — gunakan Test atau Lanjut'
             : 'Lengkapi field yang ditandai merah';
@@ -407,6 +419,9 @@
         el.classList.toggle('is-active', n === s);
         el.classList.toggle('is-done', n < s);
       });
+      var phaseEl = qs('#wizard-phase-label');
+      if (phaseEl && PHASE_BY_STEP[s]) phaseEl.textContent = PHASE_BY_STEP[s];
+      refreshApiBanner();
       if (prev) prev.disabled = s <= 1;
       if (next) {
         next.textContent = 'Lanjut';
@@ -592,7 +607,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     var css = qs('#onboarding-css');
     if (css && window.SSEO && window.SSEO.asset) {
-      css.href = window.SSEO.asset('/assets/css/onboarding.css') + '?v=20250524';
+      css.href = window.SSEO.asset('/assets/css/onboarding.css') + '?v=20250524b';
     }
     initExternalLinks();
     initInfoIcons();
@@ -601,9 +616,6 @@
     var form = qs('#wizard-form');
     if (form) loadCfBootstrapIntoForm(form);
     initApiBanner();
-    var linkStep1 = qs('#link-deploy-worker-step1');
-    var L = window.SSEO && window.SSEO.links;
-    if (linkStep1 && L && L.platformWorkerDeploy) linkStep1.href = L.platformWorkerDeploy;
     initWizard();
     checkPlatformStatus();
   });
