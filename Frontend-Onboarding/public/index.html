@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Setup Infra — Seosementara</title>
+  <link id="onboarding-css" rel="stylesheet" href="assets/css/onboarding.css">
+  <script src="assets/js/config.js"></script>
+</head>
+<body>
+  <div id="toast"></div>
+  <div class="onboarding-page">
+    <div class="onboarding-card">
+      <span class="badge-host">GitHub Pages · First boot</span>
+      <h1>Setup infrastruktur</h1>
+      <p class="subtitle">Tanpa database · tanpa .env di mini PC · Tunnel belum aktif. Isi form lalu deploy otomatis via GitHub Actions.</p>
+
+      <div class="alert alert--info">
+        Secret <strong>tidak</strong> disimpan permanen di browser. Fase ini demo UI; penyimpanan nyata lewat Workers Platform API.
+      </div>
+
+      <div class="wizard-steps" id="wizard-steps">
+        <div class="wizard-step is-active" data-step="1"><div class="wizard-step__num">1</div>GitHub</div>
+        <div class="wizard-step" data-step="2"><div class="wizard-step__num">2</div>CF API</div>
+        <div class="wizard-step" data-step="3"><div class="wizard-step__num">3</div>Mini PC</div>
+        <div class="wizard-step" data-step="4"><div class="wizard-step__num">4</div>Runner</div>
+        <div class="wizard-step" data-step="5"><div class="wizard-step__num">5</div>Tunnel</div>
+        <div class="wizard-step" data-step="6"><div class="wizard-step__num">6</div>DB</div>
+        <div class="wizard-step" data-step="7"><div class="wizard-step__num">7</div>Deploy</div>
+        <div class="wizard-step" data-step="8"><div class="wizard-step__num">8</div>Selesai</div>
+      </div>
+
+      <form id="wizard-form" autocomplete="off">
+        <div class="wizard-panel" data-panel="1">
+          <h2 class="panel-title">GitHub &amp; repository</h2>
+          <div class="form-group">
+            <label>GitHub PAT (workflow + secrets)</label>
+            <input class="form-control" name="github_pat" type="password" placeholder="ghp_...">
+            <p class="hint">Scope: repo, workflow, admin:repo_hook. Disimpan ke GitHub Secrets via Workers API.</p>
+          </div>
+          <button type="button" class="btn btn--secondary" data-test-step="GitHub PAT">Test koneksi</button>
+        </div>
+
+        <div class="wizard-panel" data-panel="2" hidden>
+          <h2 class="panel-title">Cloudflare</h2>
+          <div class="form-group">
+            <label>Global API Key / API Token</label>
+            <input class="form-control" name="cf_token" type="password">
+          </div>
+          <div class="form-grid form-grid--2">
+            <div class="form-group">
+              <label>Account ID</label>
+              <input class="form-control" name="cf_account" placeholder="32 hex">
+            </div>
+            <div class="form-group">
+              <label>Zone ID (domain produk)</label>
+              <input class="form-control" name="cf_zone" placeholder="32 hex">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Domain utama</label>
+            <input class="form-control" name="primary_domain" value="seosementara.org">
+            <p class="hint">DNS sudah di Cloudflare Dashboard — wizard hanya verifikasi.</p>
+          </div>
+          <button type="button" class="btn btn--secondary" data-test-step="Cloudflare API">Test &amp; simpan</button>
+        </div>
+
+        <div class="wizard-panel" data-panel="3" hidden>
+          <h2 class="panel-title">Mini PC (SSH)</h2>
+          <div class="form-grid form-grid--2">
+            <div class="form-group">
+              <label>Host / IP</label>
+              <input class="form-control" name="ssh_host" placeholder="192.168.1.10">
+            </div>
+            <div class="form-group">
+              <label>Port</label>
+              <input class="form-control" name="ssh_port" value="22">
+            </div>
+            <div class="form-group">
+              <label>User</label>
+              <input class="form-control" name="ssh_user" value="deploy">
+            </div>
+            <div class="form-group">
+              <label>Password / key</label>
+              <input class="form-control" name="ssh_secret" type="password">
+            </div>
+          </div>
+          <p class="hint">Workers API menjalankan test SSH — browser tidak SSH langsung.</p>
+          <button type="button" class="btn btn--secondary" data-test-step="SSH mini PC">Test SSH</button>
+        </div>
+
+        <div class="wizard-panel" data-panel="4" hidden>
+          <h2 class="panel-title">GitHub Actions runner</h2>
+          <div class="alert alert--warning">Runner self-hosted terpasang di mini PC via onboarding (bukan di laptop operator).</div>
+          <div class="form-group">
+            <label>Label runner</label>
+            <input class="form-control" name="runner_label" value="mini-pc">
+          </div>
+          <button type="button" class="btn btn--secondary" data-test-step="Runner">Daftarkan runner</button>
+        </div>
+
+        <div class="wizard-panel" data-panel="5" hidden>
+          <h2 class="panel-title">Cloudflare Tunnel</h2>
+          <div class="form-group">
+            <label>Nama tunnel</label>
+            <input class="form-control" name="tunnel_name" value="sse-production">
+          </div>
+          <p class="hint">Routes: <code>/api/*</code>, wildcard subdomain produk.</p>
+          <pre class="code-block">cloudflared service install &lt;token-dari-cf-api&gt;</pre>
+          <button type="button" class="btn btn--secondary" data-test-step="Tunnel">Buat tunnel &amp; routes</button>
+        </div>
+
+        <div class="wizard-panel" data-panel="6" hidden>
+          <h2 class="panel-title">Database &amp; encryption</h2>
+          <div class="form-grid form-grid--2">
+            <div class="form-group">
+              <label>DB password</label>
+              <input class="form-control" name="db_password" type="password">
+            </div>
+            <div class="form-group">
+              <label>Master encryption key</label>
+              <input class="form-control" name="master_key" type="password">
+            </div>
+          </div>
+          <p class="hint">→ GitHub Secrets, inject ke container PostgreSQL (Docker).</p>
+          <button type="button" class="btn btn--secondary" data-test-step="GitHub Secrets">Simpan ke GitHub Secrets</button>
+        </div>
+
+        <div class="wizard-panel" data-panel="7" hidden>
+          <h2 class="panel-title">Deploy backend &amp; Pages</h2>
+          <ul style="margin:0 0 1rem;padding-left:1.25rem;font-size:0.875rem;color:var(--color-text-muted)">
+            <li>Image Go API → GHCR</li>
+            <li>Docker compose di mini PC</li>
+            <li>Admin UI → Cloudflare Pages</li>
+            <li>Frontend publik → Cloudflare Pages</li>
+          </ul>
+          <button type="button" class="btn btn--secondary" data-test-step="Deploy">Jalankan deploy (demo)</button>
+        </div>
+
+        <div class="wizard-panel" data-panel="8" hidden>
+          <div class="alert alert--success">
+            Infrastruktur siap (demo). Klik tombol di bawah untuk membuka <strong>admin Cloudflare Pages</strong>.
+          </div>
+          <a id="btn-finish" class="btn btn--primary" href="#" style="margin-top:0.5rem">Buka Admin CMS</a>
+        </div>
+
+        <div class="btn-row" id="wizard-nav">
+          <button type="button" class="btn btn--secondary" id="btn-prev" disabled>Kembali</button>
+          <button type="button" class="btn btn--primary" id="btn-next">Lanjut</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="assets/js/onboarding.js"></script>
+</body>
+</html>

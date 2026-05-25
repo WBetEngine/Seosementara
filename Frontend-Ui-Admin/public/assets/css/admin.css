@@ -550,6 +550,18 @@ textarea.form-control { min-height: 100px; resize: vertical; }
   border: 1px solid #c4b5fd;
 }
 
+.setup-infra-banner {
+  margin: 0;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  text-align: center;
+}
+
+.setup-infra-banner a {
+  font-weight: 600;
+}
+
 /* Drawer */
 #drawer-backdrop {
   position: fixed;

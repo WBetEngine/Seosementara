@@ -13,7 +13,7 @@
   <div class="login-page">
     <div class="login-card">
       <h1>Seosementara</h1>
-      <p class="subtitle">Panel admin — mode bootstrap (tanpa backend)</p>
+      <p class="subtitle">Panel admin — Cloudflare Pages</p>
       <div class="alert alert--info">Login demo: isi email &amp; password apa saja.</div>
       <form id="login-form" class="form-grid" style="margin-top:1rem">
         <div class="form-group">
@@ -27,17 +27,23 @@
         <button type="submit" class="btn btn--primary" style="width:100%">Masuk</button>
       </form>
       <p class="text-muted mt-1" style="font-size:0.8rem;text-align:center">
-        Pertama kali? <a href="/admin/bootstrap.html">Wizard setup bootstrap</a>
+        Setup infra pertama kali?
+        <a id="onboarding-link" href="https://wbetengine.github.io/Seosementara/" target="_blank" rel="noopener">GitHub Pages onboarding</a>
       </p>
     </div>
   </div>
   <script>
-    document.getElementById('login-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-      localStorage.setItem('sseo_demo_logged_in', '1');
-      var boot = localStorage.getItem(window.SSEO.bootstrapKey);
-      window.location.href = boot ? '/admin/dashboard.html' : '/admin/bootstrap.html';
-    });
+    (function () {
+      var link = document.getElementById('onboarding-link');
+      if (link && window.SSEO && window.SSEO.onboardingUrl) {
+        link.href = window.SSEO.onboardingUrl;
+      }
+      document.getElementById('login-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        localStorage.setItem('sseo_demo_logged_in', '1');
+        window.location.href = '/admin/dashboard.html';
+      });
+    })();
   </script>
 </body>
 </html>

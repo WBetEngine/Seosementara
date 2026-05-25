@@ -9,7 +9,7 @@ Panel admin **Seosementara CMS** di Cloudflare Pages (`seosementara.org/admin/*`
 | **Setup infra pertama kali** | GitHub Pages onboarding | [Plan/29-frontend-admin-dan-onboarding.md](../Plan/29-frontend-admin-dan-onboarding.md), [Plan/28](../Plan/28-platform-github-workers.md) |
 | **Operasional sehari-hari** | Cloudflare Pages admin | Dokumen ini |
 
-Wizard bootstrap **tidak** ada di folder ini — lihat `Frontend-Onboarding/` (rencana).
+Wizard bootstrap ada di **`Frontend-Onboarding/`** (GitHub Pages). File `admin/bootstrap.html` hanya redirect ke URL onboarding.
 
 Saat infra belum selesai, admin menampilkan banner + link ke GitHub Pages onboarding.
 

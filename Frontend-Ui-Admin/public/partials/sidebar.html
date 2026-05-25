@@ -58,7 +58,7 @@
   </div>
 </nav>
 <div class="sidebar-footer">
-  <a href="/admin/bootstrap.html">Setup bootstrap</a><br>
+  <a id="sidebar-onboarding-link" href="https://wbetengine.github.io/Seosementara/" target="_blank" rel="noopener">Setup infra (GitHub Pages)</a><br>
   <a href="/admin/login.html">Keluar</a>
 </div>
 <script>
@@ -66,5 +66,7 @@
     var d = localStorage.getItem('active_managed_domain_name');
     var el = document.getElementById('sidebar-active-domain');
     if (el && d) el.textContent = d;
+    var ol = document.getElementById('sidebar-onboarding-link');
+    if (ol && window.SSEO && window.SSEO.onboardingUrl) ol.href = window.SSEO.onboardingUrl;
   })();
 </script>
