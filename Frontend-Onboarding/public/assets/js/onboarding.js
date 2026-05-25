@@ -1,21 +1,50 @@
 (function () {
   'use strict';
 
-  var MAX_STEP = 8;
+  var MAX_STEP = 9;
+  var CF_BOOTSTRAP_KEY = 'sse_cf_bootstrap';
   var API = function () {
     return window.SSEOPlatform;
   };
 
   var STEP_FIELDS = {
-    1: ['github_pat'],
-    2: ['cf_token', 'cf_account', 'cf_zone', 'primary_domain'],
-    3: ['ssh_host', 'ssh_port', 'ssh_user', 'ssh_secret'],
-    4: ['runner_label'],
-    5: ['tunnel_name'],
-    6: ['db_password', 'master_key'],
-    7: [],
-    8: []
+    1: ['cf_token', 'cf_account'],
+    2: ['github_pat'],
+    3: ['cf_zone', 'primary_domain'],
+    4: ['ssh_host', 'ssh_port', 'ssh_user', 'ssh_secret'],
+    5: ['runner_label'],
+    6: ['tunnel_name'],
+    7: ['db_password', 'master_key'],
+    8: [],
+    9: []
   };
+
+  function stepNeedsApi(stepNum) {
+    return stepNum >= 3;
+  }
+
+  function saveCfBootstrapLocal(form) {
+    var payload = API().formPayload(form);
+    try {
+      localStorage.setItem(
+        CF_BOOTSTRAP_KEY,
+        JSON.stringify({
+          cf_token: payload.cf_token || '',
+          cf_account: payload.cf_account || ''
+        })
+      );
+    } catch (e) {}
+  }
+
+  function loadCfBootstrapIntoForm(form) {
+    try {
+      var raw = localStorage.getItem(CF_BOOTSTRAP_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (data.cf_token && getInput('cf_token')) getInput('cf_token').value = data.cf_token;
+      if (data.cf_account && getInput('cf_account')) getInput('cf_account').value = data.cf_account;
+    } catch (e) {}
+  }
 
   var VALIDATORS = {
     github_pat: function (v) {
@@ -347,12 +376,23 @@
         return;
       }
       var ok = validateStep(step, false);
-      var apiOk = API() && API().apiBase();
-      statusEl.textContent = !apiOk
-        ? 'Hubungkan Platform API dulu'
-        : ok
-          ? 'Langkah siap — gunakan Test atau Lanjut'
-          : 'Lengkapi field yang ditandai merah';
+      var needsApi = stepNeedsApi(step);
+      var apiOk = !needsApi || (API() && API().apiBase());
+      if (step === 1) {
+        statusEl.textContent = ok
+          ? 'Langkah 1 siap — Lanjut ke GitHub PAT'
+          : 'Isi CLOUDFLARE_API_TOKEN dan CLOUDFLARE_ACCOUNT_ID';
+      } else if (step === 2) {
+        statusEl.textContent = ok
+          ? 'Deploy worker via tombol utama, lalu hubungkan URL API di banner'
+          : 'Isi GitHub PAT';
+      } else {
+        statusEl.textContent = !apiOk
+          ? 'Hubungkan Platform API (banner) setelah deploy worker'
+          : ok
+            ? 'Langkah siap — gunakan Test atau Lanjut'
+            : 'Lengkapi field yang ditandai merah';
+      }
       statusEl.className = 'step-status' + (ok && apiOk ? ' is-ok' : '');
       if (next) next.disabled = !ok || !apiOk;
     };
@@ -407,7 +447,61 @@
         try {
           var result;
           switch (action) {
+            case 'cf-bootstrap-verify':
+              saveCfBootstrapLocal(form);
+              if (!API().apiBase()) {
+                showToast(
+                  'Worker belum online — simpan kredensial, deploy via langkah 2 atau workflow manual, lalu verifikasi lagi.',
+                  'warning'
+                );
+                return;
+              }
+              result = await API().bootstrapVerifyCf({
+                cf_token: payload.cf_token,
+                cf_account: payload.cf_account
+              });
+              showToast(
+                (result.message || 'Cloudflare OK') +
+                  (result.account_name ? ' — ' + result.account_name : ''),
+                'success'
+              );
+              break;
+            case 'cf-bootstrap-local':
+              saveCfBootstrapLocal(form);
+              showToast('Kredensial Cloudflare disimpan sementara di browser.', 'success');
+              break;
+            case 'github-initial-setup':
+              saveCfBootstrapLocal(form);
+              if (!payload.cf_token || !payload.cf_account) {
+                showToast('Lengkapi langkah 1 (Cloudflare token + account) dulu.', 'error');
+                return;
+              }
+              if (!API().apiBase()) {
+                var deployUrl =
+                  window.SSEO && window.SSEO.links && window.SSEO.links.platformWorkerDeploy;
+                showToast(
+                  'Deploy pertama: jalankan workflow Deploy Platform Worker (isi token + account dari langkah 1). Setelah hijau, tempel URL worker di banner lalu ulangi tombol ini.',
+                  'warning'
+                );
+                if (deployUrl) window.open(deployUrl, '_blank', 'noopener,noreferrer');
+                return;
+              }
+              result = await API().initialSetup({
+                github_pat: payload.github_pat,
+                cf_token: payload.cf_token,
+                cf_account: payload.cf_account
+              });
+              if (result.worker_url) API().setApiBase(result.worker_url);
+              showToast(
+                (result.message || 'Setup OK') + (result.login ? ' — ' + result.login : ''),
+                'success'
+              );
+              break;
             case 'github-pat':
+              if (!API().apiBase()) {
+                showToast('Hubungkan Platform API dulu (banner atas).', 'error');
+                return;
+              }
               result = await API().saveGithubPat(payload.github_pat);
               showToast('GitHub PAT valid — login: ' + (result.login || ''), 'success');
               break;
@@ -471,7 +565,7 @@
           var st = await API().getStatus();
           if (!st.status || !st.status.bootstrap_complete) {
             showToast(
-              'Deploy belum lengkap — jalankan langkah 7 (Deploy) dan cek Actions hijau.',
+              'Deploy belum lengkap — jalankan langkah 8 (Deploy) dan cek Actions hijau.',
               'warning'
             );
           }
@@ -504,7 +598,12 @@
     initInfoIcons();
     initPasswordToggles();
     bindRealtimeValidation();
+    var form = qs('#wizard-form');
+    if (form) loadCfBootstrapIntoForm(form);
     initApiBanner();
+    var linkStep1 = qs('#link-deploy-worker-step1');
+    var L = window.SSEO && window.SSEO.links;
+    if (linkStep1 && L && L.platformWorkerDeploy) linkStep1.href = L.platformWorkerDeploy;
     initWizard();
     checkPlatformStatus();
   });

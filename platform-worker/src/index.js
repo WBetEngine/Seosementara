@@ -30,6 +30,12 @@ export default {
       if (path === '/setup/status' && request.method === 'GET') {
         return handleStatus(request, env);
       }
+      if (path === '/bootstrap/cloudflare/verify' && request.method === 'POST') {
+        return handleBootstrapCfVerify(request, env);
+      }
+      if (path === '/setup/initial' && request.method === 'POST') {
+        return handleInitialSetup(request, env);
+      }
       if (path === '/github/pat' && request.method === 'POST') {
         return handleGithubPat(request, env);
       }
@@ -76,6 +82,112 @@ export default {
 async function handleStatus(request, env) {
   const status = await getStatus(env.SETUP_KV);
   return jsonResponse({ ok: true, status }, 200, request, env);
+}
+
+async function handleBootstrapCfVerify(request, env) {
+  const body = await readJson(request);
+  const token = body?.cf_token?.trim();
+  const accountId = body?.cf_account?.trim();
+
+  if (!token) {
+    return jsonResponse({ ok: false, error: 'cf_token wajib' }, 400, request, env);
+  }
+  if (!accountId || !/^[a-f0-9]{32}$/i.test(accountId)) {
+    return jsonResponse({ ok: false, error: 'cf_account wajib (32 hex)' }, 400, request, env);
+  }
+
+  const verify = await cf.verifyToken(token);
+  if (!verify.ok) {
+    return jsonResponse({ ok: false, error: verify.error }, 400, request, env);
+  }
+
+  const acc = await cf.getAccount(token, accountId);
+  if (!acc.ok) {
+    return jsonResponse({ ok: false, error: acc.error }, 400, request, env);
+  }
+
+  await env.SETUP_KV.put('setup:cf_token', token);
+  await saveCfMeta(env.SETUP_KV, { account_id: accountId });
+  await patchStatus(env.SETUP_KV, { cf_worker_ok: true, cf_account_name: acc.name });
+
+  return jsonResponse(
+    {
+      ok: true,
+      message: 'Token Cloudflare valid untuk deploy Platform Worker',
+      account_name: acc.name
+    },
+    200,
+    request,
+    env
+  );
+}
+
+async function handleInitialSetup(request, env) {
+  const body = await readJson(request);
+  const pat = body?.github_pat?.trim();
+  const token = body?.cf_token?.trim();
+  const accountId = body?.cf_account?.trim();
+
+  if (!pat) {
+    return jsonResponse({ ok: false, error: 'github_pat wajib' }, 400, request, env);
+  }
+  if (!token || !accountId) {
+    return jsonResponse(
+      { ok: false, error: 'cf_token dan cf_account dari langkah 1 wajib' },
+      400,
+      request,
+      env
+    );
+  }
+
+  const check = await gh.validatePat(pat);
+  if (!check.ok) {
+    return jsonResponse({ ok: false, error: check.error }, 401, request, env);
+  }
+
+  const verify = await cf.verifyToken(token);
+  if (!verify.ok) {
+    return jsonResponse({ ok: false, error: verify.error }, 400, request, env);
+  }
+
+  await gh.setRepoSecret(env.GITHUB_REPO, pat, 'CLOUDFLARE_API_TOKEN', token);
+  await gh.setRepoSecret(env.GITHUB_REPO, pat, 'CLOUDFLARE_ACCOUNT_ID', accountId);
+
+  await env.SETUP_KV.put('setup:cf_token', token);
+  await saveCfMeta(env.SETUP_KV, { account_id: accountId });
+
+  await gh.dispatchWorkflow(env.GITHUB_REPO, pat, 'bootstrap-deploy-platform-worker', {
+    account_id: accountId
+  });
+
+  const sessionId = await createSession(env.SETUP_KV, pat, check.login);
+  await patchStatus(env.SETUP_KV, {
+    github_pat_ok: true,
+    github_login: check.login,
+    cf_worker_ok: true,
+    worker_deploy_dispatched: true
+  });
+
+  const workerUrl =
+    env.WORKER_PUBLIC_URL ||
+    (env.WORKER_SUBDOMAIN
+      ? `https://sse-platform.${env.WORKER_SUBDOMAIN}.workers.dev`
+      : null);
+
+  return jsonResponse(
+    {
+      ok: true,
+      session_id: sessionId,
+      login: check.login,
+      message:
+        'GitHub PAT valid. CLOUDFLARE_* disimpan ke Secrets & workflow Deploy Platform Worker dipicu. Refresh halaman setelah Actions hijau.',
+      actions_url: `https://github.com/${env.GITHUB_REPO}/actions`,
+      worker_url: workerUrl
+    },
+    200,
+    request,
+    env
+  );
 }
 
 async function handleGithubPat(request, env) {
@@ -292,7 +404,7 @@ async function handleTunnelCreate(request, env) {
 
   if (!token || !accountId) {
     return jsonResponse(
-      { ok: false, error: 'Simpan Cloudflare credentials dulu (langkah 2)' },
+      { ok: false, error: 'Simpan Cloudflare credentials dulu (langkah 3 — Zone & domain)' },
       400,
       request,
       env

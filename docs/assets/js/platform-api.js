@@ -110,6 +110,15 @@
     getStatus: function () {
       return request('GET', '/setup/status');
     },
+    bootstrapVerifyCf: function (payload) {
+      return request('POST', '/bootstrap/cloudflare/verify', payload);
+    },
+    initialSetup: function (payload) {
+      return request('POST', '/setup/initial', payload).then(function (d) {
+        if (d.session_id) setSession(d.session_id);
+        return d;
+      });
+    },
     saveGithubPat: function (github_pat) {
       return request('POST', '/github/pat', { github_pat: github_pat }).then(function (d) {
         if (d.session_id) setSession(d.session_id);

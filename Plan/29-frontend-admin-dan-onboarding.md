@@ -92,8 +92,9 @@ SSEO.adminUrlAfterComplete = 'https://seosementara.org/admin/login.html';
 ```
 
 - **Jangan** simpan API Key / password SSH di `localStorage` permanen
-- Setiap step: tombol **Test** sebelum **Lanjut**
-- Selesai step 8: redirect ke admin CF Pages
+- Urutan wizard: **(1) CF Worker** `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` → **(2) GitHub PAT** (secrets + deploy worker) → **(3) CF Zone/domain** → infra
+- Setiap step: tombol **Test** sebelum **Lanjut** (langkah 3+ butuh Platform API terhubung)
+- Selesai step 9: redirect ke admin CF Pages
 
 ---
 

@@ -42,6 +42,7 @@ export async function patchStatus(kv, patch) {
 function defaultStatus() {
   return {
     bootstrap_complete: false,
+    cf_worker_ok: false,
     github_pat_ok: false,
     cloudflare_ok: false,
     ssh_ok: false,

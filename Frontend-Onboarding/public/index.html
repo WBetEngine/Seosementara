@@ -25,7 +25,7 @@
         </div>
         <div id="api-banner-setup">
           <strong>Platform API belum terhubung.</strong>
-          <p class="api-banner__hint">Tanpa URL Worker, tombol <strong>Validasi &amp; simpan PAT</strong> dan <strong>Lanjut</strong> tidak akan jalan. Deploy worker sekali di GitHub Actions, lalu tempel URL di bawah.</p>
+          <p class="api-banner__hint">Langkah 1–2: deploy worker via GitHub Actions. Setelah Actions hijau, tempel URL Worker di bawah lalu <strong>Simpan &amp; tes koneksi</strong>. Langkah 3+ membutuhkan API terhubung.</p>
           <div class="api-config">
             <label class="form-label" for="platform-api-input">URL Platform Worker</label>
             <input class="form-control" id="platform-api-input" type="url" inputmode="url" placeholder="https://sse-platform.&lt;subdomain&gt;.workers.dev" autocomplete="off">
@@ -38,73 +38,44 @@
         </div>
       </div>
       <div class="alert alert--info">
-        Semua tombol <strong>Test</strong> memanggil Platform API nyata (Cloudflare / GitHub / SSH via Actions). PAT hanya dipakai untuk sesi setup, disimpan sementara di edge KV.
+        Urutan: <strong>Cloudflare Worker</strong> (token + account) → <strong>GitHub PAT</strong> (simpan secrets + deploy worker) → Zone/DNS → infra. Tombol <strong>Test</strong> memanggil Platform API nyata setelah worker hidup.
       </div>
 
       <div class="wizard-steps" id="wizard-steps">
-        <div class="wizard-step is-active" data-step="1"><div class="wizard-step__num">1</div>GitHub</div>
-        <div class="wizard-step" data-step="2"><div class="wizard-step__num">2</div>CF API</div>
-        <div class="wizard-step" data-step="3"><div class="wizard-step__num">3</div>Mini PC</div>
-        <div class="wizard-step" data-step="4"><div class="wizard-step__num">4</div>Runner</div>
-        <div class="wizard-step" data-step="5"><div class="wizard-step__num">5</div>Tunnel</div>
-        <div class="wizard-step" data-step="6"><div class="wizard-step__num">6</div>DB</div>
-        <div class="wizard-step" data-step="7"><div class="wizard-step__num">7</div>Deploy</div>
-        <div class="wizard-step" data-step="8"><div class="wizard-step__num">8</div>Selesai</div>
+        <div class="wizard-step is-active" data-step="1"><div class="wizard-step__num">1</div>CF Worker</div>
+        <div class="wizard-step" data-step="2"><div class="wizard-step__num">2</div>GitHub</div>
+        <div class="wizard-step" data-step="3"><div class="wizard-step__num">3</div>CF Zone</div>
+        <div class="wizard-step" data-step="4"><div class="wizard-step__num">4</div>Mini PC</div>
+        <div class="wizard-step" data-step="5"><div class="wizard-step__num">5</div>Runner</div>
+        <div class="wizard-step" data-step="6"><div class="wizard-step__num">6</div>Tunnel</div>
+        <div class="wizard-step" data-step="7"><div class="wizard-step__num">7</div>DB</div>
+        <div class="wizard-step" data-step="8"><div class="wizard-step__num">8</div>Deploy</div>
+        <div class="wizard-step" data-step="9"><div class="wizard-step__num">9</div>Selesai</div>
       </div>
 
       <form id="wizard-form" autocomplete="off" novalidate>
-        <!-- Step 1 -->
+        <!-- Step 1: Platform Worker -->
         <div class="wizard-panel" data-panel="1">
-          <h2 class="panel-title">GitHub &amp; repository</h2>
+          <h2 class="panel-title">Cloudflare Platform Worker</h2>
+          <div class="alert alert--warning">Deploy pertama: isi kredensial yang sama dengan GitHub Secrets <code>CLOUDFLARE_API_TOKEN</code> dan <code>CLOUDFLARE_ACCOUNT_ID</code>.</div>
           <div class="external-links">
-            <a class="btn--external" data-ext="githubTokens" target="_blank" rel="noopener noreferrer">
+            <a class="btn--external" data-ext="cfApiTokens" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-              Buat PAT
+              Buat API Token
             </a>
-            <a class="btn--external" data-ext="githubSecrets" target="_blank" rel="noopener noreferrer">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-              GitHub Secrets
-            </a>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="github_pat">
-              <span class="form-label__text">GitHub PAT (workflow + secrets)</span>
-              <button type="button" class="info-icon" aria-label="Informasi GitHub PAT" aria-expanded="false" data-tip="Personal Access Token dengan scope: repo, workflow, admin:repo_hook. Dipakai Workers API untuk menulis GitHub Secrets — tidak disimpan di localStorage permanen.">i</button>
-            </label>
-            <p class="info-tip" aria-live="polite"></p>
-            <div class="form-control-wrap">
-              <input class="form-control" id="github_pat" name="github_pat" type="password" placeholder="ghp_..." autocomplete="off">
-              <button type="button" class="pw-toggle" data-pw-toggle="github_pat" aria-label="Tampilkan password" aria-pressed="false">
-                <svg class="pw-toggle__icon pw-toggle__icon--on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                <svg class="pw-toggle__icon pw-toggle__icon--off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-              </button>
-            </div>
-            <p class="field-error" data-error-for="github_pat"></p>
-          </div>
-          <button type="button" class="btn btn--secondary" data-action="github-pat">Validasi &amp; simpan PAT</button>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="wizard-panel" data-panel="2" hidden>
-          <h2 class="panel-title">Cloudflare</h2>
-          <div class="external-links">
             <a class="btn--external" data-ext="cfDashboard" target="_blank" rel="noopener noreferrer">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
               Dashboard CF
             </a>
-            <a class="btn--external" data-ext="cfApiTokens" target="_blank" rel="noopener noreferrer">
+            <a class="btn--external" data-ext="platformWorkerDeploy" target="_blank" rel="noopener noreferrer" id="link-deploy-worker-step1">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-              API Tokens
-            </a>
-            <a class="btn--external" data-ext="cfDns" target="_blank" rel="noopener noreferrer">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
-              DNS Zone
+              Deploy Worker (manual)
             </a>
           </div>
           <div class="form-group">
             <label class="form-label" for="cf_token">
-              <span class="form-label__text">Global API Key / API Token</span>
-              <button type="button" class="info-icon" aria-label="Informasi Cloudflare token" aria-expanded="false" data-tip="Disarankan API Token scoped (Pages Edit, Tunnel Edit, DNS Edit). Disimpan di Workers Secrets, bukan file .env di mini PC.">i</button>
+              <span class="form-label__text">CLOUDFLARE_API_TOKEN</span>
+              <button type="button" class="info-icon" aria-label="Informasi API Token Worker" aria-expanded="false" data-tip="API Token dengan izin Workers Scripts, Workers KV, Account Settings (minimal untuk deploy sse-platform). Sama nilai yang akan disimpan ke GitHub Secrets.">i</button>
             </label>
             <p class="info-tip"></p>
             <div class="form-control-wrap">
@@ -116,16 +87,66 @@
             </div>
             <p class="field-error" data-error-for="cf_token"></p>
           </div>
-          <div class="form-grid form-grid--2">
-            <div class="form-group">
-              <label class="form-label" for="cf_account">
-                <span class="form-label__text">Account ID</span>
-                <button type="button" class="info-icon" aria-label="Informasi Account ID" aria-expanded="false" data-tip="32 karakter hex di sidebar kanan Cloudflare Dashboard → Overview.">i</button>
-              </label>
-              <p class="info-tip"></p>
-              <input class="form-control" id="cf_account" name="cf_account" placeholder="32 hex" autocomplete="off">
-              <p class="field-error" data-error-for="cf_account"></p>
+          <div class="form-group">
+            <label class="form-label" for="cf_account">
+              <span class="form-label__text">CLOUDFLARE_ACCOUNT_ID</span>
+              <button type="button" class="info-icon" aria-label="Informasi Account ID" aria-expanded="false" data-tip="32 karakter hex di Cloudflare Dashboard → sidebar kanan. Dipakai wrangler deploy dan GitHub Actions.">i</button>
+            </label>
+            <p class="info-tip"></p>
+            <input class="form-control" id="cf_account" name="cf_account" placeholder="32 hex" autocomplete="off">
+            <p class="field-error" data-error-for="cf_account"></p>
+          </div>
+          <button type="button" class="btn btn--secondary" data-action="cf-bootstrap-verify">Verifikasi token Cloudflare</button>
+          <button type="button" class="btn btn--ghost" data-action="cf-bootstrap-local">Simpan sementara di browser</button>
+        </div>
+
+        <!-- Step 2: GitHub PAT -->
+        <div class="wizard-panel" data-panel="2" hidden>
+          <h2 class="panel-title">GitHub &amp; repository</h2>
+          <div class="external-links">
+            <a class="btn--external" data-ext="githubTokens" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Buat PAT
+            </a>
+            <a class="btn--external" data-ext="githubSecrets" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              GitHub Secrets
+            </a>
+            <a class="btn--external" data-ext="githubActions" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              GitHub Actions
+            </a>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="github_pat">
+              <span class="form-label__text">GitHub PAT (workflow + secrets)</span>
+              <button type="button" class="info-icon" aria-label="Informasi GitHub PAT" aria-expanded="false" data-tip="Scope: repo, workflow, admin:repo_hook. Menulis CLOUDFLARE_* ke GitHub Secrets dan memicu deploy Platform Worker.">i</button>
+            </label>
+            <p class="info-tip" aria-live="polite"></p>
+            <div class="form-control-wrap">
+              <input class="form-control" id="github_pat" name="github_pat" type="password" placeholder="ghp_..." autocomplete="off">
+              <button type="button" class="pw-toggle" data-pw-toggle="github_pat" aria-label="Tampilkan password" aria-pressed="false">
+                <svg class="pw-toggle__icon pw-toggle__icon--on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-toggle__icon pw-toggle__icon--off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
             </div>
+            <p class="field-error" data-error-for="github_pat"></p>
+          </div>
+          <button type="button" class="btn btn--primary" data-action="github-initial-setup">Simpan PAT &amp; deploy Platform Worker</button>
+          <button type="button" class="btn btn--secondary" data-action="github-pat">Hanya validasi PAT</button>
+        </div>
+
+        <!-- Step 3: CF Zone -->
+        <div class="wizard-panel" data-panel="3" hidden>
+          <h2 class="panel-title">Cloudflare Zone &amp; domain</h2>
+          <div class="external-links">
+            <a class="btn--external" data-ext="cfDns" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              DNS Zone
+            </a>
+          </div>
+          <p class="api-banner__hint">Token &amp; Account ID dari langkah 1 dipakai otomatis. Di sini hanya Zone ID dan domain produk.</p>
+          <div class="form-grid form-grid--2">
             <div class="form-group">
               <label class="form-label" for="cf_zone">
                 <span class="form-label__text">Zone ID (domain produk)</span>
@@ -135,22 +156,22 @@
               <input class="form-control" id="cf_zone" name="cf_zone" placeholder="32 hex" autocomplete="off">
               <p class="field-error" data-error-for="cf_zone"></p>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="primary_domain">
+                <span class="form-label__text">Domain utama</span>
+                <button type="button" class="info-icon" aria-label="Informasi domain utama" aria-expanded="false" data-tip="Apex domain produk CMS. DNS record sudah di-setup manual di Cloudflare — wizard hanya verifikasi zone.">i</button>
+              </label>
+              <p class="info-tip"></p>
+              <input class="form-control" id="primary_domain" name="primary_domain" value="seosementara.org" autocomplete="off">
+              <p class="field-error" data-error-for="primary_domain"></p>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="primary_domain">
-              <span class="form-label__text">Domain utama</span>
-              <button type="button" class="info-icon" aria-label="Informasi domain utama" aria-expanded="false" data-tip="Apex domain produk CMS. DNS record sudah di-setup manual di Cloudflare — wizard hanya verifikasi zone.">i</button>
-            </label>
-            <p class="info-tip"></p>
-            <input class="form-control" id="primary_domain" name="primary_domain" value="seosementara.org" autocomplete="off">
-            <p class="field-error" data-error-for="primary_domain"></p>
-          </div>
-          <button type="button" class="btn btn--secondary" data-action="cf-test">Test token</button>
+          <button type="button" class="btn btn--secondary" data-action="cf-test">Test zone &amp; token</button>
           <button type="button" class="btn btn--secondary" data-action="cf-save">Simpan ke platform</button>
         </div>
 
-        <!-- Step 3 -->
-        <div class="wizard-panel" data-panel="3" hidden>
+        <!-- Step 4 -->
+        <div class="wizard-panel" data-panel="4" hidden>
           <h2 class="panel-title">Mini PC (SSH)</h2>
           <div class="external-links">
             <a class="btn--external" data-ext="cfZeroTrust" target="_blank" rel="noopener noreferrer">
@@ -205,8 +226,8 @@
           <button type="button" class="btn btn--secondary" data-action="ssh-test">Test SSH (Actions)</button>
         </div>
 
-        <!-- Step 4 -->
-        <div class="wizard-panel" data-panel="4" hidden>
+        <!-- Step 5 -->
+        <div class="wizard-panel" data-panel="5" hidden>
           <h2 class="panel-title">GitHub Actions runner</h2>
           <div class="external-links">
             <a class="btn--external" data-ext="githubRunners" target="_blank" rel="noopener noreferrer">
@@ -231,8 +252,8 @@
           <button type="button" class="btn btn--secondary" data-action="runner">Daftarkan runner (SSH)</button>
         </div>
 
-        <!-- Step 5 -->
-        <div class="wizard-panel" data-panel="5" hidden>
+        <!-- Step 6 -->
+        <div class="wizard-panel" data-panel="6" hidden>
           <h2 class="panel-title">Cloudflare Tunnel</h2>
           <div class="external-links">
             <a class="btn--external" data-ext="cfTunnels" target="_blank" rel="noopener noreferrer">
@@ -257,8 +278,8 @@
           <button type="button" class="btn btn--secondary" data-action="tunnel">Buat tunnel (CF API)</button>
         </div>
 
-        <!-- Step 6 -->
-        <div class="wizard-panel" data-panel="6" hidden>
+        <!-- Step 7 -->
+        <div class="wizard-panel" data-panel="7" hidden>
           <h2 class="panel-title">Database &amp; encryption</h2>
           <div class="external-links">
             <a class="btn--external" data-ext="githubSecrets" target="_blank" rel="noopener noreferrer">
@@ -301,8 +322,8 @@
           <button type="button" class="btn btn--secondary" data-action="database">Simpan ke GitHub Secrets</button>
         </div>
 
-        <!-- Step 7 -->
-        <div class="wizard-panel" data-panel="7" hidden>
+        <!-- Step 8 -->
+        <div class="wizard-panel" data-panel="8" hidden>
           <h2 class="panel-title">Deploy backend &amp; Pages</h2>
           <div class="external-links">
             <a class="btn--external" data-ext="githubActions" target="_blank" rel="noopener noreferrer">
@@ -327,8 +348,8 @@
           <button type="button" class="btn btn--primary" data-action="deploy-all">Jalankan deploy (backend + Pages)</button>
         </div>
 
-        <!-- Step 8 -->
-        <div class="wizard-panel" data-panel="8" hidden>
+        <!-- Step 9 -->
+        <div class="wizard-panel" data-panel="9" hidden>
           <div class="alert alert--success">
             Jika semua workflow GitHub Actions hijau, buka admin Cloudflare Pages.
           </div>

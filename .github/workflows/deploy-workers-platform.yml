@@ -6,7 +6,18 @@ on:
     paths:
       - 'platform-worker/**'
       - '.github/workflows/deploy-workers-platform.yml'
+  repository_dispatch:
+    types: [bootstrap-deploy-platform-worker]
   workflow_dispatch:
+    inputs:
+      cloudflare_api_token:
+        description: 'Cloudflare API Token (deploy pertama / tanpa secret repo)'
+        required: false
+        type: string
+      cloudflare_account_id:
+        description: 'Cloudflare Account ID (32 hex)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -30,8 +41,8 @@ jobs:
       - name: Patch KV namespace id
         working-directory: platform-worker
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ github.event.inputs.cloudflare_api_token || secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ github.event.inputs.cloudflare_account_id || secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -e
           KV_ID="${{ secrets.PLATFORM_KV_ID }}"
@@ -68,8 +79,8 @@ jobs:
         id: wrangler
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ github.event.inputs.cloudflare_api_token || secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ github.event.inputs.cloudflare_account_id || secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: platform-worker
           command: deploy
 
