@@ -17,7 +17,26 @@
       <h1>Setup infrastruktur</h1>
       <p class="subtitle">Tanpa database · tanpa .env di mini PC · Tunnel belum aktif. Validasi realtime · tombol bantuan ke dashboard eksternal.</p>
 
-      <div id="api-banner" class="alert alert--warning" hidden></div>
+      <div id="api-banner" class="alert alert--warning">
+        <div id="api-banner-connected" hidden>
+          <strong>Platform API terhubung.</strong>
+          <code id="api-banner-url"></code>
+          <button type="button" class="btn btn--ghost btn--sm" id="btn-api-change">Ubah URL</button>
+        </div>
+        <div id="api-banner-setup">
+          <strong>Platform API belum terhubung.</strong>
+          <p class="api-banner__hint">Tanpa URL Worker, tombol <strong>Validasi &amp; simpan PAT</strong> dan <strong>Lanjut</strong> tidak akan jalan. Deploy worker sekali di GitHub Actions, lalu tempel URL di bawah.</p>
+          <div class="api-config">
+            <label class="form-label" for="platform-api-input">URL Platform Worker</label>
+            <input class="form-control" id="platform-api-input" type="url" inputmode="url" placeholder="https://sse-platform.&lt;subdomain&gt;.workers.dev" autocomplete="off">
+            <div class="api-config__actions">
+              <button type="button" class="btn btn--secondary" id="btn-api-save-test">Simpan &amp; tes koneksi</button>
+              <a class="btn btn--ghost btn--external" id="link-deploy-worker" target="_blank" rel="noopener noreferrer">Deploy di GitHub Actions</a>
+            </div>
+            <p class="api-config__note">URL juga bisa dari query <code>?api=...</code> atau file <code>platform-api-url.js</code> setelah CI deploy.</p>
+          </div>
+        </div>
+      </div>
       <div class="alert alert--info">
         Semua tombol <strong>Test</strong> memanggil Platform API nyata (Cloudflare / GitHub / SSH via Actions). PAT hanya dipakai untuk sesi setup, disimpan sementara di edge KV.
       </div>

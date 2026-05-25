@@ -1,18 +1,59 @@
 (function () {
   'use strict';
 
+  var LS_KEY = 'sse_platform_api_url';
+
+  function normalizeUrl(url) {
+    return (url || '').trim().replace(/\/$/, '');
+  }
+
+  function readStored() {
+    try {
+      return normalizeUrl(localStorage.getItem(LS_KEY) || '');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function persistBase(url) {
+    var u = normalizeUrl(url);
+    window.__SSE_PLATFORM_API__ = u;
+    if (window.SSEO) window.SSEO.platformApiBase = u;
+    try {
+      if (u) localStorage.setItem(LS_KEY, u);
+      else localStorage.removeItem(LS_KEY);
+    } catch (e) {}
+    if (typeof window.refreshPlatformApiUi === 'function') {
+      window.refreshPlatformApiUi();
+    }
+    return u;
+  }
+
   function apiBase() {
     if (typeof window.__SSE_PLATFORM_API__ === 'string' && window.__SSE_PLATFORM_API__) {
-      return window.__SSE_PLATFORM_API__.replace(/\/$/, '');
+      return normalizeUrl(window.__SSE_PLATFORM_API__);
     }
     if (window.SSEO && window.SSEO.platformApiBase) {
-      return window.SSEO.platformApiBase.replace(/\/$/, '');
+      return normalizeUrl(window.SSEO.platformApiBase);
     }
     var params = new URLSearchParams(location.search);
     var q = params.get('api');
-    if (q) return q.replace(/\/$/, '');
-    return '';
+    if (q) return normalizeUrl(q);
+    return readStored();
   }
+
+  (function initApiUrl() {
+    var params = new URLSearchParams(location.search);
+    var q = params.get('api');
+    if (q) {
+      persistBase(q);
+      return;
+    }
+    if (!window.__SSE_PLATFORM_API__) {
+      var stored = readStored();
+      if (stored) window.__SSE_PLATFORM_API__ = stored;
+    }
+  })();
 
   function sessionId() {
     try {
@@ -32,7 +73,7 @@
     var base = apiBase();
     if (!base) {
       throw new Error(
-        'Platform API belum dikonfigurasi. Deploy platform-worker dulu, atau buka dengan ?api=https://sse-platform.<account>.workers.dev'
+        'Platform API belum dikonfigurasi. Isi URL Worker di kotak kuning di atas (Simpan & tes koneksi), jalankan workflow Deploy Platform Worker di GitHub Actions, atau buka dengan ?api=https://sse-platform.<account>.workers.dev'
       );
     }
 
@@ -62,6 +103,10 @@
 
   window.SSEOPlatform = {
     apiBase: apiBase,
+    setApiBase: persistBase,
+    testConnection: function () {
+      return request('GET', '/setup/status');
+    },
     getStatus: function () {
       return request('GET', '/setup/status');
     },

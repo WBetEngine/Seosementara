@@ -231,21 +231,90 @@
     });
   }
 
-  function showApiBanner() {
-    var el = qs('#api-banner');
-    if (!el) return;
+  function refreshApiBanner() {
+    var banner = qs('#api-banner');
+    var connected = qs('#api-banner-connected');
+    var setup = qs('#api-banner-setup');
+    var urlEl = qs('#api-banner-url');
+    var input = qs('#platform-api-input');
+    if (!banner) return;
+
     var base = API() && API().apiBase();
-    if (!base) {
-      el.hidden = false;
-      el.className = 'alert alert--warning';
-      el.innerHTML =
-        '<strong>Platform API belum terhubung.</strong> Deploy <code>platform-worker</code> (workflow Deploy Platform Worker), lalu refresh halaman. Atau tambahkan <code>?api=https://sse-platform.&lt;akun&gt;.workers.dev</code> di URL.';
-      return;
+    if (base) {
+      banner.className = 'alert alert--info';
+      if (connected) connected.hidden = false;
+      if (setup) setup.hidden = true;
+      if (urlEl) urlEl.textContent = base;
+      if (input && !input.value) input.value = base;
+    } else {
+      banner.className = 'alert alert--warning';
+      if (connected) connected.hidden = true;
+      if (setup) setup.hidden = false;
+      try {
+        var saved = localStorage.getItem('sse_platform_api_url');
+        if (input && saved && !input.value) input.value = saved;
+      } catch (e) {}
     }
-    el.hidden = false;
-    el.className = 'alert alert--info';
-    el.innerHTML =
-      'Terhubung ke Platform API: <code>' + base + '</code>';
+    if (typeof updateStepStatus === 'function') updateStepStatus();
+  }
+
+  function initApiBanner() {
+    var deployLink = qs('#link-deploy-worker');
+    var L = window.SSEO && window.SSEO.links;
+    if (deployLink && L && L.platformWorkerDeploy) {
+      deployLink.href = L.platformWorkerDeploy;
+    }
+
+    var saveBtn = qs('#btn-api-save-test');
+    var changeBtn = qs('#btn-api-change');
+    var input = qs('#platform-api-input');
+
+    if (saveBtn && input) {
+      saveBtn.addEventListener('click', async function () {
+        var url = input.value.trim();
+        if (!url) {
+          showToast('Masukkan URL Platform Worker.', 'error');
+          input.focus();
+          return;
+        }
+        if (!/^https?:\/\//i.test(url)) {
+          showToast('URL harus diawali http:// atau https://', 'error');
+          input.focus();
+          return;
+        }
+        setButtonLoading(saveBtn, true, 'Menguji…');
+        try {
+          API().setApiBase(url);
+          await API().testConnection();
+          showToast('Platform API terhubung.', 'success');
+          refreshApiBanner();
+        } catch (err) {
+          API().setApiBase('');
+          showToast(err.message || String(err), 'error');
+        } finally {
+          setButtonLoading(saveBtn, false);
+        }
+      });
+    }
+
+    if (changeBtn) {
+      changeBtn.addEventListener('click', function () {
+        var connected = qs('#api-banner-connected');
+        var setup = qs('#api-banner-setup');
+        var banner = qs('#api-banner');
+        if (connected) connected.hidden = true;
+        if (setup) setup.hidden = false;
+        if (banner) banner.className = 'alert alert--warning';
+        if (input) {
+          input.value = (API() && API().apiBase()) || '';
+          input.focus();
+        }
+        API().setApiBase('');
+      });
+    }
+
+    window.refreshPlatformApiUi = refreshApiBanner;
+    refreshApiBanner();
   }
 
   async function checkPlatformStatus() {
@@ -435,7 +504,7 @@
     initInfoIcons();
     initPasswordToggles();
     bindRealtimeValidation();
-    showApiBanner();
+    initApiBanner();
     initWizard();
     checkPlatformStatus();
   });
