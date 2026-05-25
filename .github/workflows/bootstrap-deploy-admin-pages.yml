@@ -1,0 +1,20 @@
+name: Bootstrap — Deploy Admin Pages
+
+on:
+  repository_dispatch:
+    types: [bootstrap-deploy-admin-pages]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Frontend-Ui-Admin ke Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy Frontend-Ui-Admin/public --project-name=seosementara-admin
+          workingDirectory: .

@@ -1,0 +1,28 @@
+name: Bootstrap — Install cloudflared
+
+on:
+  repository_dispatch:
+    types: [bootstrap-install-tunnel]
+  workflow_dispatch:
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install cloudflared di mini PC
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.BOOTSTRAP_SSH_HOST }}
+          port: ${{ secrets.BOOTSTRAP_SSH_PORT || 22 }}
+          username: ${{ secrets.BOOTSTRAP_SSH_USER }}
+          password: ${{ secrets.BOOTSTRAP_SSH_PASSWORD }}
+          script_stop: true
+          script: |
+            set -e
+            if ! command -v cloudflared >/dev/null 2>&1; then
+              curl -sL -o cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+              sudo dpkg -i cloudflared.deb || sudo apt-get install -f -y
+            fi
+            cloudflared --version
+            echo "Tunnel ID dari onboarding: ${{ github.event.client_payload.tunnel_id }}"
+            echo "Pasang token tunnel dari Cloudflare Zero Trust dashboard jika belum di-automate."

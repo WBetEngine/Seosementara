@@ -1,5 +1,6 @@
 /**
- * GitHub Pages base path + URL eksternal bantuan.
+ * URL Platform API — diisi otomatis setelah deploy worker (platform-api-url.js)
+ * atau manual: ?api=https://sse-platform.<subdomain>.workers.dev
  */
 (function () {
   var path = location.pathname.replace(/\/$/, '');
@@ -31,9 +32,9 @@
     cfDashboard: 'https://dash.cloudflare.com/',
     cfApiTokens: 'https://dash.cloudflare.com/profile/api-tokens',
     cfZeroTrust: 'https://one.dash.cloudflare.com/',
-    cfTunnels: 'https://one.dash.cloudflare.com/?to=/:account/cfd_tunnel',
+    cfTunnels: 'https://one.dash.cloudflare.com/',
     cfPages: 'https://dash.cloudflare.com/?to=/:account/pages',
-    cfDns: 'https://dash.cloudflare.com/?to=/:account/:zone/dns',
+    cfDns: 'https://dash.cloudflare.com/',
     cfDocsTunnel: 'https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/',
     ghcr: 'https://github.com/WBetEngine/Seosementara/pkgs/container'
   };

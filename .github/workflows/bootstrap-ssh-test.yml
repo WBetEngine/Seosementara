@@ -1,0 +1,23 @@
+name: Bootstrap — Test SSH
+
+on:
+  repository_dispatch:
+    types: [bootstrap-ssh-test]
+  workflow_dispatch:
+
+jobs:
+  ssh-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test koneksi SSH ke mini PC
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.BOOTSTRAP_SSH_HOST }}
+          port: ${{ secrets.BOOTSTRAP_SSH_PORT || 22 }}
+          username: ${{ secrets.BOOTSTRAP_SSH_USER }}
+          password: ${{ secrets.BOOTSTRAP_SSH_PASSWORD }}
+          script_stop: true
+          script: |
+            echo "SSH connection OK"
+            uname -a
+            docker --version || echo "Docker belum terpasang — akan di-setup pada deploy"

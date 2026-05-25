@@ -6,6 +6,8 @@
   <title>Setup Infra — Seosementara</title>
   <link id="onboarding-css" rel="stylesheet" href="assets/css/onboarding.css">
   <script src="assets/js/config.js"></script>
+  <script src="assets/js/platform-api-url.js"></script>
+  <script src="assets/js/platform-api.js"></script>
 </head>
 <body>
   <div id="toast"></div>
@@ -15,8 +17,9 @@
       <h1>Setup infrastruktur</h1>
       <p class="subtitle">Tanpa database · tanpa .env di mini PC · Tunnel belum aktif. Validasi realtime · tombol bantuan ke dashboard eksternal.</p>
 
+      <div id="api-banner" class="alert alert--warning" hidden></div>
       <div class="alert alert--info">
-        Secret <strong>tidak</strong> disimpan permanen di browser. Penyimpanan nyata lewat Workers Platform API.
+        Semua tombol <strong>Test</strong> memanggil Platform API nyata (Cloudflare / GitHub / SSH via Actions). PAT hanya dipakai untuk sesi setup, disimpan sementara di edge KV.
       </div>
 
       <div class="wizard-steps" id="wizard-steps">
@@ -53,7 +56,7 @@
             <input class="form-control" id="github_pat" name="github_pat" type="password" placeholder="ghp_..." autocomplete="off">
             <p class="field-error" data-error-for="github_pat"></p>
           </div>
-          <button type="button" class="btn btn--secondary" data-test-step="GitHub PAT">Test koneksi</button>
+          <button type="button" class="btn btn--secondary" data-action="github-pat">Validasi &amp; simpan PAT</button>
         </div>
 
         <!-- Step 2 -->
@@ -111,7 +114,8 @@
             <input class="form-control" id="primary_domain" name="primary_domain" value="seosementara.org" autocomplete="off">
             <p class="field-error" data-error-for="primary_domain"></p>
           </div>
-          <button type="button" class="btn btn--secondary" data-test-step="Cloudflare API">Test &amp; simpan</button>
+          <button type="button" class="btn btn--secondary" data-action="cf-test">Test token</button>
+          <button type="button" class="btn btn--secondary" data-action="cf-save">Simpan ke platform</button>
         </div>
 
         <!-- Step 3 -->
@@ -161,7 +165,7 @@
               <p class="field-error" data-error-for="ssh_secret"></p>
             </div>
           </div>
-          <button type="button" class="btn btn--secondary" data-test-step="SSH mini PC">Test SSH</button>
+          <button type="button" class="btn btn--secondary" data-action="ssh-test">Test SSH (Actions)</button>
         </div>
 
         <!-- Step 4 -->
@@ -187,7 +191,7 @@
             <input class="form-control" id="runner_label" name="runner_label" value="mini-pc" autocomplete="off">
             <p class="field-error" data-error-for="runner_label"></p>
           </div>
-          <button type="button" class="btn btn--secondary" data-test-step="Runner">Daftarkan runner</button>
+          <button type="button" class="btn btn--secondary" data-action="runner">Daftarkan runner (SSH)</button>
         </div>
 
         <!-- Step 5 -->
@@ -213,7 +217,7 @@
             <p class="field-error" data-error-for="tunnel_name"></p>
           </div>
           <pre class="code-block">cloudflared service install &lt;token-dari-cf-api&gt;</pre>
-          <button type="button" class="btn btn--secondary" data-test-step="Tunnel">Buat tunnel &amp; routes</button>
+          <button type="button" class="btn btn--secondary" data-action="tunnel">Buat tunnel (CF API)</button>
         </div>
 
         <!-- Step 6 -->
@@ -245,7 +249,7 @@
               <p class="field-error" data-error-for="master_key"></p>
             </div>
           </div>
-          <button type="button" class="btn btn--secondary" data-test-step="GitHub Secrets">Simpan ke GitHub Secrets</button>
+          <button type="button" class="btn btn--secondary" data-action="database">Simpan ke GitHub Secrets</button>
         </div>
 
         <!-- Step 7 -->
@@ -271,13 +275,13 @@
             <li>Admin UI → Cloudflare Pages</li>
             <li>Frontend publik → Cloudflare Pages</li>
           </ul>
-          <button type="button" class="btn btn--secondary" data-test-step="Deploy">Jalankan deploy (demo)</button>
+          <button type="button" class="btn btn--primary" data-action="deploy-all">Jalankan deploy (backend + Pages)</button>
         </div>
 
         <!-- Step 8 -->
         <div class="wizard-panel" data-panel="8" hidden>
           <div class="alert alert--success">
-            Infrastruktur siap (demo). Buka admin Cloudflare Pages.
+            Jika semua workflow GitHub Actions hijau, buka admin Cloudflare Pages.
           </div>
           <a id="btn-finish" class="btn btn--primary" href="#">Buka Admin CMS</a>
         </div>

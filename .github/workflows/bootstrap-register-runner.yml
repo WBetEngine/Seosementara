@@ -1,0 +1,48 @@
+name: Bootstrap — Register Runner
+
+on:
+  repository_dispatch:
+    types: [bootstrap-register-runner]
+  workflow_dispatch:
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Buat registration token
+        id: regtoken
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const res = await github.rest.actions.createRegistrationTokenForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            core.setOutput('token', res.data.token);
+
+      - name: Install runner di mini PC via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          RUNNER_TOKEN: ${{ steps.regtoken.outputs.token }}
+          RUNNER_LABEL: ${{ github.event.client_payload.runner_label || 'mini-pc' }}
+        with:
+          host: ${{ secrets.BOOTSTRAP_SSH_HOST }}
+          port: ${{ secrets.BOOTSTRAP_SSH_PORT || 22 }}
+          username: ${{ secrets.BOOTSTRAP_SSH_USER }}
+          password: ${{ secrets.BOOTSTRAP_SSH_PASSWORD }}
+          envs: RUNNER_TOKEN,RUNNER_LABEL
+          script_stop: true
+          script: |
+            set -e
+            RUNNER_DIR="$HOME/actions-runner"
+            mkdir -p "$RUNNER_DIR" && cd "$RUNNER_DIR"
+            if [ ! -f ./config.sh ]; then
+              curl -sL -o actions-runner.tar.gz https://github.com/actions/runner/releases/download/v2.321.0/actions-runner-linux-x64-2.321.0.tar.gz
+              tar xzf actions-runner.tar.gz
+            fi
+            ./config.sh --url https://github.com/${{ github.repository }} --token "$RUNNER_TOKEN" --labels "$RUNNER_LABEL" --unattended
+            sudo ./svc.sh install || ./svc.sh install
+            sudo ./svc.sh start || ./svc.sh start
+            echo "Runner registered with label: $RUNNER_LABEL"

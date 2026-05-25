@@ -57,11 +57,11 @@ Frontend-Publik/
 
 ## 4. Admin UI — Fase Implementasi
 
-### Fase A (selesai): Kerangka statis
+### Fase A (selesai): UI + Platform API
 
-- Layout mobile-friendly, drawer, sidebar ([27](./27-admin-panel-desain-ui-navigasi.md))
-- Mock partials untuk demo HTMX
-- **Pindahkan** `/admin/bootstrap.html` → `Frontend-Onboarding` (rencana)
+- Layout mobile-friendly, validasi realtime, ikon info di label
+- **Platform Worker** `platform-worker/` — endpoint `/admin/api/platform/*` (nyata)
+- Onboarding memanggil CF API, GitHub API, GitHub Actions (bukan demo toast)
 
 ### Fase B: Sambung Go API
 
@@ -121,7 +121,8 @@ Settings → Infra / Mini PC (status runner, tunnel, health) — **bukan** first
 | Onboarding wizard di CF Pages admin | Pemisahan hosting ([28](./28-platform-github-workers.md)) |
 | Script generator Python di repo | HTML sudah final; hapus setelah generate |
 | `npx serve` sebagai alur produksi | Kode di GitHub; deploy via Pages |
-| Bootstrap form simpan secret ke localStorage | Keamanan |
+| Simpan PAT/secret permanen di localStorage | Session edge + GitHub Secrets API |
+| Toast "demo" tanpa panggilan API | Semua Test memanggil Platform Worker |
 
 ---
 
@@ -131,9 +132,9 @@ Settings → Infra / Mini PC (status runner, tunnel, health) — **bukan** first
 - [x] Buat `Frontend-Onboarding/` + workflow GitHub Pages
 - [x] Pindahkan wizard ke onboarding; `bootstrap.html` → redirect ke GH Pages
 - [x] Banner admin + link onboarding; `?from=onboarding` → sessionStorage
-- [ ] Workers Platform API ([28](./28-platform-github-workers.md) §5)
-- [ ] Backend Go + Docker
-- [ ] Admin `apiMode: live`
+- [x] Workers Platform API — `platform-worker/` + workflows bootstrap
+- [ ] Backend Go API lengkap + `apiMode: live` di admin
+- [ ] Admin hapus `mock-api/` setelah Go API hidup
 
 ---
 

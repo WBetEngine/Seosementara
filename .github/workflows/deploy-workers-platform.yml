@@ -1,0 +1,66 @@
+name: Deploy Platform Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'platform-worker/**'
+      - '.github/workflows/deploy-workers-platform.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: platform-worker/package-lock.json
+
+      - name: Install dependencies
+        working-directory: platform-worker
+        run: npm install
+
+      - name: Patch KV namespace id
+        working-directory: platform-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "${{ secrets.PLATFORM_KV_ID }}" ]; then
+            sed -i "s/PLACEHOLDER_KV_ID/${{ secrets.PLATFORM_KV_ID }}/" wrangler.toml
+          else
+            echo "PLATFORM_KV_ID tidak diset — pastikan PLACEHOLDER_KV_ID sudah diganti di wrangler.toml"
+          fi
+
+      - name: Deploy to Cloudflare Workers
+        id: wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: platform-worker
+          command: deploy
+
+      - name: Tulis URL API untuk onboarding UI
+        run: |
+          URL="${{ steps.wrangler.outputs.deployment-url }}"
+          if [ -z "$URL" ]; then
+            echo "deployment-url kosong — set manual di config.js"
+            exit 0
+          fi
+          echo "window.__SSE_PLATFORM_API__ = '${URL%/}';" > Frontend-Onboarding/public/assets/js/platform-api-url.js
+          cp Frontend-Onboarding/public/assets/js/platform-api-url.js docs/assets/js/platform-api-url.js 2>/dev/null || true
+
+      - name: Commit platform API URL
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: update platform worker API URL for onboarding'
+          file_pattern: |
+            Frontend-Onboarding/public/assets/js/platform-api-url.js
+            docs/assets/js/platform-api-url.js

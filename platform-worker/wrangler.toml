@@ -1,0 +1,14 @@
+name = "sse-platform"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+nodejs_compat = true
+
+[vars]
+GITHUB_REPO = "WBetEngine/Seosementara"
+ALLOWED_ORIGINS = "https://wbetengine.github.io,http://localhost:3080,http://127.0.0.1:3080"
+
+# Buat namespace: npx wrangler kv namespace create SETUP_KV
+# Lalu isi id di bawah (ganti PLACEHOLDER)
+[[kv_namespaces]]
+binding = "SETUP_KV"
+id = "PLACEHOLDER_KV_ID"

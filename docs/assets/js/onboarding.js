@@ -2,6 +2,9 @@
   'use strict';
 
   var MAX_STEP = 8;
+  var API = function () {
+    return window.SSEOPlatform;
+  };
 
   var STEP_FIELDS = {
     1: ['github_pat'],
@@ -24,7 +27,7 @@
       return '';
     },
     cf_token: function (v) {
-      if (!v || !v.trim()) return 'API Token / Global API Key wajib diisi.';
+      if (!v || !v.trim()) return 'API Token wajib diisi.';
       if (v.trim().length < 20) return 'Token minimal 20 karakter.';
       return '';
     },
@@ -41,7 +44,7 @@
     primary_domain: function (v) {
       if (!v || !v.trim()) return 'Domain utama wajib diisi.';
       if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(v.trim())) {
-        return 'Format domain tidak valid (contoh: seosementara.org).';
+        return 'Format domain tidak valid.';
       }
       return '';
     },
@@ -112,7 +115,7 @@
     toast.classList.add('is-visible');
     setTimeout(function () {
       toast.classList.remove('is-visible');
-    }, 4000);
+    }, 5000);
   }
 
   function getInput(name) {
@@ -144,17 +147,29 @@
     return ok;
   }
 
+  function setButtonLoading(btn, loading, label) {
+    if (!btn) return;
+    btn.disabled = loading;
+    if (loading) {
+      btn.dataset.prevText = btn.textContent;
+      btn.textContent = label || 'Memproses…';
+    } else if (btn.dataset.prevText) {
+      btn.textContent = btn.dataset.prevText;
+      delete btn.dataset.prevText;
+    }
+  }
+
   function bindRealtimeValidation() {
     Object.keys(VALIDATORS).forEach(function (name) {
       var input = getInput(name);
       if (!input) return;
       input.addEventListener('input', function () {
         validateField(name, true);
-        updateStepStatus();
+        if (typeof updateStepStatus === 'function') updateStepStatus();
       });
       input.addEventListener('blur', function () {
         validateField(name, true);
-        updateStepStatus();
+        if (typeof updateStepStatus === 'function') updateStepStatus();
       });
     });
   }
@@ -164,14 +179,6 @@
       var tipText = btn.getAttribute('data-tip') || '';
       var group = btn.closest('.form-group');
       var tipEl = group ? qs('.info-tip', group) : null;
-
-      function toggleTip(open) {
-        if (!tipEl) return;
-        var show = open !== undefined ? open : !tipEl.classList.contains('is-open');
-        tipEl.classList.toggle('is-open', show);
-        tipEl.textContent = show ? tipText : '';
-        btn.setAttribute('aria-expanded', show ? 'true' : 'false');
-      }
 
       btn.addEventListener('click', function (e) {
         e.preventDefault();
@@ -184,20 +191,13 @@
         qsa('.info-icon[aria-expanded="true"]').forEach(function (b) {
           if (b !== btn) b.setAttribute('aria-expanded', 'false');
         });
-        toggleTip();
+        if (tipEl) {
+          var open = !tipEl.classList.contains('is-open');
+          tipEl.classList.toggle('is-open', open);
+          tipEl.textContent = open ? tipText : '';
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
       });
-    });
-
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.info-icon') && !e.target.closest('.info-tip')) {
-        qsa('.info-tip.is-open').forEach(function (t) {
-          t.classList.remove('is-open');
-          t.textContent = '';
-        });
-        qsa('.info-icon').forEach(function (b) {
-          b.setAttribute('aria-expanded', 'false');
-        });
-      }
     });
   }
 
@@ -210,6 +210,36 @@
     });
   }
 
+  function showApiBanner() {
+    var el = qs('#api-banner');
+    if (!el) return;
+    var base = API() && API().apiBase();
+    if (!base) {
+      el.hidden = false;
+      el.className = 'alert alert--warning';
+      el.innerHTML =
+        '<strong>Platform API belum terhubung.</strong> Deploy <code>platform-worker</code> (workflow Deploy Platform Worker), lalu refresh halaman. Atau tambahkan <code>?api=https://sse-platform.&lt;akun&gt;.workers.dev</code> di URL.';
+      return;
+    }
+    el.hidden = false;
+    el.className = 'alert alert--info';
+    el.innerHTML =
+      'Terhubung ke Platform API: <code>' + base + '</code>';
+  }
+
+  async function checkPlatformStatus() {
+    try {
+      var res = await API().getStatus();
+      if (res.status && res.status.bootstrap_complete) {
+        showToast('Bootstrap sudah selesai menurut server.', 'success');
+      }
+    } catch (e) {
+      /* API belum deploy */
+    }
+  }
+
+  var updateStepStatus;
+
   function initWizard() {
     var form = qs('#wizard-form');
     if (!form) return;
@@ -219,7 +249,7 @@
     var next = qs('#btn-next');
     var statusEl = qs('#step-status');
 
-    function updateStepStatus() {
+    updateStepStatus = function () {
       if (!statusEl) return;
       if (step >= MAX_STEP) {
         statusEl.textContent = '';
@@ -227,10 +257,15 @@
         return;
       }
       var ok = validateStep(step, false);
-      statusEl.textContent = ok ? 'Langkah siap dilanjutkan' : 'Lengkapi field yang ditandai merah';
-      statusEl.className = 'step-status' + (ok ? ' is-ok' : '');
-      if (next) next.disabled = !ok;
-    }
+      var apiOk = API() && API().apiBase();
+      statusEl.textContent = !apiOk
+        ? 'Hubungkan Platform API dulu'
+        : ok
+          ? 'Langkah siap — gunakan Test atau Lanjut'
+          : 'Lengkapi field yang ditandai merah';
+      statusEl.className = 'step-status' + (ok && apiOk ? ' is-ok' : '');
+      if (next) next.disabled = !ok || !apiOk;
+    };
 
     function show(s) {
       step = s;
@@ -249,10 +284,7 @@
       }
       var nav = qs('#wizard-nav');
       if (nav) nav.style.display = s >= MAX_STEP ? 'none' : '';
-      if (s < MAX_STEP) {
-        validateStep(s, false);
-        updateStepStatus();
-      }
+      if (s < MAX_STEP) updateStepStatus();
     }
 
     if (prev) {
@@ -264,7 +296,7 @@
     if (next) {
       next.addEventListener('click', function () {
         if (!validateStep(step, true)) {
-          showToast('Perbaiki field yang belum valid sebelum lanjut.', 'error');
+          showToast('Perbaiki field yang belum valid.', 'error');
           var first = qs('.form-control.is-invalid', form);
           if (first) first.focus();
           return;
@@ -273,36 +305,100 @@
       });
     }
 
-    qsa('[data-test-step]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
+    qsa('[data-action]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
         if (!validateStep(step, true)) {
           showToast('Lengkapi form yang valid dulu.', 'error');
           return;
         }
-        var label = btn.getAttribute('data-test-step') || 'Koneksi';
-        showToast(label + ': OK (demo — Workers API belum aktif)', 'success');
+        var action = btn.getAttribute('data-action');
+        var payload = API().formPayload(form);
+        setButtonLoading(btn, true);
+        try {
+          var result;
+          switch (action) {
+            case 'github-pat':
+              result = await API().saveGithubPat(payload.github_pat);
+              showToast('GitHub PAT valid — login: ' + (result.login || ''), 'success');
+              break;
+            case 'cf-test':
+              result = await API().testCloudflare(payload);
+              showToast(
+                'Cloudflare OK' +
+                  (result.zone_name ? ' — zone: ' + result.zone_name : ''),
+                'success'
+              );
+              break;
+            case 'cf-save':
+              result = await API().saveCloudflare(payload);
+              showToast(result.message || 'Cloudflare tersimpan', 'success');
+              break;
+            case 'ssh-test':
+              result = await API().testSsh(payload);
+              showToast(result.message || 'Test SSH dipicu', 'success');
+              break;
+            case 'runner':
+              result = await API().registerRunner(payload);
+              showToast(result.message || 'Register runner dipicu', 'success');
+              break;
+            case 'tunnel':
+              result = await API().createTunnel(payload);
+              showToast(
+                (result.message || 'Tunnel dibuat') +
+                  (result.tunnel_id ? ' ID: ' + result.tunnel_id : ''),
+                'success'
+              );
+              break;
+            case 'database':
+              result = await API().saveDatabase(payload);
+              showToast(result.message || 'Secrets database tersimpan', 'success');
+              break;
+            case 'deploy-all':
+              await API().deployBackend();
+              showToast('Deploy backend dipicu', 'success');
+              await API().deployAdminPages();
+              showToast('Deploy admin Pages dipicu', 'success');
+              await API().deployPublicPages();
+              showToast('Deploy publik Pages dipicu — cek GitHub Actions', 'success');
+              break;
+            default:
+              throw new Error('Aksi tidak dikenal');
+          }
+        } catch (err) {
+          showToast(err.message || String(err), 'error');
+        } finally {
+          setButtonLoading(btn, false);
+        }
       });
     });
 
     var finish = qs('#btn-finish');
     if (finish) {
-      finish.addEventListener('click', function (e) {
+      finish.addEventListener('click', async function (e) {
         e.preventDefault();
+        setButtonLoading(finish, true, 'Membuka admin…');
         try {
-          var data = {};
-          new FormData(form).forEach(function (v, k) {
-            if (v) data[k] = v;
-          });
-          localStorage.setItem(window.SSEO.wizardStorageKey, JSON.stringify(data));
-        } catch (err) {}
-
-        showToast('Setup selesai — membuka admin…', 'success');
-        var url =
-          (window.SSEO && window.SSEO.adminUrlAfterComplete) ||
-          'https://seosementara.org/admin/login.html?from=onboarding';
-        setTimeout(function () {
+          var st = await API().getStatus();
+          if (!st.status || !st.status.bootstrap_complete) {
+            showToast(
+              'Deploy belum lengkap — jalankan langkah 7 (Deploy) dan cek Actions hijau.',
+              'warning'
+            );
+          }
+          try {
+            localStorage.setItem(
+              window.SSEO.wizardStorageKey,
+              JSON.stringify(API().formPayload(form))
+            );
+          } catch (err) {}
+          var url =
+            (window.SSEO && window.SSEO.adminUrlAfterComplete) ||
+            'https://seosementara.org/admin/login.html?from=onboarding';
           window.location.href = url;
-        }, 1200);
+        } catch (err) {
+          showToast(err.message, 'error');
+          setButtonLoading(finish, false);
+        }
       });
     }
 
@@ -317,7 +413,9 @@
     initExternalLinks();
     initInfoIcons();
     bindRealtimeValidation();
+    showApiBanner();
     initWizard();
+    checkPlatformStatus();
   });
 
   window.showToast = showToast;
