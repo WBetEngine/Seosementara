@@ -11,11 +11,11 @@ on:
   workflow_dispatch:
     inputs:
       cloudflare_api_token:
-        description: 'Cloudflare API Token (deploy pertama / tanpa secret repo)'
+        description: 'Isi jika secret CLOUDFLARE_API_TOKEN belum ada (kosongkan jika secret sudah di-set)'
         required: false
         type: string
       cloudflare_account_id:
-        description: 'Cloudflare Account ID (32 hex)'
+        description: 'Isi jika secret CLOUDFLARE_ACCOUNT_ID belum ada'
         required: false
         type: string
 
@@ -40,6 +40,21 @@ jobs:
       - name: Install dependencies
         working-directory: ${{ env.WORKER_DIR }}
         run: npm install
+
+      - name: Cek kredensial Cloudflare
+        run: |
+          if [ -z "${{ github.event.inputs.cloudflare_api_token || secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN kosong."
+            echo "Isi salah satu:"
+            echo "  1) Repo Settings → Secrets → Actions → CLOUDFLARE_API_TOKEN"
+            echo "  2) Run workflow lagi dan isi field cloudflare_api_token"
+            exit 1
+          fi
+          if [ -z "${{ github.event.inputs.cloudflare_account_id || secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID kosong."
+            exit 1
+          fi
+          echo "Kredensial Cloudflare terdeteksi (dari secret atau workflow input)."
 
       - name: Siapkan KV namespace (SETUP_KV)
         working-directory: ${{ env.WORKER_DIR }}

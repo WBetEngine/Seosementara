@@ -5,7 +5,10 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-  echo "::error::CLOUDFLARE_API_TOKEN kosong. Isi GitHub Secret CLOUDFLARE_API_TOKEN atau workflow input cloudflare_api_token."
+  echo "::error::CLOUDFLARE_API_TOKEN kosong."
+  echo "GitHub: Settings → Secrets and variables → Actions → New repository secret"
+  echo "  Name: CLOUDFLARE_API_TOKEN  Value: token dari https://dash.cloudflare.com/profile/api-tokens"
+  echo "Atau Run workflow Deploy Platform Worker dan isi input cloudflare_api_token."
   exit 1
 fi
 
