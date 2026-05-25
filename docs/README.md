@@ -1,3 +1,1 @@
-# GitHub Pages
-
-Disalin dari Frontend-Onboarding/public — sync-onboarding-docs.yml
+# GitHub Pages — sync dari Frontend-Onboarding/public

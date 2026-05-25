@@ -177,6 +177,25 @@ a { color: var(--color-brand); }
   font-size: 0.75rem;
 }
 
+.deploy-troubleshoot {
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.deploy-troubleshoot summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-warning);
+}
+
+.deploy-troubleshoot ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.deploy-troubleshoot li { margin-bottom: 0.35rem; }
+
 .badge-host {
   display: inline-block;
   font-size: 0.7rem;

@@ -1,7 +1,7 @@
 name = "sse-platform"
 main = "src/index.js"
 compatibility_date = "2024-12-01"
-nodejs_compat = true
+compatibility_flags = [ "nodejs_compat" ]
 
 [vars]
 GITHUB_REPO = "WBetEngine/Seosementara"

@@ -180,6 +180,14 @@
             <div id="api-banner-connected" class="alert alert--success" hidden>
               Worker Cloudflare terhubung: <code id="api-banner-url"></code>
             </div>
+            <details class="deploy-troubleshoot">
+              <summary>Workflow deploy gagal?</summary>
+              <ul>
+                <li>Token CF butuh izin: <strong>Workers KV Storage</strong>, <strong>Workers Scripts</strong>, <strong>Account Settings</strong>.</li>
+                <li>Isi workflow inputs <code>cloudflare_api_token</code> + <code>cloudflare_account_id</code> (sama langkah 1).</li>
+                <li>Error <code>SETUP_KV</code> / <code>PLACEHOLDER_KV_ID</code>: jalankan ulang workflow setelah push terbaru repo, atau buat KV manual lalu secret <code>PLATFORM_KV_ID</code>.</li>
+              </ul>
+            </details>
           </section>
         </div>
 

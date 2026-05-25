@@ -38,42 +38,13 @@ jobs:
         working-directory: platform-worker
         run: npm install
 
-      - name: Patch KV namespace id
+      - name: Siapkan KV namespace (SETUP_KV)
         working-directory: platform-worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ github.event.inputs.cloudflare_api_token || secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ github.event.inputs.cloudflare_account_id || secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          set -e
-          KV_ID="${{ secrets.PLATFORM_KV_ID }}"
-          if [ -n "$KV_ID" ]; then
-            sed -i "s/PLACEHOLDER_KV_ID/${KV_ID}/" wrangler.toml
-            echo "KV dari secret PLATFORM_KV_ID"
-            exit 0
-          fi
-          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "::warning::CLOUDFLARE_API_TOKEN kosong — deploy akan gagal jika PLACEHOLDER_KV_ID belum diganti manual"
-            exit 0
-          fi
-          EXISTING=$(npx wrangler kv namespace list 2>/dev/null | node -e "
-            let d='';process.stdin.on('data',c=>d+=c);
-            process.stdin.on('end',()=>{
-              try {
-                const arr=JSON.parse(d);
-                const n=arr.find(x=>x.title==='SETUP_KV');
-                if(n&&n.id) console.log(n.id);
-              } catch(e) {}
-            });
-          " || true)
-          if [ -z "$EXISTING" ]; then
-            EXISTING=$(npx wrangler kv namespace create SETUP_KV 2>&1 | grep -oE '[a-f0-9]{32}' | head -1 || true)
-          fi
-          if [ -n "$EXISTING" ]; then
-            sed -i "s/PLACEHOLDER_KV_ID/${EXISTING}/" wrangler.toml
-            echo "::notice title=SETUP_KV::id=${EXISTING} — simpan sebagai GitHub secret PLATFORM_KV_ID agar deploy berikutnya konsisten"
-          else
-            echo "::warning::Gagal membuat/menemukan KV SETUP_KV — set secret PLATFORM_KV_ID atau ganti PLACEHOLDER_KV_ID di wrangler.toml"
-          fi
+          PLATFORM_KV_ID: ${{ secrets.PLATFORM_KV_ID }}
+        run: bash scripts/ensure-setup-kv.sh
 
       - name: Deploy to Cloudflare Workers
         id: wrangler
@@ -88,11 +59,12 @@ jobs:
         run: |
           URL="${{ steps.wrangler.outputs.deployment-url }}"
           if [ -z "$URL" ]; then
-            echo "deployment-url kosong — set manual di config.js"
+            echo "::warning::deployment-url kosong — tempel URL manual di onboarding (langkah 2c)"
             exit 0
           fi
           echo "window.__SSE_PLATFORM_API__ = '${URL%/}';" > Frontend-Onboarding/public/assets/js/platform-api-url.js
           cp Frontend-Onboarding/public/assets/js/platform-api-url.js docs/assets/js/platform-api-url.js 2>/dev/null || true
+          echo "Platform API URL: $URL"
 
       - name: Commit platform API URL
         uses: stefanzweifel/git-auto-commit-action@v5
