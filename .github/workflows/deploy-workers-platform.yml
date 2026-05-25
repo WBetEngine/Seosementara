@@ -23,11 +23,55 @@ permissions:
   contents: write
 
 jobs:
+  # Push otomatis tanpa secret → notice (bukan error merah). Manual/dispatch tanpa kredensial → gagal jelas.
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      has_token: ${{ steps.creds.outputs.has_token }}
+      has_account: ${{ steps.creds.outputs.has_account }}
+    steps:
+      - name: Cek kredensial Cloudflare
+        id: creds
+        run: |
+          TRIGGER="${{ github.event_name }}"
+          echo "Pemicu workflow: ${TRIGGER}"
+
+          HAS_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN != '' || github.event.inputs.cloudflare_api_token != '' }}"
+          HAS_ACCOUNT="${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' || github.event.inputs.cloudflare_account_id != '' }}"
+          echo "has_token=${HAS_TOKEN}" >> "$GITHUB_OUTPUT"
+          echo "has_account=${HAS_ACCOUNT}" >> "$GITHUB_OUTPUT"
+
+          if [ "$HAS_TOKEN" = "true" ] && [ "$HAS_ACCOUNT" = "true" ]; then
+            echo "Kredensial Cloudflare terdeteksi (secret atau workflow input)."
+            exit 0
+          fi
+
+          if [ "$TRIGGER" = "push" ]; then
+            echo "::notice title=Deploy Worker dilewati::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID belum ada di Repo Settings → Secrets → Actions. Set secret lalu Run workflow Deploy Platform Worker (atau isi input token), atau selesaikan langkah 2 onboarding (PAT menyimpan secret)."
+            exit 0
+          fi
+
+          if [ "$HAS_TOKEN" != "true" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN kosong."
+            echo "Isi salah satu:"
+            echo "  1) Repo Settings → Secrets and variables → Actions → New repository secret"
+            echo "     Name: CLOUDFLARE_API_TOKEN  (bukan Variable, harus Secret)"
+            echo "  2) Actions → Deploy Platform Worker → Run workflow → isi cloudflare_api_token"
+            exit 1
+          fi
+          echo "::error::CLOUDFLARE_ACCOUNT_ID kosong."
+          echo "Tambahkan secret CLOUDFLARE_ACCOUNT_ID atau isi input cloudflare_account_id."
+          exit 1
+
   deploy:
+    needs: preflight
+    if: needs.preflight.outputs.has_token == 'true' && needs.preflight.outputs.has_account == 'true'
     runs-on: ubuntu-latest
     env:
       WORKER_DIR: Frontend-Onboarding/platform-worker
       UI_PUBLIC: Frontend-Onboarding/public
+      CLOUDFLARE_API_TOKEN: ${{ github.event.inputs.cloudflare_api_token || secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ github.event.inputs.cloudflare_account_id || secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -41,26 +85,9 @@ jobs:
         working-directory: ${{ env.WORKER_DIR }}
         run: npm install
 
-      - name: Cek kredensial Cloudflare
-        run: |
-          if [ -z "${{ github.event.inputs.cloudflare_api_token || secrets.CLOUDFLARE_API_TOKEN }}" ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN kosong."
-            echo "Isi salah satu:"
-            echo "  1) Repo Settings → Secrets → Actions → CLOUDFLARE_API_TOKEN"
-            echo "  2) Run workflow lagi dan isi field cloudflare_api_token"
-            exit 1
-          fi
-          if [ -z "${{ github.event.inputs.cloudflare_account_id || secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
-            echo "::error::CLOUDFLARE_ACCOUNT_ID kosong."
-            exit 1
-          fi
-          echo "Kredensial Cloudflare terdeteksi (dari secret atau workflow input)."
-
       - name: Siapkan KV namespace (SETUP_KV)
         working-directory: ${{ env.WORKER_DIR }}
         env:
-          CLOUDFLARE_API_TOKEN: ${{ github.event.inputs.cloudflare_api_token || secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ github.event.inputs.cloudflare_account_id || secrets.CLOUDFLARE_ACCOUNT_ID }}
           PLATFORM_KV_ID: ${{ secrets.PLATFORM_KV_ID }}
         run: bash scripts/ensure-setup-kv.sh
 
@@ -68,8 +95,8 @@ jobs:
         id: wrangler
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ github.event.inputs.cloudflare_api_token || secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ github.event.inputs.cloudflare_account_id || secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: Frontend-Onboarding/platform-worker
           command: deploy
 
