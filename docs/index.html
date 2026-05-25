@@ -53,7 +53,13 @@
               <button type="button" class="info-icon" aria-label="Informasi GitHub PAT" aria-expanded="false" data-tip="Personal Access Token dengan scope: repo, workflow, admin:repo_hook. Dipakai Workers API untuk menulis GitHub Secrets — tidak disimpan di localStorage permanen.">i</button>
             </label>
             <p class="info-tip" aria-live="polite"></p>
-            <input class="form-control" id="github_pat" name="github_pat" type="password" placeholder="ghp_..." autocomplete="off">
+            <div class="form-control-wrap">
+              <input class="form-control" id="github_pat" name="github_pat" type="password" placeholder="ghp_..." autocomplete="off">
+              <button type="button" class="pw-toggle" data-pw-toggle="github_pat" aria-label="Tampilkan password" aria-pressed="false">
+                <svg class="pw-toggle__icon pw-toggle__icon--on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-toggle__icon pw-toggle__icon--off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
             <p class="field-error" data-error-for="github_pat"></p>
           </div>
           <button type="button" class="btn btn--secondary" data-action="github-pat">Validasi &amp; simpan PAT</button>
@@ -82,7 +88,13 @@
               <button type="button" class="info-icon" aria-label="Informasi Cloudflare token" aria-expanded="false" data-tip="Disarankan API Token scoped (Pages Edit, Tunnel Edit, DNS Edit). Disimpan di Workers Secrets, bukan file .env di mini PC.">i</button>
             </label>
             <p class="info-tip"></p>
-            <input class="form-control" id="cf_token" name="cf_token" type="password" autocomplete="off">
+            <div class="form-control-wrap">
+              <input class="form-control" id="cf_token" name="cf_token" type="password" autocomplete="off">
+              <button type="button" class="pw-toggle" data-pw-toggle="cf_token" aria-label="Tampilkan password" aria-pressed="false">
+                <svg class="pw-toggle__icon pw-toggle__icon--on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="pw-toggle__icon pw-toggle__icon--off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
             <p class="field-error" data-error-for="cf_token"></p>
           </div>
           <div class="form-grid form-grid--2">
@@ -161,7 +173,13 @@
                 <button type="button" class="info-icon" aria-label="Informasi kredensial SSH" aria-expanded="false" data-tip="Password atau isi private key SSH. Dikirim sekali ke Workers API untuk test — tidak disimpan di browser setelah sesi.">i</button>
               </label>
               <p class="info-tip"></p>
-              <input class="form-control" id="ssh_secret" name="ssh_secret" type="password" autocomplete="off">
+              <div class="form-control-wrap">
+                <input class="form-control" id="ssh_secret" name="ssh_secret" type="password" autocomplete="off">
+                <button type="button" class="pw-toggle" data-pw-toggle="ssh_secret" aria-label="Tampilkan password" aria-pressed="false">
+                  <svg class="pw-toggle__icon pw-toggle__icon--on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="pw-toggle__icon pw-toggle__icon--off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
               <p class="field-error" data-error-for="ssh_secret"></p>
             </div>
           </div>
@@ -236,7 +254,13 @@
                 <button type="button" class="info-icon" aria-label="Informasi password database" aria-expanded="false" data-tip="Password PostgreSQL production. Disimpan sebagai GitHub Secret DB_PASSWORD, di-inject ke container Docker.">i</button>
               </label>
               <p class="info-tip"></p>
-              <input class="form-control" id="db_password" name="db_password" type="password" autocomplete="new-password">
+              <div class="form-control-wrap">
+                <input class="form-control" id="db_password" name="db_password" type="password" autocomplete="new-password">
+                <button type="button" class="pw-toggle" data-pw-toggle="db_password" aria-label="Tampilkan password" aria-pressed="false">
+                  <svg class="pw-toggle__icon pw-toggle__icon--on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="pw-toggle__icon pw-toggle__icon--off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
               <p class="field-error" data-error-for="db_password"></p>
             </div>
             <div class="form-group">
@@ -245,7 +269,13 @@
                 <button type="button" class="info-icon" aria-label="Informasi encryption key" aria-expanded="false" data-tip="Kunci AES-256 untuk enkripsi token Cloudflare di DB. GitHub Secret MASTER_ENCRYPTION_KEY — minimal 16 karakter.">i</button>
               </label>
               <p class="info-tip"></p>
-              <input class="form-control" id="master_key" name="master_key" type="password" autocomplete="new-password">
+              <div class="form-control-wrap">
+                <input class="form-control" id="master_key" name="master_key" type="password" autocomplete="new-password">
+                <button type="button" class="pw-toggle" data-pw-toggle="master_key" aria-label="Tampilkan password" aria-pressed="false">
+                  <svg class="pw-toggle__icon pw-toggle__icon--on" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="pw-toggle__icon pw-toggle__icon--off" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
               <p class="field-error" data-error-for="master_key"></p>
             </div>
           </div>

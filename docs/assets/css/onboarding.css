@@ -232,6 +232,16 @@ a { color: var(--color-brand); }
 
 .field-error:empty { display: none; }
 
+.form-control-wrap {
+  position: relative;
+  display: block;
+}
+
+.form-control-wrap .form-control {
+  width: 100%;
+  padding-right: 2.85rem;
+}
+
 .form-control {
   width: 100%;
   padding: 0.55rem 0.75rem;
@@ -241,6 +251,51 @@ a { color: var(--color-brand); }
   font-family: inherit;
   min-height: var(--touch-min);
   transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--touch-min);
+  height: var(--touch-min);
+  min-width: var(--touch-min);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pw-toggle:hover,
+.pw-toggle:focus-visible {
+  color: var(--color-brand);
+  background: #f1f5f9;
+  outline: 2px solid var(--color-brand);
+  outline-offset: 1px;
+}
+
+.pw-toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  pointer-events: none;
+}
+
+.pw-toggle__icon--off {
+  display: none;
+}
+
+.pw-toggle.is-visible .pw-toggle__icon--on {
+  display: none;
+}
+
+.pw-toggle.is-visible .pw-toggle__icon--off {
+  display: block;
 }
 
 .form-control:focus {

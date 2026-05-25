@@ -201,6 +201,27 @@
     });
   }
 
+  function initPasswordToggles() {
+    qsa('.pw-toggle').forEach(function (btn) {
+      var wrap = btn.closest('.form-control-wrap');
+      var input = wrap ? qs('.form-control', wrap) : null;
+      if (!input) {
+        var id = btn.getAttribute('data-pw-toggle');
+        input = id ? qs('#' + id) : null;
+      }
+      if (!input) return;
+
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.classList.toggle('is-visible', show);
+        btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+        btn.setAttribute('aria-label', show ? 'Sembunyikan isi' : 'Tampilkan isi');
+      });
+    });
+  }
+
   function initExternalLinks() {
     var L = window.SSEO && window.SSEO.links;
     if (!L) return;
@@ -412,6 +433,7 @@
     }
     initExternalLinks();
     initInfoIcons();
+    initPasswordToggles();
     bindRealtimeValidation();
     showApiBanner();
     initWizard();
