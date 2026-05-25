@@ -37,9 +37,19 @@ Alternatif lama `docs/` di root **tidak dipakai lagi** — hindari duplikasi.
 
 ## Deploy Platform Worker (Cloudflare)
 
-1. Isi GitHub Secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (opsional `PLATFORM_KV_ID`).
-2. Actions → **Deploy Platform Worker** → Run workflow.
-3. Setelah hijau, `platform-api-url.js` ter-update otomatis.
+**Penting:** Setiap push ke `Frontend-Onboarding/**` memicu workflow ini. Jika secret belum ada, job deploy **dilewati** (bukan error) — UI Pages tetap bisa hijau sementara Worker belum ada.
+
+### Cara pertama kali (urutan disarankan)
+
+1. Repo → **Settings → Secrets and variables → Actions** → **New repository secret** (bukan *Variables*):
+   - `CLOUDFLARE_API_TOKEN` — token dari [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) (permission Workers + KV minimal).
+   - `CLOUDFLARE_ACCOUNT_ID` — ID akun (sidebar dashboard Cloudflare).
+2. Actions → **Deploy Platform Worker** → **Run workflow** (boleh kosongkan input jika secret sudah di-set).
+3. Setelah job **deploy** hijau, `platform-api-url.js` ter-update otomatis → refresh onboarding langkah **2c**.
+
+Alternatif tanpa secret: Run workflow dan isi input `cloudflare_api_token` + `cloudflare_account_id` (nilai terlihat di log run — kurang aman).
+
+Setelah Worker hidup, langkah 2 wizard bisa menyimpan `CLOUDFLARE_*` lewat PAT (`initial-setup`) dan memicu deploy berikutnya via `repository_dispatch`.
 
 Manual:
 
