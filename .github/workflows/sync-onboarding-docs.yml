@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - 'Frontend-Onboarding/**'
+      - 'platform-worker/**'
       - '.github/workflows/sync-onboarding-docs.yml'
   workflow_dispatch:
 
