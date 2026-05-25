@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Setup Infra — Seosementara</title>
-  <link id="onboarding-css" rel="stylesheet" href="assets/css/onboarding.css">
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/platform-api-url.js"></script>
-  <script src="assets/js/platform-api.js"></script>
+  <link id="onboarding-css" rel="stylesheet" href="assets/css/onboarding.css?v=20250524">
+  <script src="assets/js/config.js?v=20250524"></script>
+  <script src="assets/js/platform-api-url.js?v=20250524"></script>
+  <script src="assets/js/platform-api.js?v=20250524"></script>
 </head>
 <body>
   <div id="toast"></div>
@@ -50,7 +50,15 @@
             <div class="api-config__actions">
               <button type="button" class="btn btn--secondary" id="btn-api-save-test">Simpan &amp; tes koneksi</button>
             </div>
-            <p class="api-config__note">Setelah deploy, URL otomatis bisa masuk lewat <code>?api=...</code> atau <code>platform-api-url.js</code> dari CI.</p>
+            <div class="api-url-help" role="note">
+              <strong>URL tidak diketik manual</strong> — muncul setelah deploy worker:
+              <ol>
+                <li>Jalankan <strong>Deploy worker (Actions)</strong> (isi token + account dari langkah 1).</li>
+                <li>Buka run hijau → log job → cari <code>deployment-url</code> (mis. <code>https://sse-platform.*.workers.dev</code>).</li>
+                <li>Atau <strong>Workers di Cloudflare</strong> → layanan <code>sse-platform</code> → Trigger.</li>
+              </ol>
+            </div>
+            <p class="api-config__note">Setelah deploy, URL juga bisa dari <code>?api=...</code> atau <code>platform-api-url.js</code> (CI).</p>
           </div>
         </div>
       </div>
@@ -385,6 +393,6 @@
       </form>
     </div>
   </div>
-  <script src="assets/js/onboarding.js"></script>
+  <script src="assets/js/onboarding.js?v=20250524"></script>
 </body>
 </html>

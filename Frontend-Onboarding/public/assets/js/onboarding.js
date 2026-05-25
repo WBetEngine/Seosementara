@@ -592,7 +592,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     var css = qs('#onboarding-css');
     if (css && window.SSEO && window.SSEO.asset) {
-      css.href = window.SSEO.asset('/assets/css/onboarding.css');
+      css.href = window.SSEO.asset('/assets/css/onboarding.css') + '?v=20250524';
     }
     initExternalLinks();
     initInfoIcons();
