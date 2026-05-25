@@ -44,7 +44,7 @@ Setiap subdomain punya **tampilan HTMX sendiri** (template, menu, fungsi), tetap
 
 Subdomain **bukan** domain portfolio ribuan — itu entri terpisah di modul **Setup → Host**.
 
-**Hak subdomain:** hanya **Super Admin** yang boleh menambah, mengganti, atau menonaktifkan host/subdomain. Pekerja biasa **tidak** mengakses `/admin/setup/host`.
+**Hak subdomain:** hanya **Super Admin** yang boleh menambah, mengganti, atau menonaktifkan host/subdomain. Pekerja biasa **tidak** mengakses `/admin/settings/host`.
 
 ### 2.3 Domain portfolio (ribuan) — situs native CMS
 
@@ -96,7 +96,7 @@ flowchart TB
 
 Semua subdomain dan binding host dikelola di:
 
-**`https://seosementara.org/admin/setup/host`**
+**`https://seosementara.org/admin/settings/host`**
 
 | Field (konsep) | Keterangan |
 |----------------|------------|
@@ -132,7 +132,7 @@ func route(req) {
   case host == "seosementara.org":
     servePublicHTMX(path)           // frontend customer - apex
   default:
-    h := lookupHostConfig(host)     // dari DB, diisi via admin/setup/host
+    h := lookupHostConfig(host)     // dari DB, diisi via admin/settings/host
     if h == nil { return 404 }
     serveSubdomainHTMX(h, path)
   }
@@ -271,7 +271,7 @@ Semua endpoint `/api/admin/managed-domains/{id}/*` harus cek akses ini sebelum m
 | Admin HTMX | **`seosementara.org/admin/`** — dilayani origin (Go), bukan proyek terpisah per domain |
 | Frontend customer | **`seosementara.org/`** + subdomain — dilayani origin (Go) |
 | Cloudflare | DNS wildcard, proxy/Tunnel, cache — **bukan** satu Pages per domain portfolio |
-| Folder `Frontend-admin/` & `Frontend-Users/` | Sumber template HTML/HTMX di repo; di-build atau di-embed ke binary Go |
+| Folder `Frontend-Ui-Admin/` & `Frontend-Publik/` | Sumber HTML/HTMX di repo; deploy ke Cloudflare Pages |
 
 Cloudflare Pages masih bisa dipakai untuk **asset statis** (CSS/JS) jika diinginkan, asalkan routing `/admin/` dan subdomain tetap konsisten di DNS (Workers route → origin).
 

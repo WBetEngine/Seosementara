@@ -15,7 +15,7 @@ CMS ini dirancang untuk **skala operasional massal**: ribuan domain dikelola, ba
 ### Dalam Lingkup
 
 - Manajemen **ribuan domain portfolio** dari satu panel admin (`/admin/`)
-- Konfigurasi **host & subdomain produk** (`/admin/setup/host`)
+- Konfigurasi **host & subdomain produk** (`/admin/settings/host`)
 - CRUD konten (post, page, kategori, tag)
 - Pengaturan SEO per konten dan per situs
 - Manajemen media (upload, organisasi, optimasi dasar)

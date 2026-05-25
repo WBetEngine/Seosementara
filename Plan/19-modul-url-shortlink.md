@@ -272,7 +272,7 @@ CREATE TABLE url_link_stats_daily (
 
 ### 8.2 Setup admin ([15](./15-setup-cloudflare-integrasi.md) + [13](./13-setup-backend-dan-sistem.md))
 
-Path: `/admin/setup/backend/url-analytics/` atau tab di Setup Cloudflare
+Path: `/admin/settings/backend/url-analytics/` atau tab di Settings Cloudflare
 
 | Setting | Fungsi |
 |---------|--------|

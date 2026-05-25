@@ -2,18 +2,35 @@
 
 Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara bertahap. Estimasi waktu kalender sengaja dihindari — fokus pada **urutan dependensi** dan **risiko**.
 
-## Fase 0 — Fondasi (Prasyarat)
+## Fase −1 — Bootstrap Infra (First Boot)
+
+| Item | Output | Folder / Doc |
+|------|--------|--------------|
+| Onboarding UI | Wizard setup infra | `Frontend-Onboarding/` — [29](./29-frontend-admin-dan-onboarding.md) |
+| GitHub Pages | Auto-deploy push `main` | `.github/workflows/pages-onboarding.yml` |
+| Workers Platform API | `/admin/api/platform/*` | Workers project — [28](./28-platform-github-workers.md) |
+| Admin UI mock | Kerangka HTMX | `Frontend-Ui-Admin/` (mock → live) |
+| Self-hosted runner | GitHub Actions di mini PC | Via onboarding SSH |
+| Backend Docker | Go API + PostgreSQL | `Backend/` + GHCR — [16](./16-deploy-dan-lingkungan.md) |
+
+**Selesai jika:** operator selesai onboarding di GitHub Pages → admin CF Pages online → `GET /health` OK via Tunnel.
+
+**Tidak termasuk:** dev lokal wajib, `.env` di mini PC, bootstrap wizard di admin CF Pages.
+
+---
+
+## Fase 0 — Fondasi (Prasyarat Kode)
 
 | Item | Output | Folder |
 |------|--------|--------|
-| Repo layout | Backend, Frontend-admin, Frontend-Users, Plan | root |
-| Dokumentasi | File Plan 01–20 | `Plan/` |
+| Repo layout | Backend, Frontend-Ui-Admin, Frontend-Publik, Frontend-Onboarding, Themes, Plan | root |
+| Dokumentasi | File Plan 01–29 selaras arsitektur | `Plan/` |
 | Model domain | [09](./09-model-domain-host-dan-subdomain.md) disepakati | `Plan/` |
-| Lingkungan | Local + staging + prod — [16](./16-deploy-dan-lingkungan.md) | ops |
-| Infrastruktur | Go di mini CPU + Cloudflare DNS wildcard + Tunnel | ops |
+| Lingkungan | Staging + prod — [16](./16-deploy-dan-lingkungan.md) | CI |
+| Infrastruktur | Go Docker di mini PC + Cloudflare DNS + Tunnel | ops |
 | Routing | `Host` + `/admin/` + `/` + subdomain | Backend |
 
-**Selesai jika:** local & staging deploy OK; smoke test [16](./16-deploy-dan-lingkungan.md) §11 lulus.
+**Selesai jika:** staging deploy OK; smoke test [16](./16-deploy-dan-lingkungan.md) §11 lulus.
 
 ---
 
@@ -42,13 +59,14 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 | Item | Detail |
 |------|--------|
-| Layout sidebar + site switcher | Menu sesuai [03](./03-menu-dan-modul-cms.md) |
+| Layout sidebar + site switcher | Menu sesuai [03](./03-menu-dan-modul-cms.md), [27](./27-admin-panel-desain-ui-navigasi.md) |
 | Login page | HTMX → API |
-| Daftar & edit post | Partial swap |
+| Daftar & edit post | Partial swap + `#app-drawer` |
 | Media upload | Progress + validasi |
 | SEO sidebar per post | Title, description, slug |
+| `apiMode: live` | Hapus mock-api; banner onboarding jika infra belum selesai |
 
-**Selesai jika:** operator bisa login, pilih situs, tulis dan publish artikel dari Pages.
+**Selesai jika:** operator bisa login, pilih situs, tulis dan publish artikel dari CF Pages admin.
 
 ---
 
@@ -59,20 +77,20 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Kontrak HTMX | [17](./17-kontrak-htmx-dan-komponen-ui.md) |
 | Apex `seosementara.org/` | Beranda, halaman statis |
 | Modul URL shortlink (MVP) | [19](./19-modul-url-shortlink.md) — auto domain + redirect |
-| Admin Setup → Host | CRUD host + `template_id` |
+| Settings → Host | CRUD host + `template_id` |
 | Cache publik | Cloudflare + invalidasi |
 
 **Selesai jika:** checklist [17](./17-kontrak-htmx-dan-komponen-ui.md) §13; `url.*` redirect jalan; share domain OK.
 
 ---
 
-## Fase 4 — Setup Cloudflare, Meta, Backend
+## Fase 4 — Settings Cloudflare, Meta, Backend
 
 | Item | Detail |
 |------|--------|
-| Cloudflare API + Tunnel + Pages | [15](./15-setup-cloudflare-integrasi.md) |
-| Domain .env + sync Pages | `PRIMARY_DOMAIN`, `API_BASE_URL` |
-| Setup backend operasional | [13](./13-setup-backend-dan-sistem.md) |
+| Cloudflare API + Tunnel + Pages | [15](./15-setup-cloudflare-integrasi.md) — post-bootstrap di Settings admin |
+| Domain env + sync Pages | `PRIMARY_DOMAIN`, `API_BASE_URL` di DB |
+| Settings backend operasional | [13](./13-setup-backend-dan-sistem.md) |
 | Meta global + host + domain | [14](./14-setup-meta-dan-seo.md) |
 
 ---
@@ -108,7 +126,7 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 | Item | Detail |
 |------|--------|
 | Doc | [20](./20-pixel-admin-facebook-tiktok-gads.md) — menggantikan peran Stape/GTM SS/CAPIG secara native |
-| **Facebook Pro (spec)** | [21](./21-pixel-facebook-pro.md) + [22](./22-pixel-protokol-komunikasi-dan-data.md) — fitur, data, protokol |
+| **Facebook Pro (spec)** | [21](./21-pixel-facebook-pro.md) + [22](./22-pixel-protokol-komunikasi-dan-data.md) |
 | **Facebook Pro (kode)** | Setelah spec disetujui — Backend + admin + CAPI |
 | MVP | `pelacak.*` first-party + `sseo-track.js` + `/collect` + CAPI Facebook + worker `pixel_dispatch` |
 | Fase 2 | Event catalog + fan-out TikTok & GAds |
@@ -139,13 +157,14 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 ## Matriks Deliverable per Folder
 
-| Fase | Backend (Go) | Frontend-admin | Frontend-Users |
-|------|:------------:|:--------------:|:--------------:|
-| 1 | ✓✓✓ | — | — |
-| 2 | ✓ (partial HTML) | ✓✓✓ | — |
-| 3 | ✓ (public API) | ✓ | ✓✓✓ |
-| 4 | ✓✓ (worker) | ✓✓ | ✓ |
-| 5 | ✓✓ | ✓ | ✓ |
+| Fase | Backend (Go) | Frontend-Onboarding | Frontend-Ui-Admin | Frontend-Publik |
+|------|:------------:|:-------------------:|:-----------------:|:---------------:|
+| −1 | — | ✓✓✓ | ✓ (mock) | — |
+| 1 | ✓✓✓ | — | — | — |
+| 2 | ✓ (partial HTML) | — | ✓✓✓ | — |
+| 3 | ✓ (public API) | — | ✓ | ✓✓✓ |
+| 4 | ✓✓ (worker) | — | ✓✓ | ✓ |
+| 5 | ✓✓ | — | ✓ | ✓ |
 
 ---
 
@@ -153,7 +172,7 @@ Roadmap ini memecah pembangunan CMS menjadi fase yang dapat dikirim secara berta
 
 | # | Keputusan | Opsi |
 |---|-----------|------|
-| 1 | Database | PostgreSQL vs SQLite |
+| 1 | Database | PostgreSQL (disarankan) vs SQLite |
 | 2 | Media storage | Lokal vs Cloudflare R2 |
 | 3 | Admin response format | HTML partial only vs JSON hybrid |
 | 4 | Domain strategy | Tunnel hostname vs IP |
@@ -167,17 +186,19 @@ Catat keputusan di bagian bawah file ini setelah final.
 
 | Tanggal | Keputusan | Catatan |
 |---------|-----------|---------|
-| 2026-05-21 | Backend: **Golang** | Mini CPU |
-| 2026-05-21 | Admin & Users UI: **HTMX** | Cloudflare Pages |
+| 2026-05-21 | Backend: **Golang** | Mini CPU Docker |
+| 2026-05-21 | Admin & Publik UI: **HTMX** | Cloudflare Pages |
 | 2026-05-21 | Admin di **`/admin/`** pada domain produk | Bukan per-domain portfolio |
-| 2026-05-21 | Frontend publik = **apex + subdomain** | Setup di `/admin/setup/host` |
+| 2026-05-21 | Frontend publik = **apex + subdomain** | Settings di `/admin/settings/host` |
 | 2026-05-21 | Portfolio = **ribuan domain di DB** | Banyak pekerja, pagination wajib |
 | 2026-05-21 | **Bukan WordPress** | Situs native CMS |
 | 2026-05-21 | **Ownership + share** | Pekerja hanya domain sendiri + dibagikan |
-| 2026-05-21 | **Subdomain dinamis** | Hanya Super Admin di Setup → Host |
+| 2026-05-21 | **Subdomain dinamis** | Hanya Super Admin di Settings → Host |
 | 2026-05-21 | Co-admin undang → **owner setujui** | Notifikasi + `domain_share_invitations` |
 | 2026-05-21 | **SA transfer ownership** | API + audit + notifikasi |
-| | | |
+| 2026-05-24 | **Onboarding = GitHub Pages** | Workers Platform API; admin CF Pages terpisah |
+| 2026-05-24 | **Mini PC = Docker only** | Tanpa `.env` file; secrets GitHub + Workers |
+| 2026-05-24 | Folder: `Frontend-Ui-Admin`, `Frontend-Publik`, `Frontend-Onboarding` | Ganti nama lama `Frontend-admin`, `Frontend-Users` |
 
 ---
 

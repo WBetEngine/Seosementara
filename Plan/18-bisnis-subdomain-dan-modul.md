@@ -1,7 +1,7 @@
 # 18 — Bisnis Subdomain & Modul Layanan
 
 > Spesifikasi fungsi tiap **subdomain produk** (`bola.`, `cdn.`, `url.`, …) — melengkapi [06](./06-frontend-users-htmx.md) dan [09](./09-model-domain-host-dan-subdomain.md).  
-> Host didaftarkan di `/admin/setup/host` — template_id menentukan modul.
+> Host didaftarkan di `/admin/settings/host` — template_id menentukan modul.
 
 ## 1. Prinsip
 
@@ -10,7 +10,7 @@
 | Subdomain = **layanan produk** | Bukan domain portfolio ribuan |
 | Dinamis | Super Admin tambah/ubah host + template di admin |
 | Data terpisah | Tabel/modul per layanan — namespace API `/api/public/{modul}/` |
-| UI terpisah | Folder `Frontend-Users/subdomains/{modul}/` |
+| UI terpisah | Folder `Frontend-Publik/public/subdomains/{modul}/` |
 | Hubung ke CMS | Opsional link ke `managed_domain_id` (tracking, aset, short link target) |
 
 ---
@@ -116,7 +116,7 @@ CREATE INDEX idx_bola_matches_kickoff ON bola_matches (kickoff_at DESC);
 
 ### 4.4 UI publik
 
-`Frontend-Users/subdomains/bola/` — layout hijau, menu: Beranda, Liga, Jadwal.
+`Frontend-Publik/public/subdomains/bola/` — layout hijau, menu: Beranda, Liga, Jadwal.
 
 ---
 

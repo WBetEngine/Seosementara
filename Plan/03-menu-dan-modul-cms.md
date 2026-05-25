@@ -76,7 +76,7 @@ Settings (Read / Edit / Write — Super Admin / permission settings.*) → [27](
 ├── Host / Subdomain produk (bukan portfolio) → [09], [14]
 ├── Meta global apex → [14](./14-setup-meta-dan-seo.md)
 └── Notifikasi platform
-(Path: `/admin/settings/*` — bukan `/admin/setup/*`)
+(Path: `/admin/settings/*` — bukan `/admin/settings/*`)
 
 Bantuan
 ├── Dokumentasi internal
@@ -118,7 +118,7 @@ Modul ini mengelola **domain yang dioperasikan** (ribuan), bukan hostname UI pro
 
 ---
 
-### 2.2b Setup → Host (Domain Produk & Subdomain)
+### 2.2b Settings → Host (Domain Produk & Subdomain)
 
 | Submenu | Fungsi |
 |---------|--------|
@@ -128,7 +128,7 @@ Modul ini mengelola **domain yang dioperasikan** (ribuan), bukan hostname UI pro
 | Mapping template | Pilih UI HTMX untuk host tersebut |
 | Panduan DNS | Wildcard `*.seosementara.org` → origin |
 
-**URL admin:** `/admin/setup/host`
+**URL admin:** `/admin/settings/host`
 
 Subdomain **bisa ditambah dan diganti** sewaktu-waktu — keputusan **Super Admin** saja.
 
@@ -237,10 +237,10 @@ CRUD taxonomy per situs; hindari load semua term sekaligus — tree lazy-load ji
 
 | Lapisan | Kelola di admin | Dokumen |
 |---------|-----------------|---------|
-| Sistem (role admin, setup) | `/admin/setup/backend/rbac/` | [13](./13-setup-backend-dan-sistem.md) §3, [11](./11-rbac-dan-permission-share.md) |
+| Sistem (role admin, setup) | `/admin/settings/backend/rbac/` | [13](./13-setup-backend-dan-sistem.md) §3, [11](./11-rbac-dan-permission-share.md) |
 | Domain (share checklist) | `/admin/sites/{id}/sharing` | [11](./11-rbac-dan-permission-share.md) |
-| Login & keamanan | `/admin/setup/backend/autentikasi/` | [12](./12-autentikasi-dan-login-aman.md) |
-| Rate limit | `/admin/setup/backend/rate-limit/` | [13](./13-setup-backend-dan-sistem.md) §5 |
+| Login & keamanan | `/admin/settings/backend/autentikasi/` | [12](./12-autentikasi-dan-login-aman.md) |
+| Rate limit | `/admin/settings/backend/rate-limit/` | [13](./13-setup-backend-dan-sistem.md) §5 |
 
 ## 4. Menu Frontend Publik (Bukan Menu Admin)
 

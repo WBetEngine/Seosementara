@@ -36,7 +36,7 @@ sequenceDiagram
 
 ### 2.1 Layout shell (statis di Pages)
 
-File: `Frontend-admin/templates/layouts/admin.html`
+File: `Frontend-Ui-Admin/public/partials/layouts/admin.html`
 
 | Region | ID | Isi |
 |--------|-----|-----|
