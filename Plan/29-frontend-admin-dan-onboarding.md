@@ -10,7 +10,7 @@
 
 | | **Onboarding** | **Admin CMS** |
 |--|------------------|---------------|
-| **Folder** | `Frontend-Onboarding/` | `Frontend-Ui-Admin/` |
+| **Folder** | `Frontend-Onboarding/` (UI `public/` + Worker `platform-worker/`) | `Frontend-Ui-Admin/` |
 | **Hosting** | GitHub Pages | Cloudflare Pages |
 | **Deploy** | Otomatis tiap push `main` | Setelah bootstrap (GitHub Actions) |
 | **Pengguna** | Operator setup infra (sekali) | Pekerja CMS (sehari-hari) |
@@ -37,10 +37,10 @@ Operator **pertama kali** selalu mulai dari **URL GitHub Pages onboarding**, buk
 
 ```
 Frontend-Onboarding/
-└── public/
-    ├── index.html              # wizard bootstrap
-    ├── assets/css/onboarding.css
-    └── assets/js/onboarding.js   # panggil Workers Platform API
+├── public/                     # wizard UI (GitHub Pages)
+│   ├── index.html
+│   └── assets/js/onboarding.js
+└── platform-worker/            # Cloudflare Worker API (bukan folder terpisah di root)
 
 Frontend-Ui-Admin/
 └── public/
@@ -60,7 +60,7 @@ Frontend-Publik/
 ### Fase A (selesai): UI + Platform API
 
 - Layout mobile-friendly, validasi realtime, ikon info di label
-- **Platform Worker** `platform-worker/` — endpoint `/admin/api/platform/*` (nyata)
+- **Platform Worker** `Frontend-Onboarding/platform-worker/` — endpoint `/admin/api/platform/*` (nyata)
 - Onboarding memanggil CF API, GitHub API, GitHub Actions (bukan demo toast)
 
 ### Fase B: Sambung Go API
@@ -133,7 +133,7 @@ Settings → Infra / Mini PC (status runner, tunnel, health) — **bukan** first
 - [x] Buat `Frontend-Onboarding/` + workflow GitHub Pages
 - [x] Pindahkan wizard ke onboarding; `bootstrap.html` → redirect ke GH Pages
 - [x] Banner admin + link onboarding; `?from=onboarding` → sessionStorage
-- [x] Workers Platform API — `platform-worker/` + workflows bootstrap
+- [x] Workers Platform API — `Frontend-Onboarding/platform-worker/` + workflows bootstrap
 - [ ] Backend Go API lengkap + `apiMode: live` di admin
 - [ ] Admin hapus `mock-api/` setelah Go API hidup
 

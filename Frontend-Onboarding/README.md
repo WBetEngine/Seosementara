@@ -1,40 +1,66 @@
-# Frontend-Onboarding — Setup Infra Pertama Kali
+# Frontend-Onboarding — satu folder untuk first boot
 
-Wizard **production** — memanggil **Platform Worker API** (bukan demo).
+Semua yang terkait **wizard onboarding** ada di sini (UI + Cloudflare Worker API). Tidak ada salinan terpisah di `docs/` atau `platform-worker/` di root repo.
 
-| | |
-|--|--|
-| **URL** | https://wbetengine.github.io/Seosementara/ |
-| **API** | `https://sse-platform.<akun>.workers.dev/admin/api/platform/*` |
-| **Deploy UI** | push `main` → folder `docs/` atau GitHub Actions |
+## Struktur
 
-## Prasyarat (urutan)
-
-1. **GitHub Secrets** di repo: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
-2. **KV namespace** + deploy worker — lihat [platform-worker/README.md](../platform-worker/README.md)
-3. Workflow **Deploy Platform Worker** sukses → file `platform-api-url.js` terisi URL worker
-4. **Pages** → branch `main`, folder **`/docs`**
-
-## Uji lokal
-
-```bash
-# Terminal 1 — worker
-cd platform-worker && npm install && npm run dev
-
-# Terminal 2 — UI
-npx --yes serve Frontend-Onboarding/public -p 3080
-# Buka http://localhost:3080/?api=http://localhost:8787
+```
+Frontend-Onboarding/
+├── public/                 # UI wizard → GitHub Pages
+│   ├── index.html
+│   └── assets/
+│       ├── css/onboarding.css
+│       └── js/
+│           ├── config.js
+│           ├── onboarding.js
+│           ├── platform-api.js
+│           └── platform-api-url.js   # diisi CI setelah deploy worker
+└── platform-worker/        # Cloudflare Worker sse-platform (API bootstrap)
+    ├── src/
+    ├── wrangler.toml
+    ├── package.json
+    └── scripts/ensure-setup-kv.sh
 ```
 
-## Alur operator
+| Komponen | Platform | Folder |
+|----------|----------|--------|
+| Wizard UI | **GitHub Pages** | `public/` |
+| Platform API | **Cloudflare Workers** | `platform-worker/` |
 
-1. Validasi PAT → session edge
-2. Test + simpan Cloudflare → CF API nyata + GitHub Secrets
-3. Test SSH → GitHub Actions `bootstrap-ssh-test`
-4. Register runner → SSH install runner di mini PC
-5. Buat tunnel → Cloudflare API + workflow install cloudflared
-6. Simpan DB secrets → GitHub Secrets API
-7. Deploy → trigger backend + admin Pages + public Pages
-8. Buka admin CF Pages
+GitHub Actions (di root `.github/workflows/`) hanya **memanggil** path di atas — bukan folder duplikat.
 
-Dokumen: [Plan/28](../Plan/28-platform-github-workers.md), [Plan/29](../Plan/29-frontend-admin-dan-onboarding.md).
+## Deploy UI (GitHub Pages)
+
+**Disarankan:** Settings → Pages → Source: **GitHub Actions** → workflow `Deploy Onboarding (GitHub Pages)` → artifact `Frontend-Onboarding/public`.
+
+Alternatif lama `docs/` di root **tidak dipakai lagi** — hindari duplikasi.
+
+## Deploy Platform Worker (Cloudflare)
+
+1. Isi GitHub Secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (opsional `PLATFORM_KV_ID`).
+2. Actions → **Deploy Platform Worker** → Run workflow.
+3. Setelah hijau, `platform-api-url.js` ter-update otomatis.
+
+Manual:
+
+```bash
+cd Frontend-Onboarding/platform-worker
+npm install
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ACCOUNT_ID=...
+bash scripts/ensure-setup-kv.sh
+npm run dev   # http://localhost:8787
+```
+
+UI lokal:
+
+```bash
+npx --yes serve Frontend-Onboarding/public -p 3080
+# http://localhost:3080/?api=http://localhost:8787
+```
+
+## Urutan wizard (ringkas)
+
+1. Kredensial Cloudflare → 2. GitHub PAT + deploy worker + URL `*.workers.dev` → 3. Zone → 4–9 infra.
+
+Lihat `Plan/29-frontend-admin-dan-onboarding.md`.

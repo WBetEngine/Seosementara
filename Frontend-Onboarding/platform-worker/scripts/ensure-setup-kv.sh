@@ -57,7 +57,7 @@ fi
 if grep -q 'PLACEHOLDER_KV_ID' wrangler.toml; then
   echo "::error::KV SETUP_KV belum siap."
   echo "Token Cloudflare perlu izin: Account Settings Read, Workers Scripts Edit, Workers KV Storage Edit."
-  echo "Manual: cd platform-worker && npx wrangler kv namespace create SETUP_KV --update-config"
+  echo "Manual: cd Frontend-Onboarding/platform-worker && npx wrangler kv namespace create SETUP_KV --update-config"
   echo "Simpan id di GitHub → Settings → Secrets → PLATFORM_KV_ID"
   exit 1
 fi

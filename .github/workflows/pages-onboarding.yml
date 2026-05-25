@@ -5,8 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Frontend-Onboarding/**'
-      - 'docs/**'
+      - 'Frontend-Onboarding/public/**'
       - '.github/workflows/pages-onboarding.yml'
   workflow_dispatch:
 
