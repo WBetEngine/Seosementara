@@ -13,10 +13,10 @@
     <div class="onboarding-card">
       <span class="badge-host">GitHub Pages · First boot</span>
       <h1>Setup infrastruktur</h1>
-      <p class="subtitle">Tanpa database · tanpa .env di mini PC · Tunnel belum aktif. Isi form lalu deploy otomatis via GitHub Actions.</p>
+      <p class="subtitle">Tanpa database · tanpa .env di mini PC · Tunnel belum aktif. Validasi realtime · tombol bantuan ke dashboard eksternal.</p>
 
       <div class="alert alert--info">
-        Secret <strong>tidak</strong> disimpan permanen di browser. Fase ini demo UI; penyimpanan nyata lewat Workers Platform API.
+        Secret <strong>tidak</strong> disimpan permanen di browser. Penyimpanan nyata lewat Workers Platform API.
       </div>
 
       <div class="wizard-steps" id="wizard-steps">
@@ -30,104 +30,241 @@
         <div class="wizard-step" data-step="8"><div class="wizard-step__num">8</div>Selesai</div>
       </div>
 
-      <form id="wizard-form" autocomplete="off">
+      <form id="wizard-form" autocomplete="off" novalidate>
+        <!-- Step 1 -->
         <div class="wizard-panel" data-panel="1">
           <h2 class="panel-title">GitHub &amp; repository</h2>
+          <div class="external-links">
+            <a class="btn--external" data-ext="githubTokens" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Buat PAT
+            </a>
+            <a class="btn--external" data-ext="githubSecrets" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              GitHub Secrets
+            </a>
+          </div>
           <div class="form-group">
-            <label>GitHub PAT (workflow + secrets)</label>
-            <input class="form-control" name="github_pat" type="password" placeholder="ghp_...">
-            <p class="hint">Scope: repo, workflow, admin:repo_hook. Disimpan ke GitHub Secrets via Workers API.</p>
+            <label class="form-label" for="github_pat">
+              <span class="form-label__text">GitHub PAT (workflow + secrets)</span>
+              <button type="button" class="info-icon" aria-label="Informasi GitHub PAT" aria-expanded="false" data-tip="Personal Access Token dengan scope: repo, workflow, admin:repo_hook. Dipakai Workers API untuk menulis GitHub Secrets — tidak disimpan di localStorage permanen.">i</button>
+            </label>
+            <p class="info-tip" aria-live="polite"></p>
+            <input class="form-control" id="github_pat" name="github_pat" type="password" placeholder="ghp_..." autocomplete="off">
+            <p class="field-error" data-error-for="github_pat"></p>
           </div>
           <button type="button" class="btn btn--secondary" data-test-step="GitHub PAT">Test koneksi</button>
         </div>
 
+        <!-- Step 2 -->
         <div class="wizard-panel" data-panel="2" hidden>
           <h2 class="panel-title">Cloudflare</h2>
+          <div class="external-links">
+            <a class="btn--external" data-ext="cfDashboard" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Dashboard CF
+            </a>
+            <a class="btn--external" data-ext="cfApiTokens" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              API Tokens
+            </a>
+            <a class="btn--external" data-ext="cfDns" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              DNS Zone
+            </a>
+          </div>
           <div class="form-group">
-            <label>Global API Key / API Token</label>
-            <input class="form-control" name="cf_token" type="password">
+            <label class="form-label" for="cf_token">
+              <span class="form-label__text">Global API Key / API Token</span>
+              <button type="button" class="info-icon" aria-label="Informasi Cloudflare token" aria-expanded="false" data-tip="Disarankan API Token scoped (Pages Edit, Tunnel Edit, DNS Edit). Disimpan di Workers Secrets, bukan file .env di mini PC.">i</button>
+            </label>
+            <p class="info-tip"></p>
+            <input class="form-control" id="cf_token" name="cf_token" type="password" autocomplete="off">
+            <p class="field-error" data-error-for="cf_token"></p>
           </div>
           <div class="form-grid form-grid--2">
             <div class="form-group">
-              <label>Account ID</label>
-              <input class="form-control" name="cf_account" placeholder="32 hex">
+              <label class="form-label" for="cf_account">
+                <span class="form-label__text">Account ID</span>
+                <button type="button" class="info-icon" aria-label="Informasi Account ID" aria-expanded="false" data-tip="32 karakter hex di sidebar kanan Cloudflare Dashboard → Overview.">i</button>
+              </label>
+              <p class="info-tip"></p>
+              <input class="form-control" id="cf_account" name="cf_account" placeholder="32 hex" autocomplete="off">
+              <p class="field-error" data-error-for="cf_account"></p>
             </div>
             <div class="form-group">
-              <label>Zone ID (domain produk)</label>
-              <input class="form-control" name="cf_zone" placeholder="32 hex">
+              <label class="form-label" for="cf_zone">
+                <span class="form-label__text">Zone ID (domain produk)</span>
+                <button type="button" class="info-icon" aria-label="Informasi Zone ID" aria-expanded="false" data-tip="Zone ID domain produk (mis. seosementara.org) di halaman Overview zone — 32 karakter hex.">i</button>
+              </label>
+              <p class="info-tip"></p>
+              <input class="form-control" id="cf_zone" name="cf_zone" placeholder="32 hex" autocomplete="off">
+              <p class="field-error" data-error-for="cf_zone"></p>
             </div>
           </div>
           <div class="form-group">
-            <label>Domain utama</label>
-            <input class="form-control" name="primary_domain" value="seosementara.org">
-            <p class="hint">DNS sudah di Cloudflare Dashboard — wizard hanya verifikasi.</p>
+            <label class="form-label" for="primary_domain">
+              <span class="form-label__text">Domain utama</span>
+              <button type="button" class="info-icon" aria-label="Informasi domain utama" aria-expanded="false" data-tip="Apex domain produk CMS. DNS record sudah di-setup manual di Cloudflare — wizard hanya verifikasi zone.">i</button>
+            </label>
+            <p class="info-tip"></p>
+            <input class="form-control" id="primary_domain" name="primary_domain" value="seosementara.org" autocomplete="off">
+            <p class="field-error" data-error-for="primary_domain"></p>
           </div>
           <button type="button" class="btn btn--secondary" data-test-step="Cloudflare API">Test &amp; simpan</button>
         </div>
 
+        <!-- Step 3 -->
         <div class="wizard-panel" data-panel="3" hidden>
           <h2 class="panel-title">Mini PC (SSH)</h2>
+          <div class="external-links">
+            <a class="btn--external" data-ext="cfZeroTrust" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Cloudflare Zero Trust
+            </a>
+          </div>
           <div class="form-grid form-grid--2">
             <div class="form-group">
-              <label>Host / IP</label>
-              <input class="form-control" name="ssh_host" placeholder="192.168.1.10">
+              <label class="form-label" for="ssh_host">
+                <span class="form-label__text">Host / IP</span>
+                <button type="button" class="info-icon" aria-label="Informasi host SSH" aria-expanded="false" data-tip="Alamat LAN atau hostname mini PC yang bisa dijangkau dari internet/VPN untuk setup runner dan Docker.">i</button>
+              </label>
+              <p class="info-tip"></p>
+              <input class="form-control" id="ssh_host" name="ssh_host" placeholder="192.168.1.10" autocomplete="off">
+              <p class="field-error" data-error-for="ssh_host"></p>
             </div>
             <div class="form-group">
-              <label>Port</label>
-              <input class="form-control" name="ssh_port" value="22">
+              <label class="form-label" for="ssh_port">
+                <span class="form-label__text">Port</span>
+                <button type="button" class="info-icon" aria-label="Informasi port SSH" aria-expanded="false" data-tip="Port SSH standar 22. Ubah jika mini PC memakai port kustom.">i</button>
+              </label>
+              <p class="info-tip"></p>
+              <input class="form-control" id="ssh_port" name="ssh_port" value="22" inputmode="numeric" autocomplete="off">
+              <p class="field-error" data-error-for="ssh_port"></p>
             </div>
             <div class="form-group">
-              <label>User</label>
-              <input class="form-control" name="ssh_user" value="deploy">
+              <label class="form-label" for="ssh_user">
+                <span class="form-label__text">User</span>
+                <button type="button" class="info-icon" aria-label="Informasi user SSH" aria-expanded="false" data-tip="User Linux dengan sudo untuk install Docker, runner, dan cloudflared.">i</button>
+              </label>
+              <p class="info-tip"></p>
+              <input class="form-control" id="ssh_user" name="ssh_user" value="deploy" autocomplete="off">
+              <p class="field-error" data-error-for="ssh_user"></p>
             </div>
             <div class="form-group">
-              <label>Password / key</label>
-              <input class="form-control" name="ssh_secret" type="password">
+              <label class="form-label" for="ssh_secret">
+                <span class="form-label__text">Password / private key</span>
+                <button type="button" class="info-icon" aria-label="Informasi kredensial SSH" aria-expanded="false" data-tip="Password atau isi private key SSH. Dikirim sekali ke Workers API untuk test — tidak disimpan di browser setelah sesi.">i</button>
+              </label>
+              <p class="info-tip"></p>
+              <input class="form-control" id="ssh_secret" name="ssh_secret" type="password" autocomplete="off">
+              <p class="field-error" data-error-for="ssh_secret"></p>
             </div>
           </div>
-          <p class="hint">Workers API menjalankan test SSH — browser tidak SSH langsung.</p>
           <button type="button" class="btn btn--secondary" data-test-step="SSH mini PC">Test SSH</button>
         </div>
 
+        <!-- Step 4 -->
         <div class="wizard-panel" data-panel="4" hidden>
           <h2 class="panel-title">GitHub Actions runner</h2>
+          <div class="external-links">
+            <a class="btn--external" data-ext="githubRunners" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Runners repo
+            </a>
+            <a class="btn--external" data-ext="githubActions" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Actions
+            </a>
+          </div>
           <div class="alert alert--warning">Runner self-hosted terpasang di mini PC via onboarding (bukan di laptop operator).</div>
           <div class="form-group">
-            <label>Label runner</label>
-            <input class="form-control" name="runner_label" value="mini-pc">
+            <label class="form-label" for="runner_label">
+              <span class="form-label__text">Label runner</span>
+              <button type="button" class="info-icon" aria-label="Informasi label runner" aria-expanded="false" data-tip="Label untuk workflow runs-on, mis. mini-pc. Harus cocok dengan label di deploy-mini-pc.yml.">i</button>
+            </label>
+            <p class="info-tip"></p>
+            <input class="form-control" id="runner_label" name="runner_label" value="mini-pc" autocomplete="off">
+            <p class="field-error" data-error-for="runner_label"></p>
           </div>
           <button type="button" class="btn btn--secondary" data-test-step="Runner">Daftarkan runner</button>
         </div>
 
+        <!-- Step 5 -->
         <div class="wizard-panel" data-panel="5" hidden>
           <h2 class="panel-title">Cloudflare Tunnel</h2>
-          <div class="form-group">
-            <label>Nama tunnel</label>
-            <input class="form-control" name="tunnel_name" value="sse-production">
+          <div class="external-links">
+            <a class="btn--external" data-ext="cfTunnels" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Tunnels (CF)
+            </a>
+            <a class="btn--external" data-ext="cfDocsTunnel" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Dokumentasi Tunnel
+            </a>
           </div>
-          <p class="hint">Routes: <code>/api/*</code>, wildcard subdomain produk.</p>
+          <div class="form-group">
+            <label class="form-label" for="tunnel_name">
+              <span class="form-label__text">Nama tunnel</span>
+              <button type="button" class="info-icon" aria-label="Informasi nama tunnel" aria-expanded="false" data-tip="Nama tunnel Cloudflare, mis. sse-production. Routes: /api/* dan wildcard subdomain ke Go API di mini PC.">i</button>
+            </label>
+            <p class="info-tip"></p>
+            <input class="form-control" id="tunnel_name" name="tunnel_name" value="sse-production" autocomplete="off">
+            <p class="field-error" data-error-for="tunnel_name"></p>
+          </div>
           <pre class="code-block">cloudflared service install &lt;token-dari-cf-api&gt;</pre>
           <button type="button" class="btn btn--secondary" data-test-step="Tunnel">Buat tunnel &amp; routes</button>
         </div>
 
+        <!-- Step 6 -->
         <div class="wizard-panel" data-panel="6" hidden>
           <h2 class="panel-title">Database &amp; encryption</h2>
+          <div class="external-links">
+            <a class="btn--external" data-ext="githubSecrets" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              GitHub Secrets
+            </a>
+          </div>
           <div class="form-grid form-grid--2">
             <div class="form-group">
-              <label>DB password</label>
-              <input class="form-control" name="db_password" type="password">
+              <label class="form-label" for="db_password">
+                <span class="form-label__text">DB password</span>
+                <button type="button" class="info-icon" aria-label="Informasi password database" aria-expanded="false" data-tip="Password PostgreSQL production. Disimpan sebagai GitHub Secret DB_PASSWORD, di-inject ke container Docker.">i</button>
+              </label>
+              <p class="info-tip"></p>
+              <input class="form-control" id="db_password" name="db_password" type="password" autocomplete="new-password">
+              <p class="field-error" data-error-for="db_password"></p>
             </div>
             <div class="form-group">
-              <label>Master encryption key</label>
-              <input class="form-control" name="master_key" type="password">
+              <label class="form-label" for="master_key">
+                <span class="form-label__text">Master encryption key</span>
+                <button type="button" class="info-icon" aria-label="Informasi encryption key" aria-expanded="false" data-tip="Kunci AES-256 untuk enkripsi token Cloudflare di DB. GitHub Secret MASTER_ENCRYPTION_KEY — minimal 16 karakter.">i</button>
+              </label>
+              <p class="info-tip"></p>
+              <input class="form-control" id="master_key" name="master_key" type="password" autocomplete="new-password">
+              <p class="field-error" data-error-for="master_key"></p>
             </div>
           </div>
-          <p class="hint">→ GitHub Secrets, inject ke container PostgreSQL (Docker).</p>
           <button type="button" class="btn btn--secondary" data-test-step="GitHub Secrets">Simpan ke GitHub Secrets</button>
         </div>
 
+        <!-- Step 7 -->
         <div class="wizard-panel" data-panel="7" hidden>
           <h2 class="panel-title">Deploy backend &amp; Pages</h2>
+          <div class="external-links">
+            <a class="btn--external" data-ext="githubActions" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              GitHub Actions
+            </a>
+            <a class="btn--external" data-ext="cfPages" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Cloudflare Pages
+            </a>
+            <a class="btn--external" data-ext="ghcr" target="_blank" rel="noopener noreferrer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              GHCR packages
+            </a>
+          </div>
           <ul style="margin:0 0 1rem;padding-left:1.25rem;font-size:0.875rem;color:var(--color-text-muted)">
             <li>Image Go API → GHCR</li>
             <li>Docker compose di mini PC</li>
@@ -137,16 +274,18 @@
           <button type="button" class="btn btn--secondary" data-test-step="Deploy">Jalankan deploy (demo)</button>
         </div>
 
+        <!-- Step 8 -->
         <div class="wizard-panel" data-panel="8" hidden>
           <div class="alert alert--success">
-            Infrastruktur siap (demo). Klik tombol di bawah untuk membuka <strong>admin Cloudflare Pages</strong>.
+            Infrastruktur siap (demo). Buka admin Cloudflare Pages.
           </div>
-          <a id="btn-finish" class="btn btn--primary" href="#" style="margin-top:0.5rem">Buka Admin CMS</a>
+          <a id="btn-finish" class="btn btn--primary" href="#">Buka Admin CMS</a>
         </div>
 
         <div class="btn-row" id="wizard-nav">
           <button type="button" class="btn btn--secondary" id="btn-prev" disabled>Kembali</button>
-          <button type="button" class="btn btn--primary" id="btn-next">Lanjut</button>
+          <button type="button" class="btn btn--primary" id="btn-next" disabled>Lanjut</button>
+          <span class="step-status" id="step-status">Lengkapi field yang ditandai merah</span>
         </div>
       </form>
     </div>

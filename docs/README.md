@@ -4,4 +4,4 @@ Folder ini **otomatis** disalin dari `Frontend-Onboarding/public/` oleh workflow
 
 **Pengaturan repo:** Settings → Pages → Source: **Deploy from a branch** → Branch `main` → Folder **`/docs`**.
 
-Alternatif: Source **GitHub Actions** + workflow `pages-onboarding.yml` (tanpa folder `docs/`).
+Alternatif: Source **GitHub Actions** + workflow `pages-onboarding.yml`.

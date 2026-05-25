@@ -1,6 +1,5 @@
 /**
- * GitHub Pages base path + URL admin setelah onboarding.
- * Ubah adminUrlAfterComplete jika domain admin berbeda.
+ * GitHub Pages base path + URL eksternal bantuan.
  */
 (function () {
   var path = location.pathname.replace(/\/$/, '');
@@ -23,6 +22,21 @@
     'https://seosementara.org/admin/login.html?from=onboarding';
   window.SSEO.onboardingPagesUrl = 'https://wbetengine.github.io/Seosementara/';
   window.SSEO.wizardStorageKey = 'sseo_onboarding_wizard';
+
+  window.SSEO.links = {
+    githubTokens: 'https://github.com/settings/tokens',
+    githubSecrets: 'https://github.com/WBetEngine/Seosementara/settings/secrets/actions',
+    githubRunners: 'https://github.com/WBetEngine/Seosementara/settings/actions/runners',
+    githubActions: 'https://github.com/WBetEngine/Seosementara/actions',
+    cfDashboard: 'https://dash.cloudflare.com/',
+    cfApiTokens: 'https://dash.cloudflare.com/profile/api-tokens',
+    cfZeroTrust: 'https://one.dash.cloudflare.com/',
+    cfTunnels: 'https://one.dash.cloudflare.com/?to=/:account/cfd_tunnel',
+    cfPages: 'https://dash.cloudflare.com/?to=/:account/pages',
+    cfDns: 'https://dash.cloudflare.com/?to=/:account/:zone/dns',
+    cfDocsTunnel: 'https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/',
+    ghcr: 'https://github.com/WBetEngine/Seosementara/pkgs/container'
+  };
 
   window.SSEO.asset = function (rel) {
     var p = rel.charAt(0) === '/' ? rel : '/' + rel;
