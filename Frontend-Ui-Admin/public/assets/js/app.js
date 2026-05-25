@@ -128,21 +128,53 @@
     });
   }
 
-  function checkBootstrapRedirect() {
-    if (location.pathname.indexOf('bootstrap') >= 0 || location.pathname.indexOf('login') >= 0) return;
+  function captureOnboardingReturn() {
+    if (location.search.indexOf('from=onboarding') < 0) return;
     try {
-      var done = localStorage.getItem(window.SSEO.bootstrapKey);
-      if (!done && location.pathname.indexOf('/admin/') >= 0) {
-        /* opsional: redirect ke wizard pertama kali */
-      }
+      sessionStorage.setItem(
+        (window.SSEO && window.SSEO.setupCompleteKey) || 'sseo_setup_complete',
+        '1'
+      );
     } catch (e) {}
+    try {
+      var u = new URL(location.href);
+      u.searchParams.delete('from');
+      history.replaceState(null, '', u.pathname + u.search);
+    } catch (err) {}
+  }
+
+  function initSetupBanner() {
+    if (location.pathname.indexOf('/admin/') < 0) return;
+    if (location.pathname.indexOf('login') >= 0) return;
+    var key = (window.SSEO && window.SSEO.setupCompleteKey) || 'sseo_setup_complete';
+    try {
+      if (sessionStorage.getItem(key) === '1') return;
+    } catch (e) {}
+    var url =
+      (window.SSEO && window.SSEO.onboardingUrl) ||
+      'https://wbetengine.github.io/Seosementara/';
+    var el = document.createElement('div');
+    el.className = 'alert alert--warning setup-infra-banner';
+    el.setAttribute('role', 'alert');
+    el.innerHTML =
+      '<strong>Setup infrastruktur belum selesai.</strong> Lanjutkan di ' +
+      '<a href="' +
+      url +
+      '" target="_blank" rel="noopener">GitHub Pages onboarding</a>.';
+    var main = document.querySelector('.admin-main');
+    if (main) {
+      main.insertBefore(el, main.firstChild);
+    } else {
+      document.body.insertBefore(el, document.body.firstChild);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    captureOnboardingReturn();
     initSidebar();
     initBackdrop();
     initDemoForms();
     initHtmxHooks();
-    checkBootstrapRedirect();
+    initSetupBanner();
   });
 })();

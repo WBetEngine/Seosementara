@@ -128,8 +128,9 @@ Settings → Infra / Mini PC (status runner, tunnel, health) — **bukan** first
 ## 8. Checklist
 
 - [x] Kerangka `Frontend-Ui-Admin/` (mock)
-- [ ] Buat `Frontend-Onboarding/` + workflow GitHub Pages
-- [ ] Pindahkan/hapus `admin/bootstrap.html` dari admin
+- [x] Buat `Frontend-Onboarding/` + workflow GitHub Pages
+- [x] Pindahkan wizard ke onboarding; `bootstrap.html` → redirect ke GH Pages
+- [x] Banner admin + link onboarding; `?from=onboarding` → sessionStorage
 - [ ] Workers Platform API ([28](./28-platform-github-workers.md) §5)
 - [ ] Backend Go + Docker
 - [ ] Admin `apiMode: live`
